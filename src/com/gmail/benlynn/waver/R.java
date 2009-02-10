@@ -10,6 +10,9 @@ package com.gmail.benlynn.waver;
 public final class R {
     public static final class attr {
     }
+    public static final class id {
+        public static final int container=0x7f040000;
+    }
     public static final class layout {
         public static final int main=0x7f020000;
     }

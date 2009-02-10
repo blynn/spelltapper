@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+ android:id="@+id/container"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
 <com.gmail.benlynn.waver.MainView  
     android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
+    android:layout_height="fill_parent" 
     />
-</LinearLayout>
-
+<TextView
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:background="#ff0000aa"
+    android:textColor="#ffffffff"
+    android:text="Hello"
+    />
+</FrameLayout>
