@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.util.Log;
 
@@ -45,15 +44,43 @@ public class MainView extends View {
   static String gestArr[];
   static char choice[];
 
+  static final int ylower = 128 + 144 + 4 * 4;
+
   @Override
   public void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-    canvas.drawText(msg, 0, 0, paint);
-    canvas.drawLine(0, 0, 50, 50, paint);
+
     canvas.drawText(msg, 50, 50, paint);
     Paint boxpaint = new Paint();
     boxpaint.setARGB(255, 32, 32, 64);
-    canvas.drawRect(0, 240, 320, 480, boxpaint);
+
+    // Spell icon.
+    int x = 0;
+    int y = 64 + 48 + 2 * 4;
+    canvas.drawRect(x, y, x + 48 - 1, y + 48 - 1, boxpaint);
+
+    // Enemy avatar.
+    x = 130;
+    y = 0;
+    canvas.drawRect(x, y, x + 64 - 1, y + 64 - 1, boxpaint);
+
+    // Gesture area.
+    y = ylower;
+    canvas.drawRect(0, y, 320, 480, boxpaint);
+
+    // Status line.
+    y = ylower + 16;
+    canvas.drawText("Some status message", 0, y - 4, paint);
+
+    // Spell choice row 1
+    canvas.drawRect(0, y, 50 - 1, y + 50 - 1, paint);
+
+    // Spell choice row 2
+    y += 50;
+    canvas.drawRect(0, y, 50 - 1, y + 50 - 1, paint);
+
+    y += 50 + 16 - 4;
+
     switch(state) {
       case 0:
 	break;
@@ -61,8 +88,9 @@ public class MainView extends View {
 	canvas.drawLine(x0, y0, x1, y1, paint);
 	break;
     }
-    canvas.drawText("" + choice[0], 0, 240, paint);
-    canvas.drawText("" + choice[1], 160, 240, paint);
+    canvas.drawText("Left: " + choice[0], 0, y, paint);
+    canvas.drawText("Right: " + choice[1], 160, y, paint);
+    canvas.drawText("Stab", 0, y + 16, paint);
   }
 
   @Override
@@ -70,9 +98,10 @@ public class MainView extends View {
     // Log.i("Wave", "got event " + event.getAction());
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
+
 	x0 = event.getX();
 	y0 = event.getY();
-	if (y0 < 240) {
+	if (y0 < ylower) {
 	  return false;
 	}
 	state = 1;
@@ -105,7 +134,7 @@ public class MainView extends View {
 	    choice[h] = '0';
 	  } else {
 	    choice[h] = s.charAt(0);
-	    if (choice[h] == 'K') {
+	    if (choice[0] == 'K' && choice[1] == 'K') {
 	      choice[1 - h] = '0';
 	    }
 	  }
