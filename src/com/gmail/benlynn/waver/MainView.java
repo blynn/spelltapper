@@ -1,6 +1,8 @@
 package com.gmail.benlynn.waver;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
@@ -73,11 +75,16 @@ public class MainView extends View {
     canvas.drawText("Some status message", 0, y - 4, paint);
 
     // Spell choice row 1
-    canvas.drawRect(0, y, 50 - 1, y + 50 - 1, paint);
+    //canvas.drawRect(0, y, 50 - 1, y + 50 - 1, paint);
+    Bitmap bmstab = BitmapFactory.decodeResource(getResources(),
+	R.drawable.stab);
+    canvas.drawBitmap(bmstab, 1, y + 1, paint);
 
     // Spell choice row 2
     y += 50;
     canvas.drawRect(0, y, 50 - 1, y + 50 - 1, paint);
+
+    canvas.drawRect(256, y + 25, 256 + 64 - 1, y + 50 - 1, paint);
 
     y += 50 + 16 - 4;
 
@@ -88,8 +95,8 @@ public class MainView extends View {
 	canvas.drawLine(x0, y0, x1, y1, paint);
 	break;
     }
-    canvas.drawText("Left: " + choice[0], 0, y, paint);
-    canvas.drawText("Right: " + choice[1], 160, y, paint);
+    canvas.drawText("Left Hand: " + choice[0], 0, y, paint);
+    canvas.drawText("Right Hand: " + choice[1], 160, y, paint);
     canvas.drawText("Stab", 0, y + 16, paint);
   }
 
@@ -98,7 +105,6 @@ public class MainView extends View {
     // Log.i("Wave", "got event " + event.getAction());
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
-
 	x0 = event.getX();
 	y0 = event.getY();
 	if (y0 < ylower) {

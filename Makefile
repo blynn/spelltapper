@@ -8,7 +8,7 @@ MUCK=com/gmail/benlynn/waver/
 
 target: bin/out.apk
 
-src/$(MUCK)/R.java : res/layout/*
+src/$(MUCK)/R.java : res/*/*
 	$(AAPT) p -m -J src -M AndroidManifest.xml -S res -I $(SDKDIR)/android.jar
 
 binclasses : src/$(MUCK)/*.java src/$(MUCK)/R.java
