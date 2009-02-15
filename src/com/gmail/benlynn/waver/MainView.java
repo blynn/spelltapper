@@ -17,9 +17,13 @@ public class MainView extends View {
     paint = new Paint();
     paint.setARGB(255, 255, 255, 255);
     state = 0;
-    gestArr = new String[9];
+    gestname = new String[9];
     choice = new int[2];
     lastchoice = new int[2];
+    hist = new int[128][2];
+    histi = 0;
+    histstart = new int[2];
+    histstart[1] = histstart[0] = 0;
     choice[0] = choice[1] = flattenxy(0, 0);
     lastchoice[0] = lastchoice[1] = choice[0];
     // Use Unicode arrows as well? e.g. \u2191?
@@ -30,7 +34,8 @@ public class MainView extends View {
     put_gest("Wave", -1, 1);
     put_gest("Palm", 0, 1);
     put_gest("Fingers", 1, 1);
-    put_gest("(nothing)", 0, 0);
+    bmplayer = BitmapFactory.decodeResource(getResources(), R.drawable.wiz);
+    bmdummy = BitmapFactory.decodeResource(getResources(), R.drawable.dummy);
   }
 
   private static int flattenxy(int x, int y) {
@@ -39,19 +44,22 @@ public class MainView extends View {
 
   private void put_gest(String s, int x, int y) {
     int n = flattenxy(x, y);
-    gestArr[n] = s;
+    gestname[n] = s;
   }
 
   static Paint paint;
   static String msg;
   static float x0, y0, x1, y1;
   static int state;
-  static String gestArr[];
+  static String gestname[];
   static int choice[];
   static int lastchoice[];
+  static int hist[][], histi, histstart[];
   static final int ylower = 128 + 144 + 4 * 4;
   static final int okbutx0 = 256, okbutx1 = 256 + 64 - 1;
   static final int okbuty0 = ylower + 16 + 50 + 25 , okbuty1= okbuty0 + 25 - 1;
+  static final int STAB = flattenxy(0, -1);
+  static Bitmap bmplayer, bmdummy;
 
   @Override
   public void onDraw(Canvas canvas) {
@@ -63,12 +71,34 @@ public class MainView extends View {
     // Spell icon.
     int x = 0;
     int y = 64 + 48 + 2 * 4;
-    canvas.drawRect(x, y, x + 48 - 1, y + 48 - 1, boxpaint);
+    Bitmap bmstab = BitmapFactory.decodeResource(getResources(),
+	R.drawable.stab);
+    //canvas.drawRect(x, y, x + 48 - 1, y + 48 - 1, boxpaint);
+    canvas.drawBitmap(bmstab, x, y, paint);
 
     // Enemy avatar.
     x = 130;
     y = 0;
-    canvas.drawRect(x, y, x + 64 - 1, y + 64 - 1, boxpaint);
+    canvas.drawBitmap(bmdummy, x, y, paint);
+
+    // Player.
+    y = ylower - 64;
+    canvas.drawBitmap(bmplayer, x, y, paint);
+
+    // Player history.
+    y = ylower - 4;
+    x = 0;
+    String s = "";
+    for (int i = histstart[0]; i < histi; i++) {
+      s += " " + gestname[hist[i][0]].charAt(0);
+    }
+    canvas.drawText(s, x, y, paint);
+    s = "";
+    for (int i = histstart[1]; i < histi; i++) {
+      s += " " + gestname[hist[i][1]].charAt(0);
+    }
+    x = 160 + 32;
+    canvas.drawText(s, x, y, paint);
 
     // Gesture area.
     y = ylower;
@@ -80,8 +110,6 @@ public class MainView extends View {
 
     // Spell choice row 1
     //canvas.drawRect(0, y, 50 - 1, y + 50 - 1, paint);
-    Bitmap bmstab = BitmapFactory.decodeResource(getResources(),
-	R.drawable.stab);
     canvas.drawBitmap(bmstab, 1, y + 1, paint);
 
     // Spell choice row 2
@@ -93,6 +121,15 @@ public class MainView extends View {
 
     y += 50 + 16 - 4;
 
+    s = gestname[choice[0]];
+    if (null == s) s = "(nothing)";
+    canvas.drawText("Left Hand: " + s, 0, y, paint);
+    s = gestname[choice[1]];
+    if (null == s) s = "(nothing)";
+    canvas.drawText("Right Hand: " + s, 160, y, paint);
+
+    canvas.drawText("Stab", 0, y + 16, paint);
+
     switch(state) {
       case 0:
 	break;
@@ -100,9 +137,6 @@ public class MainView extends View {
 	canvas.drawLine(x0, y0, x1, y1, paint);
 	break;
     }
-    canvas.drawText("Left Hand: " + gestArr[choice[0]], 0, y, paint);
-    canvas.drawText("Right Hand: " + gestArr[choice[1]], 160, y, paint);
-    canvas.drawText("Stab", 0, y + 16, paint);
   }
 
   private static boolean in_ok_button(float x, float y) {
@@ -149,12 +183,11 @@ public class MainView extends View {
 	    dirx *= -1;
 	  }
 	  choice[h] = flattenxy(dirx, diry);
-	  String s = gestArr[choice[h]];
+	  String s = gestname[choice[h]];
 	  if (null == s) {
 	    choice[h] = flattenxy(0, 0);
 	  } else {
-	    char ch = s.charAt(0);
-	    if (ch == 'K' && choice[h] == choice[1 - h]) {
+	    if (s.charAt(0) == 'K' && choice[h] == choice[1 - h]) {
 	      choice[1 - h] = flattenxy(0, 0);
 	    }
 	  }
@@ -167,6 +200,18 @@ public class MainView extends View {
 
   private void end_turn() {
     msg = "(next turn)";
+    hist[histi][0] = choice[0];
+    hist[histi][1] = choice[1];
+    // Stabs and null gestures break combos.
+    if (histi > 0) {
+      if (hist[histi - 1][0] == STAB) histstart[0] = histi;
+      if (hist[histi - 1][1] == STAB) histstart[1] = histi;
+    }
+    if (choice[0] == STAB) histstart[0] = histi;
+    if (choice[1] == STAB) histstart[1] = histi;
+    histi++;
+    if (gestname[choice[0]] == null) histstart[0] = histi;
+    if (gestname[choice[1]] == null) histstart[1] = histi;
     invalidate();
   }
 
