@@ -39,6 +39,9 @@ public class Arena extends View {
     x += 10;
     if (i < 20) {
       anim_handler.sleep(10);
+    } else {
+      i = 0;
+      x = 50;
     }
   }
 
