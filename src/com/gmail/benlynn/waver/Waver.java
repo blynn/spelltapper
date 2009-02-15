@@ -14,8 +14,9 @@ public class Waver extends Activity {
     requestWindowFeature(Window.FEATURE_NO_TITLE);
     setContentView(R.layout.main);
     ViewGroup vg = (ViewGroup) findViewById(R.id.container);
-    vg.removeViewAt(2);
+    vg.removeViewAt(3);
     MainView mv = (MainView) findViewById(R.id.mainview);
     mv.set_arena((Arena) findViewById(R.id.arena));
+    mv.set_arrow_view((ArrowView) findViewById(R.id.arrow_view));
   }
 }

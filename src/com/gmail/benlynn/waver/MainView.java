@@ -20,21 +20,28 @@ public class MainView extends View {
   static int lastchoice[];
   static int hist[][], histi, histstart[];
   static final int ylower = 128 + 144 + 4 * 4;
+  static final int yicon = 64 + 48 + 2 * 4;
   // TODO: Use Rect.
   static final int okbutx0 = 256, okbutx1 = 256 + 64 - 1;
   static final int okbuty0 = ylower + 16 + 50 + 25 , okbuty1= okbuty0 + 25 - 1;
   static final int KNIFE = flattenxy(0, -1);
   static final int NO_GESTURE = flattenxy(0, 0);
-  static Bitmap bmplayer, bmdummy;
   static String spell_text[];
   static int ready_spell_count[];
   static Spell[][] ready_spell;
   static Spell[] spell_list;
   static int spell_list_count;
   static int spell_choice[];
+  static int spell_target[];
+  static int being_list_count;
+  static Being being_list[];
   static Arena arena;
+  static ArrowView arrow_view;
   void set_arena(Arena a) {
     arena = a;
+  }
+  void set_arrow_view(ArrowView a) {
+    arrow_view = a;
   }
 
   public MainView(Context context, AttributeSet attrs) {
@@ -70,18 +77,27 @@ public class MainView extends View {
     put_gest("Wave", -1, 1);
     put_gest("Palm", 0, 1);
     put_gest("Fingers", 1, 1);
-    bmplayer = BitmapFactory.decodeResource(getResources(), R.drawable.wiz);
-    bmdummy = BitmapFactory.decodeResource(getResources(), R.drawable.dummy);
-    stab_spell = new Spell("Stab", "K", R.drawable.stab);
+    stab_spell = new Spell("Stab", "K", R.drawable.stab, 1);
     spell_list = new Spell[64];
     spell_list_count = 0;
-    add_spell("Shield", "P", R.drawable.shield);
-    add_spell("Missile", "SD", R.drawable.missile);
-    add_spell("Cause Light Wounds", "WFP", R.drawable.wound);
+    add_spell("Shield", "P", R.drawable.shield, 0);
+    add_spell("Missile", "SD", R.drawable.missile, 1);
+    add_spell("Cause Light Wounds", "WFP", R.drawable.wound, 1);
+
+    being_list = new Being[16];
+    being_list_count = 0;
+
+    being_list_count++;
+    being_list[0] = new Being(160 - 32, ylower - 64, R.drawable.wiz);
+    being_list_count++;
+    being_list[1] = new Being(160 - 32, 0, R.drawable.dummy);
+
+    spell_target = new int[2];
   }
 
-  public void add_spell(String name, String gesture, int bitmapid) {
-    Spell sp = new Spell(name, gesture, bitmapid);
+  public void add_spell(String name, String gesture, int bitmapid,
+      int default_target) {
+    Spell sp = new Spell(name, gesture, bitmapid, default_target);
     spell_list[spell_list_count] = sp;
     spell_list_count++;
   }
@@ -104,14 +120,11 @@ public class MainView extends View {
     Paint boxpaint = new Paint();
     boxpaint.setARGB(255, 32, 32, 64);
 
-    // Enemy avatar.
-    x = 130;
-    y = 0;
-    canvas.drawBitmap(bmdummy, x, y, paint);
-
-    // Player.
-    y = ylower - 64;
-    canvas.drawBitmap(bmplayer, x, y, paint);
+    // Avatars.
+    for (int i = 0; i < being_list_count; i++) {
+      Being b = being_list[i];
+      canvas.drawBitmap(b.bitmap, b.x, b.y, paint);
+    }
 
     // Player history.
     y = ylower - 4;
@@ -130,12 +143,16 @@ public class MainView extends View {
 
     // Spell icons.
     x = 0;
-    y = 64 + 48 + 2 * 4;
+    y = yicon;
+    arrow_view.clear_arrows();
     for (int h = 0; h < 2; h++) {
       if (ready_spell_count[h] > 0) {
 	Spell sp = ready_spell[spell_choice[h]][h];
 	canvas.drawBitmap(sp.bitmap, x, y, paint);
 	spell_text[h] = sp.name;
+        Being b = being_list[spell_target[h]];
+	arrow_view.add_arrow(x + 24, y + 24, b.x + 32, b.y + 32);
+	arrow_view.invalidate();
       }
       x = 320 - 48 - 1;
     }
@@ -182,20 +199,18 @@ public class MainView extends View {
     // Status line.
     y = ylower + 32 + 2 * 50 + 16;
     canvas.drawText(msg, 0, y - 4, paint);
-
-    switch(state) {
-      case 0:
-	break;
-      case 2:
-	canvas.drawLine(x0, y0, x1, y1, paint);
-	break;
-    }
   }
 
   private static boolean in_ok_button(float x, float y) {
     return x >= okbutx0 && x <= okbutx1 && y >= okbuty0 && y <= okbuty1;
   }
   static boolean okstate;
+
+  private void choose_spell(int h, int i) {
+    // Assumes i is a valid choice for hand h.
+    spell_choice[h] = i;
+    spell_target[h] = ready_spell[i][h].target;
+  }
 
   @Override
   public boolean onTouchEvent(MotionEvent event) {
@@ -204,6 +219,16 @@ public class MainView extends View {
 	x0 = event.getX();
 	y0 = event.getY();
 	if (y0 < ylower) {
+	  if (y0 >= yicon && y0 < yicon + 48) {
+	    if (x0 < 48) {
+	      state = 2;
+	      return true;
+	    } else if (x0 >= 320 - 48) {
+	      state = 3;
+	      return true;
+	    }
+	  }
+	  state = 0;
 	  return false;
 	}
 	okstate = MainView.in_ok_button(x0, y0);
@@ -212,6 +237,17 @@ public class MainView extends View {
       case MotionEvent.ACTION_UP:
 	x1 = event.getX();
 	y1 = event.getY();
+	if (2 == state || 3 == state) {
+	  for(int i = 0; i < being_list_count; i++) {
+	    Being b = being_list[i];
+	    if (x1 >= b.x && y1 >= b.y && x1 < b.x + 64 && y1 < b.y + 64) {
+	      spell_target[state - 2] = i;
+	      arrow_view.invalidate();
+	      break;
+	    }
+	  }
+	  return true;
+	}
 	float dx = x1 - x0;
 	float dy = y1 - y0;
 	if (dx * dx + dy * dy < 32 * 32) {
@@ -230,7 +266,7 @@ public class MainView extends View {
 		i = ((int) x1) / 50;
 	      }
 	      if (i >= 0 && i < ready_spell_count[h]) {
-		spell_choice[h] = i;
+		choose_spell(h, i);
 		invalidate();
 		return true;
 	      }
@@ -255,9 +291,9 @@ public class MainView extends View {
 	  choice[h] = flattenxy(dirx, diry);
 	  String s = gestname[choice[h]];
 	  if (null == s) choice[h] = NO_GESTURE;
+	  handle_new_choice(h);
+	  return true;
 	}
-	handle_new_choice();
-	return true;
     }
     return false;
   }
@@ -285,44 +321,44 @@ public class MainView extends View {
     invalidate();
   }
 
-  private void handle_new_choice() {
-    state = 2;
-    for (int h = 0; h < 2; h++) if (lastchoice[h] != choice[h]) {
-      ready_spell_count[h] = 0;
-      if (choice[h] == NO_GESTURE) continue;
-      if (choice[h] == KNIFE) {
-	if (choice[1 - h] == KNIFE) {
-	  spell_text[h] = "(only one knife)";
-	} else {
-	  add_ready_spell(h, stab_spell);
-	}
+  private void handle_new_choice(int h) {
+    ready_spell_count[h] = 0;
+    if (choice[h] == KNIFE) {
+      if (choice[1 - h] == KNIFE) {
+	spell_text[h] = "(only one knife)";
       } else {
-	if (lastchoice[h] == KNIFE && choice[1 - h] == KNIFE) {
-	  ready_spell_count[1 - h] = 0;
-	  add_ready_spell(1 - h, stab_spell);
+	add_ready_spell(h, stab_spell);
+      }
+    } else if (choice[h] != NO_GESTURE) {
+      if (lastchoice[h] == KNIFE && choice[1 - h] == KNIFE) {
+	ready_spell_count[1 - h] = 0;
+	add_ready_spell(1 - h, stab_spell);
+	choose_spell(1 - h, 0);
+      }
+      spell_text[h] = "";
+      for (int i = 0; i < spell_list_count; i++) {
+	String g = spell_list[i].gesture;
+	int k = g.length();
+	if (k > histi - histstart[h] + 1) continue;
+	k--;
+	if (g.charAt(k) != gestname[choice[h]].charAt(0)) continue;
+	k--;
+	int k2 = histi - 1;
+	while (k >= 0) {
+	  if (g.charAt(k) != gestname[hist[k2][h]].charAt(0)) {
+	    break;
+	  }
+	  k2--;
+	  k--;
 	}
-	spell_text[h] = "";
-	for (int i = 0; i < spell_list_count; i++) {
-	  String g = spell_list[i].gesture;
-	  int k = g.length();
-	  if (k > histi - histstart[h] + 1) continue;
-	  k--;
-	  if (g.charAt(k) != gestname[choice[h]].charAt(0)) continue;
-	  k--;
-	  int k2 = histi - 1;
-	  while (k >= 0) {
-	    if (g.charAt(k) != gestname[hist[k2][h]].charAt(0)) {
-	      break;
-	    }
-	    k2--;
-	    k--;
-	  }
-	  if (0 > k) {
-	    // At last we have a match.
-	    add_ready_spell(h, spell_list[i]);
-	  }
+	if (0 > k) {
+	  // At last we have a match.
+	  add_ready_spell(h, spell_list[i]);
 	}
       }
+    }
+    if (ready_spell_count[h] > 0) {
+      choose_spell(h, 0);
     }
     lastchoice[0] = choice[0];
     lastchoice[1] = choice[1];
@@ -335,14 +371,30 @@ public class MainView extends View {
   }
 
   public class Spell {
-    public Spell(String new_name, String new_gest, int bitmapid) {
+    public Spell(String new_name, String new_gest, int bitmapid,
+        int def_target) {
       name = new_name;
       gesture = new_gest;
       bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
+      target = def_target;
     }
 
     Bitmap bitmap;
     String name;
     String gesture;
+    int target;
+  }
+
+  public class Being {
+    public Being(int posx, int posy, int bitmapid) {
+      x = posx;
+      y = posy;
+      bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
+    }
+    Bitmap bitmap;
+    int x, y;
+    int life;
+    int status;
+    int target;
   }
 }
