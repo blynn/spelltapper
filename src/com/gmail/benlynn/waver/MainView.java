@@ -6,14 +6,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.util.Log;
 
 public class MainView extends View {
   public MainView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    msg = "somemsg";
+    msg = "Welcome to Spell Tapper";
     paint = new Paint();
     paint.setARGB(255, 255, 255, 255);
     state = 0;
@@ -73,7 +73,6 @@ public class MainView extends View {
     int y = 64 + 48 + 2 * 4;
     Bitmap bmstab = BitmapFactory.decodeResource(getResources(),
 	R.drawable.stab);
-    //canvas.drawRect(x, y, x + 48 - 1, y + 48 - 1, boxpaint);
     canvas.drawBitmap(bmstab, x, y, paint);
 
     // Enemy avatar.
@@ -186,10 +185,6 @@ public class MainView extends View {
 	  String s = gestname[choice[h]];
 	  if (null == s) {
 	    choice[h] = flattenxy(0, 0);
-	  } else {
-	    if (s.charAt(0) == 'K' && choice[h] == choice[1 - h]) {
-	      choice[1 - h] = flattenxy(0, 0);
-	    }
 	  }
 	}
 	handle_new_choice();
@@ -212,7 +207,14 @@ public class MainView extends View {
     histi++;
     if (gestname[choice[0]] == null) histstart[0] = histi;
     if (gestname[choice[1]] == null) histstart[1] = histi;
+    if (histi > histstart[0] + 6) histstart[0]++;
+    if (histi > histstart[1] + 6) histstart[1]++;
+    arena.animate();
     invalidate();
+  }
+  static Arena arena;
+  void set_arena(Arena a) {
+    arena = a;
   }
 
   private void handle_new_choice() {
