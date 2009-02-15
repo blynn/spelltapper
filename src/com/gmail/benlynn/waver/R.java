@@ -17,6 +17,7 @@ public final class R {
         public static final int shield=0x7f020003;
         public static final int stab=0x7f020004;
         public static final int wiz=0x7f020005;
+        public static final int wound=0x7f020006;
     }
     public static final class id {
         public static final int arena=0x7f050002;

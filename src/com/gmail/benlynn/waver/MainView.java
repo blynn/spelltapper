@@ -32,6 +32,10 @@ public class MainView extends View {
   static Spell[] spell_list;
   static int spell_list_count;
   static int spell_choice[];
+  static Arena arena;
+  void set_arena(Arena a) {
+    arena = a;
+  }
 
   public MainView(Context context, AttributeSet attrs) {
     super(context, attrs);
@@ -73,6 +77,7 @@ public class MainView extends View {
     spell_list_count = 0;
     add_spell("Shield", "P", R.drawable.shield);
     add_spell("Missile", "SD", R.drawable.missile);
+    add_spell("Cause Light Wounds", "WFP", R.drawable.wound);
   }
 
   public void add_spell(String name, String gesture, int bitmapid) {
@@ -128,7 +133,9 @@ public class MainView extends View {
     y = 64 + 48 + 2 * 4;
     for (int h = 0; h < 2; h++) {
       if (ready_spell_count[h] > 0) {
-	canvas.drawBitmap(ready_spell[spell_choice[h]][h].bitmap, x, y, paint);
+	Spell sp = ready_spell[spell_choice[h]][h];
+	canvas.drawBitmap(sp.bitmap, x, y, paint);
+	spell_text[h] = sp.name;
       }
       x = 320 - 48 - 1;
     }
@@ -154,7 +161,7 @@ public class MainView extends View {
     y = ylower + 32;
     for (int h = 0; h < 2; h++) {
       for (int i = 0; i < ready_spell_count[h]; i++) {
-	if (i == spell_choice[i]) {
+	if (i == spell_choice[h]) {
 	  canvas.drawRect(x, y, x + 50, y + 50, selpaint);
 	}
 	canvas.drawBitmap(ready_spell[i][h].bitmap, x + 1, y + 1, paint);
@@ -208,9 +215,26 @@ public class MainView extends View {
 	float dx = x1 - x0;
 	float dy = y1 - y0;
 	if (dx * dx + dy * dy < 32 * 32) {
-	  if (okstate && MainView.in_ok_button(x1 ,y1)) {
+	  if (okstate && MainView.in_ok_button(x1, y1)) {
 	    end_turn();
 	    return true;
+	  }
+	  if (y1 >= ylower + 32 && y1 < ylower + 32 + 50) {
+	    // Could be choosing a ready spell.
+	    for (int h = 0; h < 2; h++) {
+	      int i;
+	      if (h == 1) {
+		if (x1 < 160) break;
+		i = ((int) x1 - 160) / 50;
+	      } else {
+		i = ((int) x1) / 50;
+	      }
+	      if (i >= 0 && i < ready_spell_count[h]) {
+		spell_choice[h] = i;
+		invalidate();
+		return true;
+	      }
+	    }
 	  }
 	} else {
 	  int dirx, diry;
@@ -255,11 +279,10 @@ public class MainView extends View {
     if (histi > histstart[0] + 6) histstart[0]++;
     if (histi > histstart[1] + 6) histstart[1]++;
     arena.animate();
+    // TODO: Clear gestures, spell text.
+    ready_spell_count[0] = 0;
+    ready_spell_count[1] = 0;
     invalidate();
-  }
-  static Arena arena;
-  void set_arena(Arena a) {
-    arena = a;
   }
 
   private void handle_new_choice() {
@@ -284,12 +307,10 @@ public class MainView extends View {
 	  int k = g.length();
 	  if (k > histi - histstart[h] + 1) continue;
 	  k--;
-	  Log.i("M", "" + g + ":" + gestname[choice[h]]);
 	  if (g.charAt(k) != gestname[choice[h]].charAt(0)) continue;
 	  k--;
 	  int k2 = histi - 1;
 	  while (k >= 0) {
-	    Log.i("M", "" + g + ":" + gestname[hist[k2][h]]);
 	    if (g.charAt(k) != gestname[hist[k2][h]].charAt(0)) {
 	      break;
 	    }
@@ -311,7 +332,6 @@ public class MainView extends View {
   public void add_ready_spell(int h, Spell sp) {
     ready_spell[ready_spell_count[h]][h] = sp;
     ready_spell_count[h]++;
-    spell_text[h] = sp.name;
   }
 
   public class Spell {
