@@ -77,12 +77,12 @@ public class MainView extends View {
     put_gest("Wave", -1, 1);
     put_gest("Palm", 0, 1);
     put_gest("Fingers", 1, 1);
-    stab_spell = new Spell("Stab", "K", R.drawable.stab, 1);
+    stab_spell = new StabSpell();
     spell_list = new Spell[64];
     spell_list_count = 0;
-    add_spell("Shield", "P", R.drawable.shield, 0);
-    add_spell("Missile", "SD", R.drawable.missile, 1);
-    add_spell("Cause Light Wounds", "WFP", R.drawable.wound, 1);
+    add_spell(new ShieldSpell());
+    add_spell(new MissileSpell());
+    add_spell(new CauseLightWoundsSpell());
 
     being_list = new Being[16];
     being_list_count = 0;
@@ -93,16 +93,18 @@ public class MainView extends View {
     being_list[1] = new Being(160 - 32, 0, R.drawable.dummy);
 
     spell_target = new int[2];
+    exec_queue = new SpellCast[16];
+
+    arena.being_list = being_list;
+    arena.being_list_count = being_list_count;
   }
 
-  public void add_spell(String name, String gesture, int bitmapid,
-      int default_target) {
-    Spell sp = new Spell(name, gesture, bitmapid, default_target);
+  public void add_spell(Spell sp) {
     spell_list[spell_list_count] = sp;
     spell_list_count++;
   }
 
-  static Spell stab_spell;
+  static StabSpell stab_spell;
 
   private static int flattenxy(int x, int y) {
     return (x + 1) + (y + 1) * 3;
@@ -118,13 +120,9 @@ public class MainView extends View {
     super.onDraw(canvas);
     int x, y;
     Paint boxpaint = new Paint();
-    boxpaint.setARGB(255, 32, 32, 64);
+    boxpaint.setARGB(255, 32, 32, 32);
 
-    // Avatars.
-    for (int i = 0; i < being_list_count; i++) {
-      Being b = being_list[i];
-      canvas.drawBitmap(b.bitmap, b.x, b.y, paint);
-    }
+    // Arena handles avatars.
 
     // Player history.
     y = ylower - 4;
@@ -150,9 +148,11 @@ public class MainView extends View {
 	Spell sp = ready_spell[spell_choice[h]][h];
 	canvas.drawBitmap(sp.bitmap, x, y, paint);
 	spell_text[h] = sp.name;
-        Being b = being_list[spell_target[h]];
-	arrow_view.add_arrow(x + 24, y + 24, b.x + 32, b.y + 32);
-	arrow_view.invalidate();
+	if (spell_target[h] >= 0) {
+	  Being b = being_list[spell_target[h]];
+	  arrow_view.add_arrow(x + 24, y + 24, b.x + 32, b.y + 32);
+	  arrow_view.invalidate();
+	}
       }
       x = 320 - 48 - 1;
     }
@@ -243,9 +243,11 @@ public class MainView extends View {
 	    if (x1 >= b.x && y1 >= b.y && x1 < b.x + 64 && y1 < b.y + 64) {
 	      spell_target[state - 2] = i;
 	      arrow_view.invalidate();
-	      break;
+	      return true;
 	    }
 	  }
+	  spell_target[state - 2] = -1;
+	  arrow_view.invalidate();
 	  return true;
 	}
 	float dx = x1 - x0;
@@ -289,17 +291,30 @@ public class MainView extends View {
 	    dirx *= -1;
 	  }
 	  choice[h] = flattenxy(dirx, diry);
-	  String s = gestname[choice[h]];
-	  if (null == s) choice[h] = NO_GESTURE;
-	  handle_new_choice(h);
+	  if (null == gestname[choice[h]]) choice[h] = NO_GESTURE;
+	  if (choice[h] != lastchoice[h]) {
+	    handle_new_choice(h);
+	  }
 	  return true;
 	}
     }
     return false;
   }
 
+  class SpellCast {
+    SpellCast(Spell init_spell, int init_source, int init_target) {
+      spell = init_spell;
+      source = init_source;
+      target = init_target;
+    }
+    Spell spell;
+    int target;
+    int source;
+  }
+  static int exec_queue_count;
+  static SpellCast[] exec_queue;
+
   private void end_turn() {
-    msg = "(next turn)";
     hist[histi][0] = choice[0];
     hist[histi][1] = choice[1];
     // Stabs and null gestures break combos.
@@ -314,7 +329,22 @@ public class MainView extends View {
     if (gestname[choice[1]] == null) histstart[1] = histi;
     if (histi > histstart[0] + 6) histstart[0]++;
     if (histi > histstart[1] + 6) histstart[1]++;
+
+    exec_queue_count = 0;
+    for (int h = 0; h < 2; h++) {
+      if (0 == ready_spell_count[h]) continue;
+      if (-1 == spell_choice[h]) continue;
+      SpellCast sc = new SpellCast(
+	  ready_spell[spell_choice[h]][h], 0, spell_target[h]);
+      exec_queue[exec_queue_count] = sc;
+      exec_queue_count++;
+    }
+
+    for(int i = 0; i < exec_queue_count; i++) {
+      exec_queue[i].spell.cast(being_list[0], being_list[0]);
+    }
     arena.animate();
+
     // TODO: Clear gestures, spell text.
     ready_spell_count[0] = 0;
     ready_spell_count[1] = 0;
@@ -370,19 +400,53 @@ public class MainView extends View {
     ready_spell_count[h]++;
   }
 
-  public class Spell {
-    public Spell(String new_name, String new_gest, int bitmapid,
+  abstract public class Spell {
+    public void init(String init_name, String init_gest, int bitmapid,
         int def_target) {
-      name = new_name;
-      gesture = new_gest;
+      name = init_name;
+      gesture = init_gest;
       bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
       target = def_target;
     }
 
+    abstract public void cast(Being source, Being target);
     Bitmap bitmap;
     String name;
     String gesture;
     int target;
+  }
+
+  public class ShieldSpell extends Spell {
+    ShieldSpell() {
+      init("Shield", "P", R.drawable.shield, 0);
+    }
+    public void cast(Being source, Being target) {
+      Log.i("SpellCast", "TODO: Shield");
+    }
+  }
+
+  public class StabSpell extends Spell {
+    StabSpell() {
+      init("Stab", "K", R.drawable.stab, 1);
+    }
+    public void cast(Being source, Being target) {
+    }
+  }
+
+  public class MissileSpell extends Spell {
+    MissileSpell() {
+      init("Missile", "SD", R.drawable.missile, 1);
+    }
+    public void cast(Being source, Being target) {
+    }
+  }
+
+  public class CauseLightWoundsSpell extends Spell {
+    CauseLightWoundsSpell() {
+      init("Cause Light Wounds", "WFP", R.drawable.wound, 1);
+    }
+    public void cast(Being source, Being target) {
+    }
   }
 
   public class Being {
@@ -390,10 +454,12 @@ public class MainView extends View {
       x = posx;
       y = posy;
       bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
+      status = 0;
     }
     Bitmap bitmap;
     int x, y;
     int life;
+    int max_life;
     int status;
     int target;
   }
