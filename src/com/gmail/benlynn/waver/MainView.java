@@ -14,6 +14,7 @@ import android.os.Message;
 
 public class MainView extends View {
   static Paint paint, selpaint;
+  static Paint boxpaint;
   static String msg;
   static float x0, y0, x1, y1;
   static int state;
@@ -22,6 +23,7 @@ public class MainView extends View {
   static int lastchoice[];
   static int hist[][], histi, histstart[];
   static final int ylower = 128 + 144 + 4 * 4;
+  static final int ystatus = ylower + 32 + 2 * 50 + 16 - 4;
   static final int yicon = 64 + 48 + 2 * 4;
   // TODO: Use Rect.
   static final int okbutx0 = 256, okbutx1 = 256 + 64 - 1;
@@ -48,11 +50,12 @@ public class MainView extends View {
 
   public MainView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    msg = "This is Spell Tap";
     paint = new Paint();
     paint.setARGB(255, 255, 255, 255);
     selpaint = new Paint();
     selpaint.setARGB(255, 127, 255, 127);
+    boxpaint = new Paint();
+    boxpaint.setARGB(255, 63, 0, 63);
     state = 0;
     gestname = new String[9];
     choice = new int[2];
@@ -95,18 +98,25 @@ public class MainView extends View {
     being_list[0].h = 64;
     being_list[0].midw = 32;
     being_list[0].midh = 32;
+    being_list[0].life = 5;
+    being_list[0].life_max = 5;
     being_list_count++;
     being_list[1] = new Being(160 - 32, 0, R.drawable.dummy);
     being_list[1].w = 64;
     being_list[1].h = 64;
     being_list[1].midw = 32;
     being_list[1].midh = 32;
+    being_list[1].life = 3;
+    being_list[1].life_max = 3;
 
     spell_target = new int[2];
     exec_queue = new SpellCast[16];
 
     arena.being_list = being_list;
     arena.being_list_count = being_list_count;
+ 
+    // msg = "This is Spell Tap";
+    print("Tap this line to confirm moves.");
   }
 
   public void add_spell(Spell sp) {
@@ -129,10 +139,8 @@ public class MainView extends View {
   public void onDraw(Canvas canvas) {
     super.onDraw(canvas);
     int x, y;
-    Paint boxpaint = new Paint();
-    boxpaint.setARGB(255, 32, 32, 32);
 
-    // Arena handles avatars.
+    // Arena class handles avatars and status line.
 
     // Player history.
     y = ylower - 4;
@@ -205,10 +213,6 @@ public class MainView extends View {
 
     // End-turn button.
     canvas.drawRect(okbutx0, okbuty0, okbutx1, okbuty1, paint);
-
-    // Status line.
-    y = ylower + 32 + 2 * 50 + 16;
-    canvas.drawText(msg, 0, y - 4, paint);
   }
 
   private static boolean in_ok_button(float x, float y) {
@@ -359,13 +363,42 @@ public class MainView extends View {
     next_spell();
   }
 
+  public void print(String s) {
+    msg = s;
+  }
+
   static int exec_cursor;
   public void next_spell() {
-    Log.i("M", "Next spell");
     Log.i("M", Integer.toString(exec_cursor) + " " + Integer.toString(exec_queue_count));
     if (exec_cursor < exec_queue_count) {
-    //Log.i("M", Integer.toString(exec_cursor) + " " + Integer.toString(exec_queue_count));
       SpellCast sc = exec_queue[exec_cursor];
+      String s = "";
+      if (sc.spell == stab_spell) {
+	if (0 == sc.source) {
+	  s += "You stab ";
+	} else {
+	  s += "Opponent attacks ";
+	}
+      } else {
+	if (0 == sc.source) {
+	  s += "You cast ";
+	} else {
+	  s += "Opponent casts ";
+	}
+	s += sc.spell.name + " on ";
+      }
+      if (0 == sc.target) {
+	if (0 == sc.source) {
+	  s += "yourself.";
+	} else {
+	  s += "you.";
+	}
+      } else if (-1 == sc.target) {
+	s += "thin air!";
+      } else {
+	s += "Opponent.";
+      }
+      print(s);
       sc.spell.execute(sc.source, sc.target);
       exec_cursor++;
     } else {
@@ -439,6 +472,7 @@ public class MainView extends View {
     int target;
     int state;
     boolean is_finished;  // Set this to true before calling last animation.
+                          // Or call finish_spell() [it's slower].
     int cast_source, cast_target;
 
     public void execute(int init_source, int init_target) {
@@ -450,7 +484,7 @@ public class MainView extends View {
       cast(cast_source, cast_target);
     }
 
-    public void stub_finish() {
+    public void finish_spell() {
       is_finished = true;
       done_handler.sendEmptyMessage(0);
     }
@@ -473,8 +507,18 @@ public class MainView extends View {
       init("Shield", "P", R.drawable.shield, 0);
     }
     public void cast(int source, int target) {
-      Log.i("SpellCast", "TODO: Shield");
-      stub_finish();
+      switch(state) {
+	case 0:
+	  arena.animate_shield(target);
+	  return;
+	case 1:
+	  if (target != -1) {
+	    Being b = being_list[target];
+	    b.shield = 1;
+	  }
+	  finish_spell();
+	  return;
+      }
     }
   }
 
@@ -520,8 +564,15 @@ public class MainView extends View {
       init("Cause Light Wounds", "WFP", R.drawable.wound, 1);
     }
     public void cast(int source, int target) {
-      Log.i("SpellCast", "TODO: Cure Light");
-      stub_finish();
+      switch(state) {
+	case 0:
+	  arena.animate_spell(target, bitmap);
+	  return;
+	case 1:
+	  is_finished = true;
+	  arena.animate_damage(target, 2);
+	  return;
+      }
     }
   }
 
@@ -536,7 +587,7 @@ public class MainView extends View {
     Bitmap bitmap;
     int x, y;
     int life;
-    int max_life;
+    int life_max;;
     int status;
     int target;
     int shield;

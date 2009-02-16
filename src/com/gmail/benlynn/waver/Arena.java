@@ -28,18 +28,29 @@ public class Arena extends View {
     anim = ANIM_NONE;
     frame = 0;
     paint = new Paint();
-    damage_paint = new Paint();
-    damage_paint.setARGB(200, 255, 0, 0);
+    fade_paint = new Paint();
+    white_paint = new Paint();
+    white_paint.setARGB(255, 255, 255, 255);
     big_white_paint = new Paint();
     big_white_paint.setARGB(255, 255, 255, 255);
     big_white_paint.setTextSize(32);
     black_stroke_paint = new Paint();
     black_stroke_paint.setStyle(Paint.Style.STROKE);
     black_stroke_paint.setStrokeWidth(2);
+    shield_paint = new Paint[5];
+    shield_paint[0] = new Paint();
+    shield_paint[0].setARGB(255, 0, 0, 63);
+    shield_paint[0].setStyle(Paint.Style.STROKE);
+    shield_paint[0].setStrokeWidth(4);
+    shield_paint[1] = new Paint();
+    shield_paint[1].setARGB(255, 0, 0, 127);
+    shield_paint[1].setStyle(Paint.Style.STROKE);
+    shield_paint[1].setStrokeWidth(6);
   }
 
   static int source, target;
   static int x, y;
+  static Bitmap bitmap;
   static int x1, y1;
   static int xdelta, ydelta;
   static int frame;
@@ -53,12 +64,16 @@ public class Arena extends View {
   static final int ANIM_MOVE_DAMAGE = 3;
   static final int ANIM_BULLET = 4;
   static final int ANIM_DAMAGE = 5;
+  static final int ANIM_SPELL = 6;
+  static final int ANIM_SHIELD = 7;
   static int delay = 20;
-  static int frame_max = 20;
-  static Paint damage_paint, big_white_paint, black_stroke_paint;
+  static int frame_max = 24;
+  static Paint fade_paint, white_paint, big_white_paint, black_stroke_paint;
+  static Paint[] shield_paint;
   static int alphadelta;
   static String damage;
   static int damagex = 12, damagey = 16;
+  static float shieldr, rdelta;
 
   private void update() {
     switch(anim) {
@@ -70,7 +85,11 @@ public class Arena extends View {
 	break;
       case ANIM_MOVE_DAMAGE:
       case ANIM_DAMAGE:
-	damage_paint.setAlpha(damage_paint.getAlpha() - alphadelta);
+      case ANIM_SPELL:
+	fade_paint.setAlpha(fade_paint.getAlpha() - alphadelta);
+	break;
+      case ANIM_SHIELD:
+        shieldr += rdelta;
 	break;
     }
     if (frame < frame_max) {
@@ -103,6 +122,19 @@ public class Arena extends View {
       y1 = b.y + b.midh;
       ydelta = (y1 - y) / frame_max;
       xdelta = (x1 - x) / frame_max;
+    }
+    anim_handler.sleep(delay);
+  }
+
+  public void animate_shield(int init_target) {
+    anim = ANIM_SHIELD;
+    target = init_target;
+    if (target != -1) {
+      Being b = being_list[target];
+      x = b.x + b.midw;
+      y = b.y + b.midh;
+      shieldr = 1;
+      rdelta = (b.midw + 5 - shieldr) / frame_max;
     }
     anim_handler.sleep(delay);
   }
@@ -141,12 +173,21 @@ public class Arena extends View {
     anim_handler.sleep(delay);
   }
 
+  public void animate_spell(int init_target, Bitmap init_bitmap) {
+    anim = ANIM_SPELL;
+    target = init_target;
+    bitmap = init_bitmap;
+    fade_paint.setARGB(200, 255, 0, 0);
+    alphadelta = 200 / frame_max;
+    anim_handler.sleep(delay);
+  }
+
   public void animate_damage(int init_target, int init_damage) {
     anim = ANIM_DAMAGE;
     // TODO: Remove duplicated code.
     target = init_target;
     damage = Integer.toString(init_damage);
-    damage_paint.setAlpha(200);
+    fade_paint.setARGB(200, 255, 0, 0);
     alphadelta = 200 / frame_max;
     anim_handler.sleep(delay);
   }
@@ -155,7 +196,7 @@ public class Arena extends View {
     anim = ANIM_MOVE_DAMAGE;
     target = init_target;
     damage = Integer.toString(init_damage);
-    damage_paint.setAlpha(200);
+    fade_paint.setARGB(200, 255, 0, 0);
     alphadelta = 200 / frame_max;
     anim_handler.sleep(delay);
   }
@@ -170,7 +211,10 @@ public class Arena extends View {
       Being b = being_list[i];
       canvas.drawBitmap(b.bitmap, mx, my, paint);
       // TODO: Cache life string.
-      canvas.drawText(Integer.toString(b.life) + "/" + Integer.toString(b.max_life), mx, my + 16 - 4, paint);
+      canvas.drawText(Integer.toString(b.life) + "/" + Integer.toString(b.life_max), mx, my + 16 - 4, paint);
+      if (b.shield > 0) {
+	canvas.drawCircle(mx + b.midw, my + b.midh, b.midw + 5, shield_paint[0]);
+      }
   }
 
   @Override
@@ -189,6 +233,9 @@ public class Arena extends View {
       drawBeing(i, b.x, b.y, canvas);
     }
 
+    // Status line.
+    canvas.drawText(MainView.msg, 0, MainView.ystatus + 16 - 4, white_paint);
+
     switch(anim) {
       case ANIM_MOVE:
       case ANIM_MOVE_BACK:
@@ -200,10 +247,19 @@ public class Arena extends View {
       case ANIM_DAMAGE:
 	if (-1 != target) {
 	  Being b = being_list[target];
-	  canvas.drawRect(b.x, b.y, b.x + b.w, b.y + b.h, damage_paint);
+	  canvas.drawRect(b.x, b.y, b.x + b.w, b.y + b.h, fade_paint);
 	  canvas.drawText(damage, b.x + b.midw - damagex,
 	      b.y + b.midh + damagey, big_white_paint);
 	}
+	break;
+      case ANIM_SPELL:
+	if (-1 != target) {
+	  Being b = being_list[target];
+	  canvas.drawBitmap(bitmap, b.x + b.midw - 24, b.y + b.midh - 24, fade_paint);
+	}
+	break;
+      case ANIM_SHIELD:
+        canvas.drawCircle(x, y, shieldr, shield_paint[0]);
 	break;
       case ANIM_BULLET:
         canvas.drawCircle(x, y, 10, big_white_paint);
