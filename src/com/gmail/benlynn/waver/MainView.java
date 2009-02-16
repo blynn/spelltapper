@@ -177,7 +177,7 @@ public class MainView extends View {
         return;
       case 2:
 	speech_box.setVisibility(View.GONE);
-	get_ready(); 
+	get_ready();
 	state = 3;
         return;
       case 3:
@@ -212,7 +212,6 @@ public class MainView extends View {
       put_gest("Knife", 0, -1);
     }
     void run() {
-      clear_choices();
       for(;;) switch(state) {
       case 0:
         // Resurrect and restore HP
@@ -272,48 +271,144 @@ public class MainView extends View {
     int state;
   }
 
+  // The opponent just stabs every turn, but he also has 5 hitpoints.
   class ShieldTutorial extends Tutorial {
     ShieldTutorial() {
       state = 0;
+      hand = 0;
       put_gest("Knife", 0, -1);
       put_gest("Palm", 0, 1);
+    }
+    void AI_move(SpellTapMove turn) {
+      super.AI_move(turn);
+      turn.gest[hand] = KNIFE;
+      turn.spell[hand] = 64;
+      turn.spell_target[hand] = 0;
+      hand = 1 - hand;
     }
     void run() {
       for(;;) switch(state) {
       case 0:
         // Resurrect and restore HP
-	being_list[0].life = 5;
-	being_list[0].dead = false;
+	being_list[0].start_life(5);
 	being_list[1].start_life(5);
 	// A new challenger.
 	being_list[1].name = "Sendin the Clown";
 	being_list[1].bitmap = bmclown;
 	being_list_count = 2;
-
 	main_state = STATE_SPEECH;
 	speech_box.setVisibility(View.VISIBLE);
 	speech_box.setText(R.string.shieldtut);
 	clear_choices();
 	arena.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
-	get_ready(); 
 	invalidate();
 	state = 1;
+	return;
       case 1:
 	speech_box.setVisibility(View.VISIBLE);
 	speech_box.setText(R.string.shieldtut2);
 	state = 2;
+	return;
       case 2:
 	speech_box.setVisibility(View.GONE);
         get_ready();
 	state = 3;
         return;
       case 3:
-	Log.i("shield tutorial", "TODO!");
-	return;
+	speech_box.setVisibility(View.VISIBLE);
+	switch(winner) {
+	case 0:
+	  speech_box.setText(R.string.shieldtutwin);
+	  tut = new WFPTutorial();
+	  break;
+	case 1:
+	  speech_box.setText(R.string.shieldtutlose);
+	  state = 0;
+	  break;
+	case 2:
+	  speech_box.setText(R.string.shieldtutdraw);
+	  state = 0;
+	  break;
+	}
+	main_state = STATE_SPEECH;
+        return;
       }
     }
     int state;
+    int hand;
+  }
+
+  int indexOfSpell(String name) {
+    if (name == "Stab") return 64;
+    for(int i = 0; i < spell_list_count; i++) {
+      if (name == spell_list[i].name) return i;
+    }
+    return -1;
+  }
+
+  class WFPTutorial extends Tutorial {
+    WFPTutorial() {
+      state = 0;
+      hand = 0;
+      put_gest("Knife", 0, -1);
+      put_gest("Wave", -1, 1);
+      put_gest("Palm", 0, 1);
+      put_gest("Fingers", 1, 1);
+    }
+    void AI_move(SpellTapMove turn) {
+      turn.gest[hand] = KNIFE;
+      turn.spell[hand] = 64;
+      turn.spell_target[hand] = 0;
+      hand = 1 - hand;
+      turn.gest[hand] = flattenxy(0, 1);;
+      turn.spell[hand] = indexOfSpell("Shield");
+      turn.spell_target[hand] = 1;
+    }
+    void run() {
+      for(;;) switch(state) {
+      case 0:
+        // Resurrect and restore HP
+	being_list[0].start_life(5);
+	being_list[1].start_life(5);
+	being_list[1].name = "Sendin the Clown";
+	being_list[1].bitmap = bmclown;
+	being_list_count = 2;
+
+	main_state = STATE_SPEECH;
+	speech_box.setVisibility(View.VISIBLE);
+	speech_box.setText(R.string.WFPtut);
+	clear_choices();
+	arena.setVisibility(View.VISIBLE);
+	arrow_view.setVisibility(View.VISIBLE);
+	invalidate();
+	state = 1;
+	count = 0;
+	return;
+      case 1:
+	switch(count) {
+	  case 0:
+	    speech_box.setText(R.string.WFPtut2);
+	    count++;
+	    return;
+	  case 1:
+	    speech_box.setText(R.string.WFPtut3);
+	    state = 2;
+	    return;
+	}
+      case 2:
+	speech_box.setVisibility(View.GONE);
+        get_ready();
+	state = 3;
+	return;
+      case 3:
+        Log.i("TODO", "TODO");
+	return;
+      }
+    }
+    int hand;
+    int state;
+    int count;
   }
 
   class NoTutorial extends Tutorial {
@@ -330,7 +425,7 @@ public class MainView extends View {
       put_gest("Wave", -1, 1);
       put_gest("Palm", 0, 1);
       put_gest("Fingers", 1, 1);
-      get_ready(); 
+      get_ready();
       invalidate();
       main_state = STATE_NORMAL;
     }
@@ -394,6 +489,7 @@ public class MainView extends View {
     spell_text = new String[2];
     clear_choices();
     stab_spell = new StabSpell();
+    stab_spell.index = 64;
     spell_list = new Spell[64];
     spell_list_count = 0;
     add_spell(new ShieldSpell());
@@ -429,7 +525,7 @@ public class MainView extends View {
       monatt[i] = new MonsterAttack(i);
     }
 
-    tut = new ShieldTutorial();
+    tut = new WFPTutorial();
     msg = "";
     bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
     bmclown = BitmapFactory.decodeResource(getResources(), R.drawable.clown);
@@ -443,6 +539,7 @@ public class MainView extends View {
 
   public void add_spell(Spell sp) {
     spell_list[spell_list_count] = sp;
+    sp.index = spell_list_count;
     spell_list_count++;
   }
 
@@ -464,10 +561,25 @@ public class MainView extends View {
 
     // Arena class handles avatars and status line.
 
+    // Opponent history.
+    y = 16 - 4;
+    x = 0;
+    String s = "";
+    for (int i = opphist.start[0]; i < opphist.cur; i++) {
+      s += " " + gestname[opphist.gest[i][0]].charAt(0);
+    }
+    canvas.drawText(s, x, y, paint);
+    s = "";
+    for (int i = opphist.start[1]; i < opphist.cur; i++) {
+      s += " " + gestname[opphist.gest[i][1]].charAt(0);
+    }
+    x = 160 + 32;
+    canvas.drawText(s, x, y, paint);
+
     // Player history.
     y = ylower - 4;
     x = 0;
-    String s = "";
+    s = "";
     for (int i = hist.start[0]; i < hist.cur; i++) {
       s += " " + gestname[hist.gest[i][0]].charAt(0);
     }
@@ -673,6 +785,7 @@ public class MainView extends View {
     hist.add(choice);
 
     tut.AI_move(oppmove);
+    opphist.add(oppmove.gest);
 
     // TODO: Sort spells by priority.
     exec_queue_count = 0;
@@ -681,6 +794,13 @@ public class MainView extends View {
       if (-1 == spell_choice[h]) continue;
       SpellCast sc = new SpellCast(
 	  ready_spell[spell_choice[h]][h], 0, spell_target[h]);
+      exec_queue[exec_queue_count] = sc;
+      exec_queue_count++;
+    }
+    for (int h = 0; h < 2; h++) {
+      if (-1 == oppmove.spell[h]) continue;
+      Spell sp = oppmove.spell[h] == 64 ? stab_spell : spell_list[oppmove.spell[h]];
+      SpellCast sc = new SpellCast(sp, 1, oppmove.spell_target[h]);
       exec_queue[exec_queue_count] = sc;
       exec_queue_count++;
     }
@@ -710,8 +830,10 @@ public class MainView extends View {
 
   static int exec_cursor;
   public void next_spell() {
+    Log.i("Spell", "" + exec_cursor + "/" + exec_queue_count);
     if (exec_cursor < exec_queue_count) {
       SpellCast sc = exec_queue[exec_cursor];
+    Log.i("Spell", sc.spell.name + " " + sc.source);
       String s = "";
       String srcname = being_list[sc.source].name;
       String tgtname = null;
@@ -848,6 +970,7 @@ public class MainView extends View {
     Bitmap bitmap;
     String name;
     String gesture;
+    int index;
     int target;
     int state;
     boolean is_finished;  // Set this to true before calling last animation.

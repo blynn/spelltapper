@@ -19,7 +19,15 @@
     <string name="targettutdraw">Close enough. Let's move on anyway. The first gesture you'll learn is the easiest, but also the most powerful.</string>
     <string name="targettutlose">You're lucky I know the Raise Dead spell. Let's try that again.</string>
     
-    <string name="shieldtut">The Palm gesture (P) is performed by dragging your finger down the screen, starting in the lower section. It's the opposite of the Knife gesture. A single Palm will cast the Shield spell, which protects you from all physical attacks, such as stabs and monsters.
-    </string>
+    <string name="shieldtut">The Palm gesture (P) is performed by dragging your finger down somewhere in the lower part of the screen: the reverse of the Knife gesture. A single Palm will cast the Shield spell, which protects you from all physical attacks, such as stabs and monsters.</string>
+
     <string name="shieldtut2">But be warned! Due to its power, gesturing Palm with both hands causes you to lose at the end of the round, unless you have simultaneously vanquished your opponent.</string>
+    <string name="shieldtutdraw">A draw is not good enough. With the Shield spell you should be able to win easily.</string>
+    <string name="shieldtutwin">Well done. But what if the opponent also knows Shield? Listen carefully...</string>
+    <string name="shieldtutlose">Let's try it again, shall we?</string>
+
+    <string name="WFPtut">You must remember these 3 points. First, a Wave gesture (W) is executed by running your finger diagonally down the screen and away from the center.</string>
+    <string name="WFPtut2">Second, a Fingers gesture (F) is similar, except you run your finger diagonally down the screen and toward the center.</string>
+<string name="WFPtut3">Lastly, cast Cause Light Damage by gesturing W, F, P with the same hand in consecutive turns. This inflicts 2 damage, even if the target is shielded. Good luck!
+    </string>
 </resources>

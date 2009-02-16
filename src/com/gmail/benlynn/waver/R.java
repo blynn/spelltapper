@@ -32,6 +32,9 @@ public final class R {
         public static final int main=0x7f030000;
     }
     public static final class string {
+        public static final int WFPtut=0x7f040014;
+        public static final int WFPtut2=0x7f040015;
+        public static final int WFPtut3=0x7f040016;
         public static final int app_name=0x7f040000;
         public static final int dummytut=0x7f040006;
         public static final int dummytut1=0x7f040007;
@@ -45,6 +48,9 @@ public final class R {
         public static final int howtoknifepass3=0x7f040005;
         public static final int shieldtut=0x7f04000f;
         public static final int shieldtut2=0x7f040010;
+        public static final int shieldtutdraw=0x7f040011;
+        public static final int shieldtutlose=0x7f040013;
+        public static final int shieldtutwin=0x7f040012;
         public static final int targettut=0x7f04000b;
         public static final int targettutdraw=0x7f04000d;
         public static final int targettutlose=0x7f04000e;
