@@ -12,13 +12,14 @@ public final class R {
     }
     public static final class drawable {
         public static final int clown=0x7f020000;
-        public static final int dummy=0x7f020001;
-        public static final int goblin=0x7f020002;
-        public static final int missile=0x7f020003;
-        public static final int shield=0x7f020004;
-        public static final int stab=0x7f020005;
-        public static final int wiz=0x7f020006;
-        public static final int wound=0x7f020007;
+        public static final int corpse=0x7f020001;
+        public static final int dummy=0x7f020002;
+        public static final int goblin=0x7f020003;
+        public static final int missile=0x7f020004;
+        public static final int shield=0x7f020005;
+        public static final int stab=0x7f020006;
+        public static final int wiz=0x7f020007;
+        public static final int wound=0x7f020008;
     }
     public static final class id {
         public static final int arena=0x7f050002;

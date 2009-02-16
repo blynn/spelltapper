@@ -164,11 +164,11 @@ public class Arena extends View {
       x1 = x;
       y1 = y;
     } else {
-      b = MainView.being_list[target];
-      x1 = b.x;
-      if (b.y > y) y1 = b.y - b.h;
-      else if (b.y < y) y1 = b.y + b.h;
-      else y1 = b.y;  // TODO: Adjust x1 to avoid overlap?
+      Being b2 = MainView.being_list[target];
+      x1 = b2.x;
+      if (b2.y > y) y1 = b2.y - b.h;
+      else if (b2.y < y) y1 = b2.y + b2.h;
+      else y1 = b2.y;  // TODO: Adjust x1 to avoid overlap?
       ydelta = (y1 - y) / frame_max;
       xdelta = (x1 - x) / frame_max;
     }

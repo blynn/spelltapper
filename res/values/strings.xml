@@ -14,6 +14,6 @@
     <string name="dummytutdraw">Very funny, though strictly speaking you did destroy the dummy. You're lucky I know the Raise Dead spell. Clearly you know how to play, so we'll skip a lesson. </string>
     <string name="dummytutlose">Very funny. You're lucky I know the Raise Dead spell. We'll move on, even though you lost to a wooden dummy.</string>
 
-    <string name="targettut">Did you notice? The green line indicates the target. In this fight, you must direct your first stabs to the goblins, who each inflict one point of damage. Drag your finger from the stab icon to a goblin before ending your turn. </string>
+    <string name="targettut">Did you notice the green line indicating the target? In this fight, you must direct your first stabs to the goblins, who each inflict one point of damage. Drag your finger from the Stab icon to a goblin before ending your turn. </string>
     
 </resources>

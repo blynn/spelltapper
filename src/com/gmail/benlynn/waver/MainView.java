@@ -48,6 +48,7 @@ public class MainView extends View {
   static int being_list_count;
   static Being being_list[];
   static int winner;
+  static MonsterAttack monatt[];
 
   static Arena arena;
   static ArrowView arrow_view;
@@ -67,6 +68,8 @@ public class MainView extends View {
     abstract void run();
   }
 
+  // To pass this tutorial, the player merely has to drag their finger up three
+  // times, starting from the lower part of the screen.
   class KnifeTutorial extends Tutorial {
     KnifeTutorial() {
       put_gest("Knife", 0, -1);
@@ -125,6 +128,8 @@ public class MainView extends View {
     int count;
   }
 
+  // Defeat a pacifist wooden dummy with 3 hitpoints to pass this one.
+  // Actually, as long as the battle ends, the player passes.
   class DummyTutorial extends Tutorial {
     DummyTutorial() {
       put_gest("Knife", 0, -1);
@@ -173,6 +178,9 @@ public class MainView extends View {
     int state;
   }
 
+  // Now we're talking! Two goblins and a dummy. Since the dummy is the
+  // default target, the player is forced to retarget their stabs if they are
+  // to win.
   class TargetTutorial extends Tutorial {
     TargetTutorial() {
       state = 0;
@@ -194,6 +202,7 @@ public class MainView extends View {
 	being_list[2].set_size_48();
 	being_list[2].start_life(1);
 	being_list[2].controller = 1;
+	being_list[2].target = 0;
 
 	being_list_count++;
 	being_list[3] = new Being(
@@ -201,6 +210,7 @@ public class MainView extends View {
 	being_list[3].set_size_48();
 	being_list[3].start_life(1);
 	being_list[3].controller = 1;
+	being_list[3].target = 0;
 
 	clear_choices();
 	main_state = STATE_SPEECH;
@@ -305,8 +315,14 @@ public class MainView extends View {
     spell_target = new int[2];
     exec_queue = new SpellCast[16];
 
+    monatt = new MonsterAttack[5];
+    for (int i = 1; i <= 4; i++) {
+      monatt[i] = new MonsterAttack(i);
+    }
+
     tut = new TargetTutorial();
     msg = "";
+    bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
   }
 
   public void get_ready() {
@@ -558,6 +574,8 @@ public class MainView extends View {
     if (histi > histstart[0] + 6) histstart[0]++;
     if (histi > histstart[1] + 6) histstart[1]++;
 
+    // TODO: Sort spells by priority.
+
     exec_queue_count = 0;
     for (int h = 0; h < 2; h++) {
       if (0 == ready_spell_count[h]) continue;
@@ -566,6 +584,15 @@ public class MainView extends View {
 	  ready_spell[spell_choice[h]][h], 0, spell_target[h]);
       exec_queue[exec_queue_count] = sc;
       exec_queue_count++;
+    }
+    for (int i = 2; i < being_list_count; i++) {
+      Being b = being_list[i];
+      if (b.dead) continue;
+      if (-1 != b.target) {
+	SpellCast sc = new SpellCast(monatt[b.life_max], i, b.target);
+	exec_queue[exec_queue_count] = sc;
+	exec_queue_count++;
+      }
     }
 
     clear_choices();
@@ -592,7 +619,9 @@ public class MainView extends View {
       if (sc.target != -1) {
 	tgtname = being_list[sc.target].name;
       }
-      if (sc.spell == stab_spell) {
+      if (sc.source >= 2) {
+	s += srcname + " attacks ";
+      } else if (sc.spell == stab_spell) {
 	if (0 == sc.source) {
 	  s += "You stab ";
 	} else {
@@ -631,7 +660,10 @@ public class MainView extends View {
       Being b = being_list[i];
       if (b.shield > 0) b.shield--;
       // TODO: Shield off animation.
-      if (b.life <= 0) b.dead = true;
+      if (b.life <= 0) {
+	if (i >= 2) b.bitmap = bmcorpse;
+	b.dead = true;
+      }
     }
     boolean gameover = false;
     if (being_list[1].dead) {
@@ -842,6 +874,43 @@ public class MainView extends View {
     }
   }
 
+  public class MonsterAttack extends Spell {
+    MonsterAttack(int n) {
+      init("", "", R.drawable.goblin, 1);
+      level = n;
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  arena.animate_move(source, target);
+	  return;
+	case 1:
+	  if (target != -1) {
+	    Being b = being_list[target];
+	    if (0 == b.shield) {
+	      b.get_hurt(1);
+	      arena.animate_move_damage(target, 1);
+	    } else {
+	      // TODO: Block animation.
+	      Log.i("TODO", "block animation");
+	      arena.animate_move_damage(target, 0);
+	    }
+	  } else {
+	    // TODO: This just delays. I ought to have a dedicated delay
+	    // "animation".
+	    arena.animate_move_damage(target, 0);
+	  }
+	  return;
+	case 2:
+	  is_finished = true;
+	  arena.animate_move_back();
+	  return;
+      }
+    }
+    int level;
+  }
+
+  static Bitmap bmcorpse;
   public class Being {
     public Being(String init_name, int posx, int posy, int bitmapid) {
       x = posx;
