@@ -24,7 +24,7 @@ public class MainView extends View {
   static Tutorial tut;
   static int main_state;
   static final int STATE_SPEECH = 128;
-  static final int STATE_WANT_KNIFE = 129;
+  static final int STATE_GESTURE_ONLY = 129;
   static final int STATE_NORMAL = 0;
   static final int STATE_BUSY = 1;
   static final int STATE_LDRAG = 2;
@@ -74,8 +74,6 @@ public class MainView extends View {
       count = 0;
     }
     void run() {
-Log.i("R", "" + state);
-Log.i("R", "" + main_state);
       for(;;) switch(state) {
 	case 0:
 	  arena.setVisibility(View.GONE);
@@ -94,19 +92,26 @@ Log.i("R", "" + main_state);
 	  speech_box.setVisibility(View.GONE);
 	  clear_choices();
 	  invalidate();
-	  main_state = STATE_WANT_KNIFE;
+	  main_state = STATE_GESTURE_ONLY;
 	  state = 3;
 	  return;
 	case 3:
 	  speech_box.setVisibility(View.VISIBLE);
 	  if (choice[0] == KNIFE || choice[1] == KNIFE) {
 	    count++;
-	    if (count == 3) {
+	    switch(count) {
+	    case 3:
 	      speech_box.setText(R.string.howtoknifepass3);
 	      tut = new NoTutorial();
-	    } else {
+	      break;
+	    case 2:
+	      speech_box.setText(R.string.howtoknifepass2);
+	      state = 2;
+	      break;
+	    case 1:
 	      speech_box.setText(R.string.howtoknifepass1);
 	      state = 2;
+	      break;
 	    }
 	    main_state = STATE_SPEECH;
 	  } else {
@@ -317,16 +322,6 @@ Log.i("R", "" + main_state);
 
   @Override
   public boolean onTouchEvent(MotionEvent event) {
-    if (event.getAction() != MotionEvent.ACTION_DOWN &&
-        event.getAction() != MotionEvent.ACTION_UP) return false;
-    boolean result = handle_motion(event);
-    if (STATE_WANT_KNIFE == main_state || STATE_SPEECH == main_state) {
-      if (!result || event.getAction() == MotionEvent.ACTION_UP) tut.run();
-    }
-    return result;
-  }
-
-  public boolean handle_motion(MotionEvent event) {
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
 	Log.i("M", "D");
@@ -335,6 +330,10 @@ Log.i("R", "" + main_state);
 	x0 = event.getX();
 	y0 = event.getY();
 	if (y0 < ylower) {
+	  if (STATE_GESTURE_ONLY == main_state) {
+	    tut.run();
+	    return false;
+	  }
 	  // Check for spell retargeting drag.
 	  if (y0 >= yicon && y0 < yicon + 48) {
 	    if (x0 < 48) {
@@ -352,7 +351,10 @@ Log.i("R", "" + main_state);
       case MotionEvent.ACTION_UP:
 	Log.i("M", "U");
 	if (STATE_BUSY == main_state) return false;
-	if (STATE_SPEECH == main_state) return true;
+	if (STATE_SPEECH == main_state) {
+	  tut.run();
+	  return true;
+	}
 	x1 = event.getX();
 	y1 = event.getY();
 	if (2 == main_state || 3 == main_state) {
@@ -371,6 +373,10 @@ Log.i("R", "" + main_state);
 	float dx = x1 - x0;
 	float dy = y1 - y0;
 	if (dx * dx + dy * dy < 32 * 32) {
+	  if (STATE_GESTURE_ONLY == main_state) {
+	    tut.run();
+	    return true;
+	  }
 	  if (okstate && y1 > ystatus) {
 	    end_turn();
 	    return true;
@@ -413,6 +419,7 @@ Log.i("R", "" + main_state);
 	  if (choice[h] != lastchoice[h]) {
 	    handle_new_choice(h);
 	  }
+	  if (STATE_GESTURE_ONLY == main_state) tut.run();
 	  return true;
 	}
     }
