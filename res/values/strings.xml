@@ -15,5 +15,11 @@
     <string name="dummytutlose">Very funny. You're lucky I know the Raise Dead spell. We'll move on, even though you lost to a wooden dummy.</string>
 
     <string name="targettut">Did you notice the green line indicating the target? In this fight, you must direct your first stabs to the goblins, who each inflict one point of damage. Drag your finger from the Stab icon to a goblin before ending your turn. </string>
+    <string name="targettutwin">Capital! At last you are ready to learn magic. The first gesture you'll learn is the easiest, but also the most powerful.</string>
+    <string name="targettutdraw">Close enough. Let's move on anyway. The first gesture you'll learn is the easiest, but also the most powerful.</string>
+    <string name="targettutlose">You're lucky I know the Raise Dead spell. Let's try that again.</string>
     
+    <string name="shieldtut">The Palm gesture (P) is performed by dragging your finger down the screen, starting in the lower section. It's the opposite of the Knife gesture. A single Palm will cast the Shield spell, which protects you from all physical attacks, such as stabs and monsters.
+    </string>
+    <string name="shieldtut2">But be warned! Due to its power, gesturing Palm with both hands causes you to lose at the end of the round, unless you have simultaneously vanquished your opponent.</string>
 </resources>

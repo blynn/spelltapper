@@ -32,7 +32,7 @@ public class MainView extends View {
   static String gestname[];
   static int choice[];  // Gesture choice.
   static int lastchoice[];
-  static int hist[][], histi, histstart[];
+  static History hist, opphist;
   static final int ylower = 128 + 144 + 4 * 4;
   static final int ystatus = ylower + 32 + 2 * 50 + 16 - 4;
   static final int yicon = 64 + 48 + 2 * 4;
@@ -64,8 +64,29 @@ public class MainView extends View {
     tut.run();
   }
 
+  static SpellTapMove oppmove;
+  class SpellTapMove {
+    SpellTapMove() {
+      gest = new int[2];
+      spell = new int[2];
+      spell_target = new int[2];
+      //monster_target = new int[16];
+    }
+    int gest[];
+    int spell[];
+    int spell_target[];
+    //int monster_target[];
+  }
+
   abstract class Tutorial {
     abstract void run();
+    void AI_move(SpellTapMove turn) {
+      for(int h = 0; h < 2; h++) {
+	turn.gest[h] = NO_GESTURE;
+	turn.spell[h] = -1;
+	turn.spell_target[h] = -1;
+      }
+    }
   }
 
   // To pass this tutorial, the player merely has to drag their finger up three
@@ -129,7 +150,9 @@ public class MainView extends View {
   }
 
   // Defeat a pacifist wooden dummy with 3 hitpoints to pass this one.
-  // Actually, as long as the battle ends, the player passes.
+  // Actually, as long as the battle ends, the player passes. The only way
+  // to lose is to stab yourself, which requires a player who knows what
+  // they're doing.
   class DummyTutorial extends Tutorial {
     DummyTutorial() {
       put_gest("Knife", 0, -1);
@@ -162,16 +185,18 @@ public class MainView extends View {
 	switch(winner) {
 	case 0:
 	  speech_box.setText(R.string.dummytutwin);
+	  tut = new TargetTutorial();
 	  break;
 	case 1:
 	  speech_box.setText(R.string.dummytutlose);
+	  tut = new ShieldTutorial();
 	  break;
 	case 2:
 	  speech_box.setText(R.string.dummytutdraw);
+	  tut = new ShieldTutorial();
 	  break;
 	}
 	main_state = STATE_SPEECH;
-	tut = new TargetTutorial();
         return;
       }
     }
@@ -191,10 +216,8 @@ public class MainView extends View {
       for(;;) switch(state) {
       case 0:
         // Resurrect and restore HP
-	being_list[0].life = 5;
-	being_list[0].dead = false;
-	being_list[1].life = 3;
-	being_list[1].dead = false;
+	being_list[0].start_life(5);
+	being_list[1].start_life(3);
 	// Two goblins.
 	being_list_count++;
 	being_list[2] = new Being(
@@ -227,8 +250,67 @@ public class MainView extends View {
 	state = 2;
         return;
       case 2:
-        Log.i("TODO!", "target tut");
+	speech_box.setVisibility(View.VISIBLE);
+	switch(winner) {
+	case 0:
+	  speech_box.setText(R.string.targettutwin);
+	  tut = new ShieldTutorial();
+	  break;
+	case 1:
+	  speech_box.setText(R.string.targettutlose);
+	  state = 0;
+	  break;
+	case 2:
+	  speech_box.setText(R.string.targettutdraw);
+	  tut = new ShieldTutorial();
+	  break;
+	}
+	main_state = STATE_SPEECH;
         return;
+      }
+    }
+    int state;
+  }
+
+  class ShieldTutorial extends Tutorial {
+    ShieldTutorial() {
+      state = 0;
+      put_gest("Knife", 0, -1);
+      put_gest("Palm", 0, 1);
+    }
+    void run() {
+      for(;;) switch(state) {
+      case 0:
+        // Resurrect and restore HP
+	being_list[0].life = 5;
+	being_list[0].dead = false;
+	being_list[1].start_life(5);
+	// A new challenger.
+	being_list[1].name = "Sendin the Clown";
+	being_list[1].bitmap = bmclown;
+	being_list_count = 2;
+
+	main_state = STATE_SPEECH;
+	speech_box.setVisibility(View.VISIBLE);
+	speech_box.setText(R.string.shieldtut);
+	clear_choices();
+	arena.setVisibility(View.VISIBLE);
+	arrow_view.setVisibility(View.VISIBLE);
+	get_ready(); 
+	invalidate();
+	state = 1;
+      case 1:
+	speech_box.setVisibility(View.VISIBLE);
+	speech_box.setText(R.string.shieldtut2);
+	state = 2;
+      case 2:
+	speech_box.setVisibility(View.GONE);
+        get_ready();
+	state = 3;
+        return;
+      case 3:
+	Log.i("shield tutorial", "TODO!");
+	return;
       }
     }
     int state;
@@ -261,6 +343,35 @@ public class MainView extends View {
     spell_text[0] = spell_text[1] = "";
   }
 
+  class History {
+    History() {
+      gest = new int[128][2];
+      cur = 0;
+      start = new int[2];
+      start[1] = start[0] = 0;
+    }
+    void add(int g[]) {
+      gest[cur][0] = g[0];
+      gest[cur][1] = g[1];
+      // Stabs and null gestures break combos.
+      if (cur > 0) {
+	if (gest[cur - 1][0] == KNIFE) start[0] = cur;
+	if (gest[cur - 1][1] == KNIFE) start[1] = cur;
+      }
+      if (g[0] == KNIFE) start[0] = cur;
+      if (g[1] == KNIFE) start[1] = cur;
+      cur++;
+      if (g[0] == NO_GESTURE) start[0] = cur;
+      if (g[1] == NO_GESTURE) start[1] = cur;
+      // No spell needs more than 7 turns.
+      if (cur > start[0] + 6) start[0]++;
+      if (cur > start[1] + 6) start[1]++;
+    }
+    int[][] gest;
+    int cur;
+    int[] start;
+  }
+
   public MainView(Context context, AttributeSet attrs) {
     super(context, attrs);
     paint = new Paint();
@@ -274,10 +385,8 @@ public class MainView extends View {
     gestname = new String[9];
     choice = new int[2];
     lastchoice = new int[2];
-    hist = new int[128][2];
-    histi = 0;
-    histstart = new int[2];
-    histstart[1] = histstart[0] = 0;
+    hist = new History();
+    opphist = new History();
     ready_spell_count = new int[2];
     ready_spell = new Spell[4][2];
     spell_choice = new int[2];
@@ -320,9 +429,11 @@ public class MainView extends View {
       monatt[i] = new MonsterAttack(i);
     }
 
-    tut = new TargetTutorial();
+    tut = new ShieldTutorial();
     msg = "";
     bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
+    bmclown = BitmapFactory.decodeResource(getResources(), R.drawable.clown);
+    oppmove = new SpellTapMove();
   }
 
   public void get_ready() {
@@ -357,13 +468,13 @@ public class MainView extends View {
     y = ylower - 4;
     x = 0;
     String s = "";
-    for (int i = histstart[0]; i < histi; i++) {
-      s += " " + gestname[hist[i][0]].charAt(0);
+    for (int i = hist.start[0]; i < hist.cur; i++) {
+      s += " " + gestname[hist.gest[i][0]].charAt(0);
     }
     canvas.drawText(s, x, y, paint);
     s = "";
-    for (int i = histstart[1]; i < histi; i++) {
-      s += " " + gestname[hist[i][1]].charAt(0);
+    for (int i = hist.start[1]; i < hist.cur; i++) {
+      s += " " + gestname[hist.gest[i][1]].charAt(0);
     }
     x = 160 + 32;
     canvas.drawText(s, x, y, paint);
@@ -559,23 +670,11 @@ public class MainView extends View {
 
   private void end_turn() {
     main_state = STATE_BUSY;
-    hist[histi][0] = choice[0];
-    hist[histi][1] = choice[1];
-    // Stabs and null gestures break combos.
-    if (histi > 0) {
-      if (hist[histi - 1][0] == KNIFE) histstart[0] = histi;
-      if (hist[histi - 1][1] == KNIFE) histstart[1] = histi;
-    }
-    if (choice[0] == KNIFE) histstart[0] = histi;
-    if (choice[1] == KNIFE) histstart[1] = histi;
-    histi++;
-    if (gestname[choice[0]] == null) histstart[0] = histi;
-    if (gestname[choice[1]] == null) histstart[1] = histi;
-    if (histi > histstart[0] + 6) histstart[0]++;
-    if (histi > histstart[1] + 6) histstart[1]++;
+    hist.add(choice);
+
+    tut.AI_move(oppmove);
 
     // TODO: Sort spells by priority.
-
     exec_queue_count = 0;
     for (int h = 0; h < 2; h++) {
       if (0 == ready_spell_count[h]) continue;
@@ -705,13 +804,13 @@ public class MainView extends View {
       for (int i = 0; i < spell_list_count; i++) {
 	String g = spell_list[i].gesture;
 	int k = g.length();
-	if (k > histi - histstart[h] + 1) continue;
+	if (k > hist.cur - hist.start[h] + 1) continue;
 	k--;
 	if (g.charAt(k) != gestname[choice[h]].charAt(0)) continue;
 	k--;
-	int k2 = histi - 1;
+	int k2 = hist.cur - 1;
 	while (k >= 0) {
-	  if (g.charAt(k) != gestname[hist[k2][h]].charAt(0)) {
+	  if (g.charAt(k) != gestname[hist.gest[k2][h]].charAt(0)) {
 	    break;
 	  }
 	  k2--;
@@ -910,7 +1009,7 @@ public class MainView extends View {
     int level;
   }
 
-  static Bitmap bmcorpse;
+  static Bitmap bmcorpse, bmclown;
   public class Being {
     public Being(String init_name, int posx, int posy, int bitmapid) {
       x = posx;
@@ -930,6 +1029,7 @@ public class MainView extends View {
     }
     void start_life(int n) {
       life = life_max = n;
+      dead = false;
     }
 
     Bitmap bitmap;

@@ -43,6 +43,11 @@ public final class R {
         public static final int howtoknifepass1=0x7f040003;
         public static final int howtoknifepass2=0x7f040004;
         public static final int howtoknifepass3=0x7f040005;
+        public static final int shieldtut=0x7f04000f;
+        public static final int shieldtut2=0x7f040010;
         public static final int targettut=0x7f04000b;
+        public static final int targettutdraw=0x7f04000d;
+        public static final int targettutlose=0x7f04000e;
+        public static final int targettutwin=0x7f04000c;
     }
 }
