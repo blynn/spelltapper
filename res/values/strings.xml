@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Waver</string>
+    <string name="howtoknife">Violence is a last resort even for wizards.
+    Thus it will be you first lesson. Let me see a few practice
+    swings with your knife.</string>
+    <string name="howtoknife2">[Slide your finger straight up, starting from
+    the lower part of the screen.]</string>
+    <string name="howtoknifepass1">Good. Let me see another one.</string>
+    <string name="howtoknifepass3">You're a natural. Let's move on.</string>
 </resources>

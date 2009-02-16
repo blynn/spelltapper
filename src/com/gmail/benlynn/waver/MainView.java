@@ -21,12 +21,14 @@ public class MainView extends View {
   static Paint status_paint;
   static String msg;
   static float x0, y0, x1, y1;
-  static int tut_state;
-  static final int TUT_NONE = 0;
-  static final int TUT_KNIFE = 1;
+  static Tutorial tut;
   static int main_state;
+  static final int STATE_SPEECH = 128;
+  static final int STATE_WANT_KNIFE = 129;
   static final int STATE_NORMAL = 0;
   static final int STATE_BUSY = 1;
+  static final int STATE_LDRAG = 2;
+  static final int STATE_RDRAG = 3;
   static String gestname[];
   static int choice[];  // Gesture choice.
   static int lastchoice[];
@@ -46,16 +48,103 @@ public class MainView extends View {
   static int being_list_count;
   static Being being_list[];
   static Arena arena;
-  static TextView speech;
   static ArrowView arrow_view;
+  static TextView speech_box;
   void set_arena(Arena a) {
     arena = a;
-  }
-  void set_speech(TextView a) {
-    speech = a;
+    arena.being_list = being_list;
+    arena.being_list_count = being_list_count;
   }
   void set_arrow_view(ArrowView a) {
     arrow_view = a;
+  }
+  void set_speech_box(TextView a) {
+    speech_box = a;
+    tut.run();
+  }
+
+  abstract class Tutorial {
+    abstract void run();
+  }
+
+  class KnifeTutorial extends Tutorial {
+    KnifeTutorial() {
+      put_gest("Knife", 0, -1);
+      state = 0;
+      count = 0;
+    }
+    void run() {
+Log.i("R", "" + state);
+Log.i("R", "" + main_state);
+      for(;;) switch(state) {
+	case 0:
+	  arena.setVisibility(View.GONE);
+	  arrow_view.setVisibility(View.GONE);
+	  speech_box.setVisibility(View.VISIBLE);
+	  speech_box.setText(R.string.howtoknife);
+	  main_state = STATE_SPEECH;
+	  state = 1;
+	  return;
+	case 1:
+	  speech_box.setText(R.string.howtoknife2);
+	  main_state = STATE_SPEECH;
+	  state = 2;
+	  return;
+	case 2:
+	  speech_box.setVisibility(View.GONE);
+	  clear_choices();
+	  invalidate();
+	  main_state = STATE_WANT_KNIFE;
+	  state = 3;
+	  return;
+	case 3:
+	  speech_box.setVisibility(View.VISIBLE);
+	  if (choice[0] == KNIFE || choice[1] == KNIFE) {
+	    count++;
+	    if (count == 3) {
+	      speech_box.setText(R.string.howtoknifepass3);
+	      tut = new NoTutorial();
+	    } else {
+	      speech_box.setText(R.string.howtoknifepass1);
+	      state = 2;
+	    }
+	    main_state = STATE_SPEECH;
+	  } else {
+	    state = 1;
+	    break;
+	  }
+	  return;
+      }
+    }
+    int state;
+    int count;
+  }
+
+  class NoTutorial extends Tutorial {
+    NoTutorial() {}
+    void run() {
+      clear_choices();
+      speech_box.setVisibility(View.GONE);
+      arena.setVisibility(View.VISIBLE);
+      arrow_view.setVisibility(View.VISIBLE);
+      put_gest("Snap", -1, -1);
+      put_gest("Knife", 0, -1);
+      put_gest("Digit", 1, -1);
+      put_gest("Clap", 1, 0);
+      put_gest("Wave", -1, 1);
+      put_gest("Palm", 0, 1);
+      put_gest("Fingers", 1, 1);
+      get_ready(); 
+      invalidate();
+      main_state = STATE_NORMAL;
+    }
+  }
+
+  void clear_choices() {
+    choice[1] = choice[0] = NO_GESTURE;
+    lastchoice[0] = lastchoice[1] = choice[0];
+    ready_spell_count[0] = ready_spell_count[1] = 0;
+    spell_text[0] = spell_text[1] = "";
   }
 
   public MainView(Context context, AttributeSet attrs) {
@@ -75,24 +164,12 @@ public class MainView extends View {
     histi = 0;
     histstart = new int[2];
     histstart[1] = histstart[0] = 0;
-    choice[0] = choice[1] = NO_GESTURE;
-    lastchoice[0] = lastchoice[1] = choice[0];
     ready_spell_count = new int[2];
     ready_spell = new Spell[4][2];
-    ready_spell_count[0] = ready_spell_count[1] = 0;
     spell_choice = new int[2];
     spell_choice[0] = spell_choice[1] = 0;
     spell_text = new String[2];
-    spell_text[0] = "";
-    spell_text[1] = "";
-    // Use Unicode arrows as well? e.g. \u2191?
-    put_gest("Snap", -1, -1);
-    put_gest("Knife", 0, -1);
-    put_gest("Digit", 1, -1);
-    put_gest("Clap", 1, 0);
-    put_gest("Wave", -1, 1);
-    put_gest("Palm", 0, 1);
-    put_gest("Fingers", 1, 1);
+    clear_choices();
     stab_spell = new StabSpell();
     spell_list = new Spell[64];
     spell_list_count = 0;
@@ -123,12 +200,8 @@ public class MainView extends View {
     spell_target = new int[2];
     exec_queue = new SpellCast[16];
 
-    arena.being_list = being_list;
-    arena.being_list_count = being_list_count;
-
-    speech.setVisibility(View.GONE);
-    tut_state = TUT_NONE;
-    get_ready(); 
+    tut = new KnifeTutorial();
+    msg = "";
   }
 
   public void get_ready() {
@@ -244,9 +317,21 @@ public class MainView extends View {
 
   @Override
   public boolean onTouchEvent(MotionEvent event) {
-    if (STATE_BUSY == main_state) return true;
+    if (event.getAction() != MotionEvent.ACTION_DOWN &&
+        event.getAction() != MotionEvent.ACTION_UP) return false;
+    boolean result = handle_motion(event);
+    if (STATE_WANT_KNIFE == main_state || STATE_SPEECH == main_state) {
+      if (!result || event.getAction() == MotionEvent.ACTION_UP) tut.run();
+    }
+    return result;
+  }
+
+  public boolean handle_motion(MotionEvent event) {
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
+	Log.i("M", "D");
+	if (STATE_BUSY == main_state) return false;
+	if (STATE_SPEECH == main_state) return true;
 	x0 = event.getX();
 	y0 = event.getY();
 	if (y0 < ylower) {
@@ -265,6 +350,9 @@ public class MainView extends View {
 	okstate = y0 > ystatus;
 	return true;
       case MotionEvent.ACTION_UP:
+	Log.i("M", "U");
+	if (STATE_BUSY == main_state) return false;
+	if (STATE_SPEECH == main_state) return true;
 	x1 = event.getX();
 	y1 = event.getY();
 	if (2 == main_state || 3 == main_state) {

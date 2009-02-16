@@ -177,8 +177,8 @@ public class Arena extends View {
     anim = ANIM_SPELL;
     target = init_target;
     bitmap = init_bitmap;
-    fade_paint.setARGB(200, 255, 0, 0);
-    alphadelta = 200 / frame_max;
+    fade_paint.setARGB(0, 255, 0, 0);
+    alphadelta = -(255 / frame_max);
     anim_handler.sleep(delay);
   }
 
