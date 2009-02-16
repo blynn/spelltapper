@@ -44,7 +44,7 @@ public class Arena extends View {
   static final int ANIM_NONE = 0;
   static final int ANIM_MOVE = 1;
   static final int ANIM_MOVE_BACK = 2;
-  static final int ANIM_DAMAGE = 3;
+  static final int ANIM_MOVE_DAMAGE = 3;
   static int delay = 20;
   static int frame_max = 20;
   static Paint damage_paint, big_white_paint;
@@ -59,7 +59,7 @@ public class Arena extends View {
 	x += xdelta;
 	y += ydelta;
 	break;
-      case ANIM_DAMAGE:
+      case ANIM_MOVE_DAMAGE:
 	damage_paint.setAlpha(damage_paint.getAlpha() - alphadelta);
 	break;
     }
@@ -100,8 +100,8 @@ public class Arena extends View {
     } else {
       b = being_list[target];
       x1 = b.x;
-      if (b.y > y) y1 = b.y - 64;
-      else if (b.y < y) y1 = b.y + 64;
+      if (b.y > y) y1 = b.y - b.h;
+      else if (b.y < y) y1 = b.y + b.h;
       else y1 = b.y;  // TODO: Adjust x1 to avoid overlap?
       ydelta = (y1 - y) / frame_max;
       xdelta = (x1 - x) / frame_max;
@@ -109,8 +109,8 @@ public class Arena extends View {
     anim_handler.sleep(delay);
   }
 
-  public void animate_damage(int init_target, int init_damage) {
-    anim = ANIM_DAMAGE;
+  public void animate_move_damage(int init_target, int init_damage) {
+    anim = ANIM_MOVE_DAMAGE;
     target = init_target;
     damage = Integer.toString(init_damage);
     damage_paint.setAlpha(200);
@@ -138,7 +138,7 @@ public class Arena extends View {
 
     // Avatars.
     for (int i = 0; i < being_list_count; i++) {
-      if (anim == ANIM_MOVE || anim == ANIM_MOVE_BACK || anim == ANIM_DAMAGE) {
+      if (anim == ANIM_MOVE || anim == ANIM_MOVE_BACK || anim == ANIM_MOVE_DAMAGE) {
 	if (i == source) {
 	  continue;
 	}
@@ -152,12 +152,13 @@ public class Arena extends View {
       case ANIM_MOVE_BACK:
 	drawBeing(source, x, y, canvas);
 	break;
-      case ANIM_DAMAGE:
+      case ANIM_MOVE_DAMAGE:
 	drawBeing(source, x, y, canvas);
 	if (-1 != target) {
 	  Being b = being_list[target];
-	  canvas.drawRect(b.x, b.y, b.x + 64 - 1, b.y + 64 - 1, damage_paint);
-	  canvas.drawText(damage, b.x + 32 - damagex, b.y + 32 + damagey, big_white_paint);
+	  canvas.drawRect(b.x, b.y, b.x + b.w, b.y + b.h, damage_paint);
+	  canvas.drawText(damage, b.x + b.midw - damagex,
+	      b.y + b.midh + damagey, big_white_paint);
 	}
 	break;
     }

@@ -91,8 +91,16 @@ public class MainView extends View {
 
     being_list_count++;
     being_list[0] = new Being(160 - 32, ylower - 64, R.drawable.wiz);
+    being_list[0].w = 64;
+    being_list[0].h = 64;
+    being_list[0].midw = 32;
+    being_list[0].midh = 32;
     being_list_count++;
     being_list[1] = new Being(160 - 32, 0, R.drawable.dummy);
+    being_list[1].w = 64;
+    being_list[1].h = 64;
+    being_list[1].midw = 32;
+    being_list[1].midh = 32;
 
     spell_target = new int[2];
     exec_queue = new SpellCast[16];
@@ -152,7 +160,7 @@ public class MainView extends View {
 	spell_text[h] = sp.name;
 	if (spell_target[h] >= 0) {
 	  Being b = being_list[spell_target[h]];
-	  arrow_view.add_arrow(x + 24, y + 24, b.x + 32, b.y + 32);
+	  arrow_view.add_arrow(x + 24, y + 24, b.x + b.midw, b.y + b.midh);
 	  arrow_view.invalidate();
 	}
       }
@@ -166,10 +174,10 @@ public class MainView extends View {
     // Gesture and spell text.
     y = ylower + 16 - 4;
     s = gestname[choice[0]];
-    if (null == s) s = "(nothing)";
+    if (null == s) s = ""; //"(nothing)";
     canvas.drawText("Left Hand: " + s, 0, y, paint);
     s = gestname[choice[1]];
-    if (null == s) s = "(nothing)";
+    if (null == s) s = ""; //"(nothing)";
     canvas.drawText("Right Hand: " + s, 160, y, paint);
 
     canvas.drawText(spell_text[0], 0, y + 16, paint);
@@ -342,15 +350,28 @@ public class MainView extends View {
       exec_queue_count++;
     }
 
-    for(int i = 0; i < exec_queue_count; i++) {
-      SpellCast sc = exec_queue[i];
-      sc.spell.execute(sc.source, sc.target);
-    }
-
     // TODO: Clear gestures, spell text.
     ready_spell_count[0] = 0;
     ready_spell_count[1] = 0;
     invalidate();
+
+    exec_cursor = 0;
+    next_spell();
+  }
+
+  static int exec_cursor;
+  public void next_spell() {
+    Log.i("M", "Next spell");
+    Log.i("M", Integer.toString(exec_cursor) + " " + Integer.toString(exec_queue_count));
+    if (exec_cursor < exec_queue_count) {
+    //Log.i("M", Integer.toString(exec_cursor) + " " + Integer.toString(exec_queue_count));
+      SpellCast sc = exec_queue[exec_cursor];
+      sc.spell.execute(sc.source, sc.target);
+      exec_cursor++;
+    } else {
+      // TODO: Re-enable gestures.
+      Log.i("M", "Setup next turn");
+    }
   }
 
   private void handle_new_choice(int h) {
@@ -417,21 +438,32 @@ public class MainView extends View {
     String gesture;
     int target;
     int state;
+    boolean is_finished;  // Set this to true before calling last animation.
     int cast_source, cast_target;
 
     public void execute(int init_source, int init_target) {
       state = 0;
+      is_finished = false;
       arena.set_notify_me(done_handler);
       cast_source = init_source;
       cast_target = init_target;
       cast(cast_source, cast_target);
     }
+
+    public void stub_finish() {
+      is_finished = true;
+      done_handler.sendEmptyMessage(0);
+    }
     private DoneHandler done_handler = new DoneHandler();
     class DoneHandler extends Handler {
       @Override
       public void handleMessage(Message msg) {
-	state++;
-	cast(cast_source, cast_target);
+	if (is_finished) {
+	  MainView.this.next_spell();
+	} else {
+	  state++;
+	  cast(cast_source, cast_target);
+	}
       }
     }
   }
@@ -442,6 +474,7 @@ public class MainView extends View {
     }
     public void cast(int source, int target) {
       Log.i("SpellCast", "TODO: Shield");
+      stub_finish();
     }
   }
 
@@ -455,9 +488,10 @@ public class MainView extends View {
 	  arena.animate_move(source, target);
 	  return;
 	case 1:
-	  arena.animate_damage(target, 1);
+	  arena.animate_move_damage(target, 1);
 	  return;
 	case 2:
+	  is_finished = true;
 	  arena.animate_move_back();
 	  return;
       }
@@ -469,6 +503,8 @@ public class MainView extends View {
       init("Missile", "SD", R.drawable.missile, 1);
     }
     public void cast(int source, int target) {
+      Log.i("SpellCast", "TODO: Missile");
+      stub_finish();
     }
   }
 
@@ -477,6 +513,8 @@ public class MainView extends View {
       init("Cause Light Wounds", "WFP", R.drawable.wound, 1);
     }
     public void cast(int source, int target) {
+      Log.i("SpellCast", "TODO: Cure Light");
+      stub_finish();
     }
   }
 
@@ -495,5 +533,7 @@ public class MainView extends View {
     int status;
     int target;
     int shield;
+    int w, h;
+    int midw, midh;
   }
 }
