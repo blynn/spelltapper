@@ -341,9 +341,9 @@ public class MainView extends View {
     }
 
     for(int i = 0; i < exec_queue_count; i++) {
-      exec_queue[i].spell.cast(being_list[0], being_list[0]);
+      SpellCast sc = exec_queue[i];
+      sc.spell.cast(sc.source, sc.target);
     }
-    arena.animate();
 
     // TODO: Clear gestures, spell text.
     ready_spell_count[0] = 0;
@@ -409,7 +409,7 @@ public class MainView extends View {
       target = def_target;
     }
 
-    abstract public void cast(Being source, Being target);
+    abstract public void cast(int source, int target);
     Bitmap bitmap;
     String name;
     String gesture;
@@ -420,7 +420,7 @@ public class MainView extends View {
     ShieldSpell() {
       init("Shield", "P", R.drawable.shield, 0);
     }
-    public void cast(Being source, Being target) {
+    public void cast(int source, int target) {
       Log.i("SpellCast", "TODO: Shield");
     }
   }
@@ -429,7 +429,8 @@ public class MainView extends View {
     StabSpell() {
       init("Stab", "K", R.drawable.stab, 1);
     }
-    public void cast(Being source, Being target) {
+    public void cast(int source, int target) {
+      arena.animate_move(source, target);
     }
   }
 
@@ -437,7 +438,7 @@ public class MainView extends View {
     MissileSpell() {
       init("Missile", "SD", R.drawable.missile, 1);
     }
-    public void cast(Being source, Being target) {
+    public void cast(int source, int target) {
     }
   }
 
@@ -445,7 +446,7 @@ public class MainView extends View {
     CauseLightWoundsSpell() {
       init("Cause Light Wounds", "WFP", R.drawable.wound, 1);
     }
-    public void cast(Being source, Being target) {
+    public void cast(int source, int target) {
     }
   }
 

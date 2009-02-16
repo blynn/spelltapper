@@ -23,33 +23,70 @@ public class Arena extends View {
   }
 
   void init_arena() {
-    x = 50;
-    y = 50;
-    i = 0;
+    anim = ANIM_NONE;
+    frame = 0;
     paint = new Paint();
   }
 
+  static int source, target;
   static int x, y;
-  static int i;
+  static int x1, y1;
+  static int xdelta, ydelta;
+  static int frame;
+  static int anim;
+  static final int ANIM_NONE = 0;
+  static final int ANIM_MOVE = 1;
+  static int delay = 20;
+  static int frame_max = 20;
 
   private void update() {
-    i++;
-    x += 10;
-    if (i < 20) {
-      anim_handler.sleep(10);
+    frame++;
+    x += xdelta;
+    y += ydelta;
+    if (frame < frame_max) {
+      anim_handler.sleep(delay);
     } else {
-      i = 0;
-      x = 50;
+      frame = 0;
+      anim = ANIM_NONE;
+      x = x1;
+      y = y1;
     }
   }
 
-  public void animate() {
-    anim_handler.sleep(10);
+  public void animate_move(int init_source, int init_target) {
+    anim = ANIM_MOVE;
+    source = init_source;
+    target = init_target;
+    MainView.Being b = being_list[source];
+    x = b.x;
+    y = b.y;
+    if (target == -1 || target == source) {
+      xdelta = 0;
+      ydelta = 0;
+      x1 = x;
+      y1 = y;
+    } else {
+      b = being_list[target];
+      x1 = b.x;
+      if (b.y > y) y1 = b.y - 64;
+      else if (b.y < y) y1 = b.y + 64;
+      else y1 = b.y;  // TODO: Adjust x1 to avoid overlap?
+      ydelta = (y1 - y) / frame_max;
+      xdelta = (x1 - x) / frame_max;
+    }
+    anim_handler.sleep(delay);
   }
 
   static MainView.Being[] being_list;
   static int being_list_count;
   static Paint paint;
+
+  public void drawBeing(int i, int mx, int my, Canvas canvas) {
+      MainView.Being b = being_list[i];
+      canvas.drawBitmap(b.bitmap, mx, my, paint);
+      // TODO: Cache life string.
+      canvas.drawText(Integer.toString(b.life) + "/" + Integer.toString(b.max_life), mx, my + 16 - 4, paint);
+  }
 
   @Override
   public void onDraw(Canvas canvas) {
@@ -58,8 +95,17 @@ public class Arena extends View {
 
     // Avatars.
     for (int i = 0; i < being_list_count; i++) {
+      if (anim == ANIM_MOVE) {
+	if (i == source) {
+	  continue;
+	}
+      }
       MainView.Being b = being_list[i];
-      canvas.drawBitmap(b.bitmap, b.x, b.y, paint);
+      drawBeing(i, b.x, b.y, canvas);
+    }
+
+    if (anim == ANIM_MOVE) {
+      drawBeing(source, x, y, canvas);
     }
   }
 
