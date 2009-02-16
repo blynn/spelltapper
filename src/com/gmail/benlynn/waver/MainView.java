@@ -1,5 +1,6 @@
 // TODO: Log, spellbook, character sheet.
 // Title menu, save state
+// Don't retarget if player taps on already-selected ready spell.
 package com.gmail.benlynn.waver;
 
 import android.content.Context;
@@ -94,6 +95,7 @@ public class MainView extends View {
   class KnifeTutorial extends Tutorial {
     KnifeTutorial() {
       put_gest("Knife", 0, -1);
+      stab_spell.learned = true;
       state = 0;
       count = 0;
     }
@@ -156,6 +158,7 @@ public class MainView extends View {
   class DummyTutorial extends Tutorial {
     DummyTutorial() {
       put_gest("Knife", 0, -1);
+      stab_spell.learned = true;
       state = 0;
     }
     void run() {
@@ -293,9 +296,11 @@ public class MainView extends View {
 	being_list[0].start_life(5);
 	being_list[1].start_life(5);
 	// A new challenger.
-	being_list[1].name = "Sendin the Clown";
+	being_list[1].name = "Sendin";
 	being_list[1].bitmap = bmclown;
 	being_list_count = 2;
+	hist.reset();
+	opphist.reset();
 	main_state = STATE_SPEECH;
 	speech_box.setVisibility(View.VISIBLE);
 	speech_box.setText(R.string.shieldtut);
@@ -347,6 +352,8 @@ public class MainView extends View {
     return -1;
   }
 
+  // Introduce W F gestures, and spells that take multiple turns. Also
+  // WFP conflicts with P but hopefully they'll figure that out.
   class WFPTutorial extends Tutorial {
     WFPTutorial() {
       state = 0;
@@ -371,9 +378,11 @@ public class MainView extends View {
         // Resurrect and restore HP
 	being_list[0].start_life(5);
 	being_list[1].start_life(5);
-	being_list[1].name = "Sendin the Clown";
+	being_list[1].name = "Sendin";
 	being_list[1].bitmap = bmclown;
 	being_list_count = 2;
+	hist.reset();
+	opphist.reset();
 
 	main_state = STATE_SPEECH;
 	speech_box.setVisibility(View.VISIBLE);
@@ -402,7 +411,108 @@ public class MainView extends View {
 	state = 3;
 	return;
       case 3:
-        Log.i("TODO", "TODO");
+	speech_box.setVisibility(View.VISIBLE);
+	switch(winner) {
+	case 0:
+	  speech_box.setText(R.string.WFPtutwin);
+	  tut = new SDTutorial();
+	  break;
+	case 1:
+	  speech_box.setText(R.string.WFPtutlose);
+	  state = 0;
+	  break;
+	case 2:
+	  speech_box.setText(R.string.WFPtutdraw);
+	  state = 0;
+	  break;
+	}
+	main_state = STATE_SPEECH;
+	return;
+      }
+    }
+    int hand;
+    int state;
+    int count;
+  }
+ 
+  // Introduce S D gestures.
+  class SDTutorial extends Tutorial {
+    SDTutorial() {
+      state = 0;
+      hand = 0;
+      put_gest("Snap", -1, -1);
+      put_gest("Knife", 0, -1);
+      put_gest("Digit", 1, -1);
+      put_gest("Wave", -1, 1);
+      put_gest("Palm", 0, 1);
+      put_gest("Fingers", 1, 1);
+    }
+    void AI_move(SpellTapMove turn) {
+      turn.gest[hand] = KNIFE;
+      turn.spell[hand] = 64;
+      turn.spell_target[hand] = 0;
+      hand = 1 - hand;
+      turn.gest[hand] = flattenxy(0, 1);;
+      turn.spell[hand] = indexOfSpell("Shield");
+      turn.spell_target[hand] = 1;
+    }
+    void run() {
+      for(;;) switch(state) {
+      case 0:
+        // Resurrect and restore HP
+	being_list[0].start_life(5);
+	being_list[1].start_life(5);
+	being_list[1].name = "Sendin";
+	being_list[1].bitmap = bmclown;
+	being_list_count = 2;
+	hist.reset();
+	opphist.reset();
+
+	main_state = STATE_SPEECH;
+	speech_box.setVisibility(View.VISIBLE);
+	speech_box.setText(R.string.SDtut);
+	clear_choices();
+	arena.setVisibility(View.VISIBLE);
+	arrow_view.setVisibility(View.VISIBLE);
+	invalidate();
+	state = 1;
+	count = 0;
+	return;
+      case 1:
+	switch(count) {
+	  case 0:
+	    speech_box.setText(R.string.SDtut2);
+	    count++;
+	    return;
+	  case 1:
+	    speech_box.setText(R.string.SDtut3);
+	    state = 2;
+	    return;
+	}
+      case 2:
+	speech_box.setVisibility(View.GONE);
+        get_ready();
+	state = 3;
+	return;
+      case 3:
+	/*
+	speech_box.setVisibility(View.VISIBLE);
+	switch(winner) {
+	case 0:
+	  speech_box.setText(R.string.SDtutwin);
+	  tut = new SDTutorial();
+	  break;
+	case 1:
+	  speech_box.setText(R.string.SDtutlose);
+	  state = 0;
+	  break;
+	case 2:
+	  speech_box.setText(R.string.SDtutdraw);
+	  state = 0;
+	  break;
+	}
+	main_state = STATE_SPEECH;
+	*/
 	return;
       }
     }
@@ -441,9 +551,12 @@ public class MainView extends View {
   class History {
     History() {
       gest = new int[128][2];
-      cur = 0;
       start = new int[2];
-      start[1] = start[0] = 0;
+      reset();
+    }
+    void reset() {
+      cur = 0;
+      start[0] = start[1] = 0;
     }
     void add(int g[]) {
       gest[cur][0] = g[0];
@@ -505,8 +618,7 @@ public class MainView extends View {
     being_list[0].h = 64;
     being_list[0].midw = 32;
     being_list[0].midh = 32;
-    being_list[0].life = 5;
-    being_list[0].life_max = 5;
+    being_list[0].start_life(5);
     being_list_count++;
 
     being_list[1] = new Being("The Dummy", 160 - 32, 0, R.drawable.dummy);
@@ -514,8 +626,7 @@ public class MainView extends View {
     being_list[1].h = 64;
     being_list[1].midw = 32;
     being_list[1].midh = 32;
-    being_list[1].life = 3;
-    being_list[1].life_max = 3;
+    being_list[1].start_life(3);
 
     spell_target = new int[2];
     exec_queue = new SpellCast[16];
@@ -525,7 +636,7 @@ public class MainView extends View {
       monatt[i] = new MonsterAttack(i);
     }
 
-    tut = new WFPTutorial();
+    tut = new KnifeTutorial();
     msg = "";
     bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
     bmclown = BitmapFactory.decodeResource(getResources(), R.drawable.clown);
@@ -846,13 +957,13 @@ public class MainView extends View {
 	if (0 == sc.source) {
 	  s += "You stab ";
 	} else {
-	  s += tgtname + " stabs ";
+	  s += srcname + " stabs ";
 	}
       } else {
 	if (0 == sc.source) {
 	  s += "You cast ";
 	} else {
-	  s += tgtname + " casts ";
+	  s += srcname + " casts ";
 	}
 	s += sc.spell.name + " on ";
       }
@@ -883,28 +994,25 @@ public class MainView extends View {
       // TODO: Shield off animation.
       if (b.life <= 0) {
 	if (i >= 2) b.bitmap = bmcorpse;
-	b.dead = true;
+	b.die();
       }
     }
     boolean gameover = false;
     if (being_list[1].dead) {
       gameover = true;
       winner = 0;
-      Log.i("endofround", "opponent dead");
       if (being_list[0].dead) {
-	Log.i("endofround", "so is player");
 	winner = 2;
       }
     } else if (being_list[0].dead) {
       winner = 1;
       gameover = true;
-      Log.i("endofround", "player dead");
     }
+    invalidate();
     if (gameover) {
       tut.run();
     } else {
       get_ready();
-      invalidate();
     }
   }
 
@@ -964,6 +1072,7 @@ public class MainView extends View {
       gesture = init_gest;
       bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
       target = def_target;
+      learned = false;
     }
 
     abstract public void cast(int init_source, int init_target);
@@ -973,6 +1082,7 @@ public class MainView extends View {
     int index;
     int target;
     int state;
+    boolean learned;
     boolean is_finished;  // Set this to true before calling last animation.
                           // Or call finish_spell() [it's slower].
     int cast_source, cast_target;
@@ -1142,9 +1252,11 @@ public class MainView extends View {
       shield = 0;
       name = init_name;
       dead = false;
+      lifeline = "?";
     }
     void get_hurt(int amount) {
       life -= amount;
+      lifeline = Integer.toString(life) + "/" + Integer.toString(life_max);
     }
     void set_size_48() {
       w = h = 48;
@@ -1153,10 +1265,16 @@ public class MainView extends View {
     void start_life(int n) {
       life = life_max = n;
       dead = false;
+      lifeline = Integer.toString(n) + "/" + Integer.toString(n);
+    }
+    void die() {
+      dead = true;
+      lifeline = "Dead";
     }
 
     Bitmap bitmap;
     String name;
+    String lifeline;
     int x, y;
     int life;
     int life_max;

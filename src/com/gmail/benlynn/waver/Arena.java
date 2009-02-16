@@ -210,8 +210,7 @@ public class Arena extends View {
   public void drawBeing(int i, int mx, int my, Canvas canvas) {
       Being b = MainView.being_list[i];
       canvas.drawBitmap(b.bitmap, mx, my, paint);
-      // TODO: Cache life string.
-      canvas.drawText(Integer.toString(b.life) + "/" + Integer.toString(b.life_max), mx, my + 16 - 4, paint);
+      canvas.drawText(b.lifeline, mx, my + 16 - 4, paint);
       if (b.shield > 0) {
 	canvas.drawCircle(mx + b.midw, my + b.midh, b.midw + 5, shield_paint[0]);
       }

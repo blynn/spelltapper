@@ -4,7 +4,7 @@
 
     <string name="howtoknife">Before any spells, you must learn to wield a weapon. Physical violence may be the last resort, but many a wizard owes their life to combat training. Take this knife, and let me see a few practice stabs.</string>
     <string name="howtoknife2">Starting from the lower part of the screen, slide your finger straight up. </string>
-    <string name="howtoknifepass1">Good. Let me see another attack.</string>
+    <string name="howtoknifepass1">Good! Do it again.</string>
     <string name="howtoknifepass2">Well done. Observe running your finger up the left half means your stab is left-handed; similarly, sliding up the right half of the screen causes a right-handed stab.</string>
     <string name="howtoknifepass3">Excellent. Let us move on.</string> 
 
@@ -28,6 +28,12 @@
 
     <string name="WFPtut">You must remember these 3 points. First, a Wave gesture (W) is executed by running your finger diagonally down the screen and away from the center.</string>
     <string name="WFPtut2">Second, a Fingers gesture (F) is similar, except you run your finger diagonally down the screen and toward the center.</string>
-<string name="WFPtut3">Lastly, cast Cause Light Damage by gesturing W, F, P with the same hand in consecutive turns. This inflicts 2 damage, even if the target is shielded. Good luck!
-    </string>
+<string name="WFPtut3">Lastly, cast Cause Light Damage by gesturing W, F, P with the same hand in consecutive turns. This inflicts 2 damage, even if the target is shielded. Good luck!</string>
+    <string name="WFPtutwin">Impressive! I have one last lesson for now.</string>
+    <string name="WFPtutlose">This is a tough fight. Don't lose heart!</string>
+    <string name="WFPtutdraw">I'll let you pass, but remember you won't always have someone around to cast Raise Dead on you.</string>
+
+    <string name="SDtut">Two more gestures: do a Snap gesture (S) by drawing a diagonal that goes up and away from the center, like a Knife gesture that veers outwards.</string>
+    <string name="SDtut2">Second, the Digit gesture (D) is the same except you go toward to center.</string>
+    <string name="SDtut3">SD shoots a projectile for 1 damage. SFW summons a goblin to fight for you. DFW restores up to one hit point.</string>
 </resources>
