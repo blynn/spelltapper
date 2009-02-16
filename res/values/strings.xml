@@ -11,11 +11,9 @@
     <string name="dummytut">Stab this wooden dummy 3 times to destroy it. Use the motion you just learned, then tap the bottom of the screen to confirm each stab.</string>
     <string name="dummytut1">Notice you cannot stab with both hands simultaneously. You only have one knife; you can only stab once per turn.</string>
     <string name="dummytutwin">Good job. Beware! You will face armed and dangerous monsters in the next lesson.</string>
-    <string name="dummytutdraw">Very funny, though strictly speaking you did destroy the dummy. You're lucky I know the Raise Dead spell. Clearly you know how to play, so we'll skip a lesson.
-    </string>
+    <string name="dummytutdraw">Very funny, though strictly speaking you did destroy the dummy. You're lucky I know the Raise Dead spell. Clearly you know how to play, so we'll skip a lesson. </string>
     <string name="dummytutlose">Very funny. You're lucky I know the Raise Dead spell. We'll move on, even though you lost to a wooden dummy.</string>
 
-    <string name="targettut">Did you notice? The green line indicates the target. In this fight, you must direct your stabs to the goblins, who do one point of damage each. Drag your finger from the stab icon to a goblin before ending your turn.
-    </string>
+    <string name="targettut">Did you notice? The green line indicates the target. In this fight, you must direct your first stabs to the goblins, who each inflict one point of damage. Drag your finger from the stab icon to a goblin before ending your turn. </string>
     
 </resources>

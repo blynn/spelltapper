@@ -54,8 +54,6 @@ public class MainView extends View {
   static TextView speech_box;
   void set_arena(Arena a) {
     arena = a;
-    arena.being_list = being_list;
-    arena.being_list_count = being_list_count;
   }
   void set_arrow_view(ArrowView a) {
     arrow_view = a;
@@ -189,6 +187,21 @@ public class MainView extends View {
 	being_list[0].dead = false;
 	being_list[1].life = 3;
 	being_list[1].dead = false;
+	// Two goblins.
+	being_list_count++;
+	being_list[2] = new Being(
+	    "Porsap", 160 - 32 - 10 - 48, 0, R.drawable.goblin);
+	being_list[2].set_size_48();
+	being_list[2].start_life(1);
+	being_list[2].controller = 1;
+
+	being_list_count++;
+	being_list[3] = new Being(
+	    "Dedmeet", 160 + 32 + 10, 0, R.drawable.goblin);
+	being_list[3].set_size_48();
+	being_list[3].start_life(1);
+	being_list[3].controller = 1;
+
 	clear_choices();
 	main_state = STATE_SPEECH;
 	speech_box.setVisibility(View.VISIBLE);
@@ -292,7 +305,7 @@ public class MainView extends View {
     spell_target = new int[2];
     exec_queue = new SpellCast[16];
 
-    tut = new KnifeTutorial();
+    tut = new TargetTutorial();
     msg = "";
   }
 
@@ -450,11 +463,13 @@ public class MainView extends View {
 	    if (x1 >= b.x && y1 >= b.y && x1 < b.x + 64 && y1 < b.y + 64) {
 	      spell_target[main_state - 2] = i;
 	      arrow_view.invalidate();
+	      main_state = STATE_NORMAL;
 	      return true;
 	    }
 	  }
 	  spell_target[main_state - 2] = -1;
 	  arrow_view.invalidate();
+	  main_state = STATE_NORMAL;
 	  return true;
 	}
 	float dx = x1 - x0;
@@ -840,12 +855,19 @@ public class MainView extends View {
     void get_hurt(int amount) {
       life -= amount;
     }
+    void set_size_48() {
+      w = h = 48;
+      midw = midh = 24;
+    }
+    void start_life(int n) {
+      life = life_max = n;
+    }
 
     Bitmap bitmap;
     String name;
     int x, y;
     int life;
-    int life_max;;
+    int life_max;
     int status;
     int target;
     int shield;

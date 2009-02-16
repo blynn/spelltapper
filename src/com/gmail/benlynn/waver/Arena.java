@@ -61,6 +61,8 @@ public class Arena extends View {
   // TODO: In retrospect, when moving I should change the coordinates stored
   // in the source Being class, and cache the original coordinates for
   // ANIM_MOVE_BACK. That way, I only need one DAMAGE animation routine.
+  // TODO: Use floats for coordinates, as the animation is choppy due to
+  // accumulated errors. Either that or don't use deltas.
   static final int ANIM_MOVE_DAMAGE = 3;
   static final int ANIM_BULLET = 4;
   static final int ANIM_DAMAGE = 5;
@@ -108,7 +110,7 @@ public class Arena extends View {
     anim = ANIM_BULLET;
     source = init_source;
     target = init_target;
-    Being b = being_list[source];
+    Being b = MainView.being_list[source];
     x = b.x + b.midw;
     y = b.y + b.midh;
     if (target == -1 || target == source) {
@@ -117,7 +119,7 @@ public class Arena extends View {
       x1 = x;
       y1 = y;
     } else {
-      b = being_list[target];
+      b = MainView.being_list[target];
       x1 = b.x + b.midw;
       y1 = b.y + b.midh;
       ydelta = (y1 - y) / frame_max;
@@ -130,7 +132,7 @@ public class Arena extends View {
     anim = ANIM_SHIELD;
     target = init_target;
     if (target != -1) {
-      Being b = being_list[target];
+      Being b = MainView.being_list[target];
       x = b.x + b.midw;
       y = b.y + b.midh;
       shieldr = 1;
@@ -141,7 +143,7 @@ public class Arena extends View {
 
   public void animate_move_back() {
     anim = ANIM_MOVE_BACK;
-    Being b = being_list[source];
+    Being b = MainView.being_list[source];
     x1 = b.x;
     y1 = b.y;
     ydelta = (y1 - y) / frame_max;
@@ -153,7 +155,7 @@ public class Arena extends View {
     anim = ANIM_MOVE;
     source = init_source;
     target = init_target;
-    Being b = being_list[source];
+    Being b = MainView.being_list[source];
     x = b.x;
     y = b.y;
     if (target == -1 || target == source) {
@@ -162,7 +164,7 @@ public class Arena extends View {
       x1 = x;
       y1 = y;
     } else {
-      b = being_list[target];
+      b = MainView.being_list[target];
       x1 = b.x;
       if (b.y > y) y1 = b.y - b.h;
       else if (b.y < y) y1 = b.y + b.h;
@@ -201,14 +203,12 @@ public class Arena extends View {
     anim_handler.sleep(delay);
   }
 
-  static Being[] being_list;
-  static int being_list_count;
   static Paint paint;
   static Handler notify_me;
   void set_notify_me(Handler h) { notify_me = h; }
 
   public void drawBeing(int i, int mx, int my, Canvas canvas) {
-      Being b = being_list[i];
+      Being b = MainView.being_list[i];
       canvas.drawBitmap(b.bitmap, mx, my, paint);
       // TODO: Cache life string.
       canvas.drawText(Integer.toString(b.life) + "/" + Integer.toString(b.life_max), mx, my + 16 - 4, paint);
@@ -220,16 +220,16 @@ public class Arena extends View {
   @Override
   public void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-    if (null == being_list) return;
+    if (null == MainView.being_list) return;
 
     // Avatars.
-    for (int i = 0; i < being_list_count; i++) {
+    for (int i = 0; i < MainView.being_list_count; i++) {
       if (anim == ANIM_MOVE || anim == ANIM_MOVE_BACK || anim == ANIM_MOVE_DAMAGE) {
 	if (i == source) {
 	  continue;
 	}
       }
-      Being b = being_list[i];
+      Being b = MainView.being_list[i];
       drawBeing(i, b.x, b.y, canvas);
     }
 
@@ -246,7 +246,7 @@ public class Arena extends View {
 	// ***  FALLTHROUGH ***
       case ANIM_DAMAGE:
 	if (-1 != target) {
-	  Being b = being_list[target];
+	  Being b = MainView.being_list[target];
 	  canvas.drawRect(b.x, b.y, b.x + b.w, b.y + b.h, fade_paint);
 	  canvas.drawText(damage, b.x + b.midw - damagex,
 	      b.y + b.midh + damagey, big_white_paint);
@@ -254,7 +254,7 @@ public class Arena extends View {
 	break;
       case ANIM_SPELL:
 	if (-1 != target) {
-	  Being b = being_list[target];
+	  Being b = MainView.being_list[target];
 	  canvas.drawBitmap(bitmap, b.x + b.midw - 24, b.y + b.midh - 24, fade_paint);
 	}
 	break;
