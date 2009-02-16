@@ -15,9 +15,12 @@ import android.os.Message;
 public class MainView extends View {
   static Paint paint, selpaint;
   static Paint boxpaint;
+  static Paint status_paint;
   static String msg;
   static float x0, y0, x1, y1;
-  static int state;
+  static int main_state;
+  static final int STATE_NORMAL = 0;
+  static final int STATE_BUSY = 1;
   static String gestname[];
   static int choice[];  // Gesture choice.
   static int lastchoice[];
@@ -26,8 +29,6 @@ public class MainView extends View {
   static final int ystatus = ylower + 32 + 2 * 50 + 16 - 4;
   static final int yicon = 64 + 48 + 2 * 4;
   // TODO: Use Rect.
-  static final int okbutx0 = 256, okbutx1 = 256 + 64 - 1;
-  static final int okbuty0 = ylower + 16 + 50 + 25 , okbuty1= okbuty0 + 25 - 1;
   static final int KNIFE = flattenxy(0, -1);
   static final int NO_GESTURE = flattenxy(0, 0);
   static String spell_text[];
@@ -56,7 +57,8 @@ public class MainView extends View {
     selpaint.setARGB(255, 127, 255, 127);
     boxpaint = new Paint();
     boxpaint.setARGB(255, 63, 0, 63);
-    state = 0;
+    status_paint = new Paint();
+    status_paint.setARGB(255, 95, 63, 95);
     gestname = new String[9];
     choice = new int[2];
     lastchoice = new int[2];
@@ -93,7 +95,7 @@ public class MainView extends View {
     being_list_count = 0;
 
     being_list_count++;
-    being_list[0] = new Being(160 - 32, ylower - 64, R.drawable.wiz);
+    being_list[0] = new Being("Player", 160 - 32, ylower - 64, R.drawable.wiz);
     being_list[0].w = 64;
     being_list[0].h = 64;
     being_list[0].midw = 32;
@@ -101,7 +103,7 @@ public class MainView extends View {
     being_list[0].life = 5;
     being_list[0].life_max = 5;
     being_list_count++;
-    being_list[1] = new Being(160 - 32, 0, R.drawable.dummy);
+    being_list[1] = new Being("The Dummy", 160 - 32, 0, R.drawable.dummy);
     being_list[1].w = 64;
     being_list[1].h = 64;
     being_list[1].midw = 32;
@@ -115,7 +117,11 @@ public class MainView extends View {
     arena.being_list = being_list;
     arena.being_list_count = being_list_count;
  
-    // msg = "This is Spell Tap";
+    get_ready(); 
+  }
+
+  public void get_ready() {
+    main_state = STATE_NORMAL;
     print("Tap this line to confirm moves.");
   }
 
@@ -179,13 +185,18 @@ public class MainView extends View {
     y = ylower;
     canvas.drawRect(0, y, 320, 480, boxpaint);
 
+    // Status line highlight.
+    canvas.drawRect(0, ystatus, 320, 480, status_paint);
+
     // Gesture and spell text.
     y = ylower + 16 - 4;
     s = gestname[choice[0]];
     if (null == s) s = ""; //"(nothing)";
+    else s += " (" + s.charAt(0) + ")";
     canvas.drawText("Left Hand: " + s, 0, y, paint);
     s = gestname[choice[1]];
     if (null == s) s = ""; //"(nothing)";
+    else s += " (" + s.charAt(0) + ")";
     canvas.drawText("Right Hand: " + s, 160, y, paint);
 
     canvas.drawText(spell_text[0], 0, y + 16, paint);
@@ -210,14 +221,8 @@ public class MainView extends View {
     y += 50;
     canvas.drawRect(0, y, 50 - 1, y + 50 - 1, paint);
     */
-
-    // End-turn button.
-    canvas.drawRect(okbutx0, okbuty0, okbutx1, okbuty1, paint);
   }
 
-  private static boolean in_ok_button(float x, float y) {
-    return x >= okbutx0 && x <= okbutx1 && y >= okbuty0 && y <= okbuty1;
-  }
   static boolean okstate;
 
   private void choose_spell(int h, int i) {
@@ -228,46 +233,46 @@ public class MainView extends View {
 
   @Override
   public boolean onTouchEvent(MotionEvent event) {
+    if (STATE_BUSY == main_state) return true;
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
 	x0 = event.getX();
 	y0 = event.getY();
 	if (y0 < ylower) {
+	  // Check for spell retargeting drag.
 	  if (y0 >= yicon && y0 < yicon + 48) {
 	    if (x0 < 48) {
-	      state = 2;
+	      main_state = 2;
 	      return true;
 	    } else if (x0 >= 320 - 48) {
-	      state = 3;
+	      main_state = 3;
 	      return true;
 	    }
 	  }
-	  state = 0;
 	  return false;
 	}
-	okstate = MainView.in_ok_button(x0, y0);
-	state = 1;
+	okstate = y0 > ystatus;
 	return true;
       case MotionEvent.ACTION_UP:
 	x1 = event.getX();
 	y1 = event.getY();
-	if (2 == state || 3 == state) {
+	if (2 == main_state || 3 == main_state) {
 	  for(int i = 0; i < being_list_count; i++) {
 	    Being b = being_list[i];
 	    if (x1 >= b.x && y1 >= b.y && x1 < b.x + 64 && y1 < b.y + 64) {
-	      spell_target[state - 2] = i;
+	      spell_target[main_state - 2] = i;
 	      arrow_view.invalidate();
 	      return true;
 	    }
 	  }
-	  spell_target[state - 2] = -1;
+	  spell_target[main_state - 2] = -1;
 	  arrow_view.invalidate();
 	  return true;
 	}
 	float dx = x1 - x0;
 	float dy = y1 - y0;
 	if (dx * dx + dy * dy < 32 * 32) {
-	  if (okstate && MainView.in_ok_button(x1, y1)) {
+	  if (okstate && y1 > ystatus) {
 	    end_turn();
 	    return true;
 	  }
@@ -329,6 +334,7 @@ public class MainView extends View {
   static SpellCast[] exec_queue;
 
   private void end_turn() {
+    main_state = STATE_BUSY;
     hist[histi][0] = choice[0];
     hist[histi][1] = choice[1];
     // Stabs and null gestures break combos.
@@ -360,6 +366,7 @@ public class MainView extends View {
     invalidate();
 
     exec_cursor = 0;
+    // TODO: Print message and delay if there are no spells.
     next_spell();
   }
 
@@ -369,21 +376,25 @@ public class MainView extends View {
 
   static int exec_cursor;
   public void next_spell() {
-    Log.i("M", Integer.toString(exec_cursor) + " " + Integer.toString(exec_queue_count));
     if (exec_cursor < exec_queue_count) {
       SpellCast sc = exec_queue[exec_cursor];
       String s = "";
+      String srcname = being_list[sc.source].name;
+      String tgtname = null;
+      if (sc.target != -1) {
+	tgtname = being_list[sc.target].name;
+      }
       if (sc.spell == stab_spell) {
 	if (0 == sc.source) {
 	  s += "You stab ";
 	} else {
-	  s += "Opponent attacks ";
+	  s += tgtname + " stabs ";
 	}
       } else {
 	if (0 == sc.source) {
 	  s += "You cast ";
 	} else {
-	  s += "Opponent casts ";
+	  s += tgtname + " casts ";
 	}
 	s += sc.spell.name + " on ";
       }
@@ -396,14 +407,13 @@ public class MainView extends View {
       } else if (-1 == sc.target) {
 	s += "thin air!";
       } else {
-	s += "Opponent.";
+	s += tgtname + ".";
       }
       print(s);
       sc.spell.execute(sc.source, sc.target);
       exec_cursor++;
     } else {
-      // TODO: Re-enable gestures.
-      Log.i("M", "Setup next turn");
+      get_ready();
     }
   }
 
@@ -514,7 +524,7 @@ public class MainView extends View {
 	case 1:
 	  if (target != -1) {
 	    Being b = being_list[target];
-	    b.shield = 1;
+	    if (0 == b.shield) b.shield = 1;
 	  }
 	  finish_spell();
 	  return;
@@ -570,21 +580,32 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  is_finished = true;
+	  if (-1 != target) {
+	    hurt(target, 2);
+	    print("Cause Light Wounds deals 2 damage.");
+	  }
 	  arena.animate_damage(target, 2);
 	  return;
       }
     }
   }
 
+  void hurt(int target, int amount) {
+    Being b = being_list[target];
+    b.life -= amount;
+  }
+
   public class Being {
-    public Being(int posx, int posy, int bitmapid) {
+    public Being(String init_name, int posx, int posy, int bitmapid) {
       x = posx;
       y = posy;
       bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
       status = 0;
       shield = 0;
+      name = init_name;
     }
     Bitmap bitmap;
+    String name;
     int x, y;
     int life;
     int life_max;;
