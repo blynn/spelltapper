@@ -37,8 +37,9 @@ public class MainView extends View {
   static final int ylower = 128 + 144 + 4 * 4;
   static final int ystatus = ylower + 32 + 2 * 50 + 16 - 4;
   static final int yicon = 64 + 48 + 2 * 4;
-  static final int KNIFE = flattenxy(0, -1);
-  static final int NO_GESTURE = flattenxy(0, 0);
+  static final int GESTURE_KNIFE = flattenxy(0, -1);
+  static final int GESTURE_PALM = flattenxy(0, 1);
+  static final int GESTURE_NONE = flattenxy(0, 0);
   static String spell_text[];
   static int ready_spell_count[];
   static Spell[][] ready_spell;
@@ -83,7 +84,7 @@ public class MainView extends View {
     abstract void run();
     void AI_move(SpellTapMove turn) {
       for(int h = 0; h < 2; h++) {
-	turn.gest[h] = NO_GESTURE;
+	turn.gest[h] = GESTURE_NONE;
 	turn.spell[h] = -1;
 	turn.spell_target[h] = -1;
       }
@@ -123,7 +124,7 @@ public class MainView extends View {
 	  return;
 	case 3:
 	  speech_box.setVisibility(View.VISIBLE);
-	  if (choice[0] == KNIFE || choice[1] == KNIFE) {
+	  if (choice[0] == GESTURE_KNIFE || choice[1] == GESTURE_KNIFE) {
 	    count++;
 	    switch(count) {
 	    case 3:
@@ -192,11 +193,11 @@ public class MainView extends View {
 	  break;
 	case 1:
 	  speech_box.setText(R.string.dummytutlose);
-	  tut = new ShieldTutorial();
+	  tut = new PalmTutorial();
 	  break;
 	case 2:
 	  speech_box.setText(R.string.dummytutdraw);
-	  tut = new ShieldTutorial();
+	  tut = new PalmTutorial();
 	  break;
 	}
 	main_state = STATE_SPEECH;
@@ -256,7 +257,7 @@ public class MainView extends View {
 	switch(winner) {
 	case 0:
 	  speech_box.setText(R.string.targettutwin);
-	  tut = new ShieldTutorial();
+	  tut = new PalmTutorial();
 	  break;
 	case 1:
 	  speech_box.setText(R.string.targettutlose);
@@ -264,7 +265,7 @@ public class MainView extends View {
 	  break;
 	case 2:
 	  speech_box.setText(R.string.targettutdraw);
-	  tut = new ShieldTutorial();
+	  tut = new PalmTutorial();
 	  break;
 	}
 	main_state = STATE_SPEECH;
@@ -272,6 +273,63 @@ public class MainView extends View {
       }
     }
     int state;
+  }
+
+  // The Palm version of the Knife tutorial
+  // times, starting from the lower part of the screen.
+  class PalmTutorial extends Tutorial {
+    PalmTutorial() {
+      put_gest("Knife", 0, -1);
+      put_gest("Palm", 0, 1);
+      stab_spell.learned = true;
+      state = 0;
+      count = 0;
+    }
+    void run() {
+      for(;;) switch(state) {
+	case 0:
+	  arena.setVisibility(View.GONE);
+	  arrow_view.setVisibility(View.GONE);
+	  speech_box.setVisibility(View.VISIBLE);
+	  speech_box.setText(R.string.palmtut);
+	  main_state = STATE_SPEECH;
+	  state = 1;
+	  return;
+	case 1:
+	  speech_box.setVisibility(View.GONE);
+	  clear_choices();
+	  main_state = STATE_GESTURE_ONLY;
+	  invalidate();
+	  state = 2;
+	  return;
+	case 2:
+	  speech_box.setVisibility(View.VISIBLE);
+	  if (choice[0] == GESTURE_PALM || choice[1] == GESTURE_PALM) {
+	    count++;
+	    switch(count) {
+	    case 3:
+	      speech_box.setText(R.string.palmtutpass3);
+	      tut = new ShieldTutorial();
+	      break;
+	    case 2:
+	      speech_box.setText(R.string.palmtutpass2);
+	      state = 1;
+	      break;
+	    case 1:
+	      speech_box.setText(R.string.palmtutpass1);
+	      state = 1;
+	      break;
+	    }
+	    main_state = STATE_SPEECH;
+	  } else {
+	    state = 0;
+	    break;
+	  }
+	  return;
+      }
+    }
+    int state;
+    int count;
   }
 
   // The opponent just stabs every turn, but he also has 5 hitpoints.
@@ -284,7 +342,7 @@ public class MainView extends View {
     }
     void AI_move(SpellTapMove turn) {
       super.AI_move(turn);
-      turn.gest[hand] = KNIFE;
+      turn.gest[hand] = GESTURE_KNIFE;
       turn.spell[hand] = 64;
       turn.spell_target[hand] = 0;
       hand = 1 - hand;
@@ -311,7 +369,6 @@ public class MainView extends View {
 	state = 1;
 	return;
       case 1:
-	speech_box.setVisibility(View.VISIBLE);
 	speech_box.setText(R.string.shieldtut2);
 	state = 2;
 	return;
@@ -364,11 +421,11 @@ public class MainView extends View {
       put_gest("Fingers", 1, 1);
     }
     void AI_move(SpellTapMove turn) {
-      turn.gest[hand] = KNIFE;
+      turn.gest[hand] = GESTURE_KNIFE;
       turn.spell[hand] = 64;
       turn.spell_target[hand] = 0;
       hand = 1 - hand;
-      turn.gest[hand] = flattenxy(0, 1);;
+      turn.gest[hand] = GESTURE_PALM;
       turn.spell[hand] = indexOfSpell("Shield");
       turn.spell_target[hand] = 1;
     }
@@ -448,11 +505,11 @@ public class MainView extends View {
       put_gest("Fingers", 1, 1);
     }
     void AI_move(SpellTapMove turn) {
-      turn.gest[hand] = KNIFE;
+      turn.gest[hand] = GESTURE_KNIFE;
       turn.spell[hand] = 64;
       turn.spell_target[hand] = 0;
       hand = 1 - hand;
-      turn.gest[hand] = flattenxy(0, 1);;
+      turn.gest[hand] = GESTURE_PALM;
       turn.spell[hand] = indexOfSpell("Shield");
       turn.spell_target[hand] = 1;
     }
@@ -542,7 +599,7 @@ public class MainView extends View {
   }
 
   void clear_choices() {
-    choice[1] = choice[0] = NO_GESTURE;
+    choice[1] = choice[0] = GESTURE_NONE;
     lastchoice[0] = lastchoice[1] = choice[0];
     ready_spell_count[0] = ready_spell_count[1] = 0;
     spell_text[0] = spell_text[1] = "";
@@ -563,14 +620,14 @@ public class MainView extends View {
       gest[cur][1] = g[1];
       // Stabs and null gestures break combos.
       if (cur > 0) {
-	if (gest[cur - 1][0] == KNIFE) start[0] = cur;
-	if (gest[cur - 1][1] == KNIFE) start[1] = cur;
+	if (gest[cur - 1][0] == GESTURE_KNIFE) start[0] = cur;
+	if (gest[cur - 1][1] == GESTURE_KNIFE) start[1] = cur;
       }
-      if (g[0] == KNIFE) start[0] = cur;
-      if (g[1] == KNIFE) start[1] = cur;
+      if (g[0] == GESTURE_KNIFE) start[0] = cur;
+      if (g[1] == GESTURE_KNIFE) start[1] = cur;
       cur++;
-      if (g[0] == NO_GESTURE) start[0] = cur;
-      if (g[1] == NO_GESTURE) start[1] = cur;
+      if (g[0] == GESTURE_NONE) start[0] = cur;
+      if (g[1] == GESTURE_NONE) start[1] = cur;
       // No spell needs more than 7 turns.
       if (cur > start[0] + 6) start[0]++;
       if (cur > start[1] + 6) start[1]++;
@@ -867,7 +924,7 @@ public class MainView extends View {
 	    dirx *= -1;
 	  }
 	  choice[h] = flattenxy(dirx, diry);
-	  if (null == gestname[choice[h]]) choice[h] = NO_GESTURE;
+	  if (null == gestname[choice[h]]) choice[h] = GESTURE_NONE;
 	  if (choice[h] != lastchoice[h]) {
 	    handle_new_choice(h);
 	  }
@@ -1001,12 +1058,15 @@ public class MainView extends View {
     if (being_list[1].dead) {
       gameover = true;
       winner = 0;
+      print("You win!");
       if (being_list[0].dead) {
 	winner = 2;
+	print("You both die. It's a draw!");
       }
     } else if (being_list[0].dead) {
       winner = 1;
       gameover = true;
+      print("You lose...");
     }
     invalidate();
     if (gameover) {
@@ -1018,14 +1078,15 @@ public class MainView extends View {
 
   private void handle_new_choice(int h) {
     ready_spell_count[h] = 0;
-    if (choice[h] == KNIFE) {
-      if (choice[1 - h] == KNIFE) {
+    if (choice[h] == GESTURE_KNIFE) {
+      if (choice[1 - h] == GESTURE_KNIFE) {
 	spell_text[h] = "(only one knife)";
       } else {
 	add_ready_spell(h, stab_spell);
+	spell_text[h] = "";
       }
-    } else if (choice[h] != NO_GESTURE) {
-      if (lastchoice[h] == KNIFE && choice[1 - h] == KNIFE) {
+    } else if (choice[h] != GESTURE_NONE) {
+      if (lastchoice[h] == GESTURE_KNIFE && choice[1 - h] == GESTURE_KNIFE) {
 	ready_spell_count[1 - h] = 0;
 	add_ready_spell(1 - h, stab_spell);
 	choose_spell(1 - h, 0);
