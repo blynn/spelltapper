@@ -503,8 +503,15 @@ public class MainView extends View {
       init("Missile", "SD", R.drawable.missile, 1);
     }
     public void cast(int source, int target) {
-      Log.i("SpellCast", "TODO: Missile");
-      stub_finish();
+      switch(state) {
+	case 0:
+	  arena.animate_bullet(source, target);
+	  return;
+	case 1:
+	  is_finished = true;
+	  arena.animate_damage(target, 1);
+	  return;
+      }
     }
   }
 

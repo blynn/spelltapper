@@ -33,6 +33,9 @@ public class Arena extends View {
     big_white_paint = new Paint();
     big_white_paint.setARGB(255, 255, 255, 255);
     big_white_paint.setTextSize(32);
+    black_stroke_paint = new Paint();
+    black_stroke_paint.setStyle(Paint.Style.STROKE);
+    black_stroke_paint.setStrokeWidth(2);
   }
 
   static int source, target;
@@ -44,22 +47,29 @@ public class Arena extends View {
   static final int ANIM_NONE = 0;
   static final int ANIM_MOVE = 1;
   static final int ANIM_MOVE_BACK = 2;
+  // TODO: In retrospect, when moving I should change the coordinates stored
+  // in the source Being class, and cache the original coordinates for
+  // ANIM_MOVE_BACK. That way, I only need one DAMAGE animation routine.
   static final int ANIM_MOVE_DAMAGE = 3;
+  static final int ANIM_BULLET = 4;
+  static final int ANIM_DAMAGE = 5;
   static int delay = 20;
   static int frame_max = 20;
-  static Paint damage_paint, big_white_paint;
+  static Paint damage_paint, big_white_paint, black_stroke_paint;
   static int alphadelta;
   static String damage;
   static int damagex = 12, damagey = 16;
 
   private void update() {
     switch(anim) {
+      case ANIM_BULLET:
       case ANIM_MOVE_BACK:
       case ANIM_MOVE:
 	x += xdelta;
 	y += ydelta;
 	break;
       case ANIM_MOVE_DAMAGE:
+      case ANIM_DAMAGE:
 	damage_paint.setAlpha(damage_paint.getAlpha() - alphadelta);
 	break;
     }
@@ -73,6 +83,28 @@ public class Arena extends View {
       y = y1;
       notify_me.sendEmptyMessage(0);
     }
+  }
+
+  public void animate_bullet(int init_source, int init_target) {
+    anim = ANIM_BULLET;
+    source = init_source;
+    target = init_target;
+    Being b = being_list[source];
+    x = b.x + b.midw;
+    y = b.y + b.midh;
+    if (target == -1 || target == source) {
+      xdelta = 0;
+      ydelta = 0;
+      x1 = x;
+      y1 = y;
+    } else {
+      b = being_list[target];
+      x1 = b.x + b.midw;
+      y1 = b.y + b.midh;
+      ydelta = (y1 - y) / frame_max;
+      xdelta = (x1 - x) / frame_max;
+    }
+    anim_handler.sleep(delay);
   }
 
   public void animate_move_back() {
@@ -106,6 +138,16 @@ public class Arena extends View {
       ydelta = (y1 - y) / frame_max;
       xdelta = (x1 - x) / frame_max;
     }
+    anim_handler.sleep(delay);
+  }
+
+  public void animate_damage(int init_target, int init_damage) {
+    anim = ANIM_DAMAGE;
+    // TODO: Remove duplicated code.
+    target = init_target;
+    damage = Integer.toString(init_damage);
+    damage_paint.setAlpha(200);
+    alphadelta = 200 / frame_max;
     anim_handler.sleep(delay);
   }
 
@@ -154,12 +196,18 @@ public class Arena extends View {
 	break;
       case ANIM_MOVE_DAMAGE:
 	drawBeing(source, x, y, canvas);
+	// ***  FALLTHROUGH ***
+      case ANIM_DAMAGE:
 	if (-1 != target) {
 	  Being b = being_list[target];
 	  canvas.drawRect(b.x, b.y, b.x + b.w, b.y + b.h, damage_paint);
 	  canvas.drawText(damage, b.x + b.midw - damagex,
 	      b.y + b.midh + damagey, big_white_paint);
 	}
+	break;
+      case ANIM_BULLET:
+        canvas.drawCircle(x, y, 10, big_white_paint);
+        canvas.drawCircle(x, y, 11, black_stroke_paint);
 	break;
     }
   }
