@@ -11,6 +11,8 @@ import android.view.View;
 import android.os.Handler;
 import android.os.Message;
 
+import com.gmail.benlynn.waver.MainView.Being;
+
 public class Arena extends View {
   public Arena(Context context, AttributeSet attrs) {
     super(context, attrs);
@@ -26,6 +28,11 @@ public class Arena extends View {
     anim = ANIM_NONE;
     frame = 0;
     paint = new Paint();
+    damage_paint = new Paint();
+    damage_paint.setARGB(200, 255, 0, 0);
+    big_white_paint = new Paint();
+    big_white_paint.setARGB(255, 255, 255, 255);
+    big_white_paint.setTextSize(32);
   }
 
   static int source, target;
@@ -36,28 +43,53 @@ public class Arena extends View {
   static int anim;
   static final int ANIM_NONE = 0;
   static final int ANIM_MOVE = 1;
+  static final int ANIM_MOVE_BACK = 2;
+  static final int ANIM_DAMAGE = 3;
   static int delay = 20;
   static int frame_max = 20;
+  static Paint damage_paint, big_white_paint;
+  static int alphadelta;
+  static String damage;
+  static int damagex = 12, damagey = 16;
 
   private void update() {
-    frame++;
-    x += xdelta;
-    y += ydelta;
+    switch(anim) {
+      case ANIM_MOVE_BACK:
+      case ANIM_MOVE:
+	x += xdelta;
+	y += ydelta;
+	break;
+      case ANIM_DAMAGE:
+	damage_paint.setAlpha(damage_paint.getAlpha() - alphadelta);
+	break;
+    }
     if (frame < frame_max) {
+      frame++;
       anim_handler.sleep(delay);
     } else {
       frame = 0;
       anim = ANIM_NONE;
       x = x1;
       y = y1;
+      notify_me.sendEmptyMessage(0);
     }
+  }
+
+  public void animate_move_back() {
+    anim = ANIM_MOVE_BACK;
+    Being b = being_list[source];
+    x1 = b.x;
+    y1 = b.y;
+    ydelta = (y1 - y) / frame_max;
+    xdelta = (x1 - x) / frame_max;
+    anim_handler.sleep(delay);
   }
 
   public void animate_move(int init_source, int init_target) {
     anim = ANIM_MOVE;
     source = init_source;
     target = init_target;
-    MainView.Being b = being_list[source];
+    Being b = being_list[source];
     x = b.x;
     y = b.y;
     if (target == -1 || target == source) {
@@ -77,12 +109,23 @@ public class Arena extends View {
     anim_handler.sleep(delay);
   }
 
-  static MainView.Being[] being_list;
+  public void animate_damage(int init_target, int init_damage) {
+    anim = ANIM_DAMAGE;
+    target = init_target;
+    damage = Integer.toString(init_damage);
+    damage_paint.setAlpha(200);
+    alphadelta = 200 / frame_max;
+    anim_handler.sleep(delay);
+  }
+
+  static Being[] being_list;
   static int being_list_count;
   static Paint paint;
+  static Handler notify_me;
+  void set_notify_me(Handler h) { notify_me = h; }
 
   public void drawBeing(int i, int mx, int my, Canvas canvas) {
-      MainView.Being b = being_list[i];
+      Being b = being_list[i];
       canvas.drawBitmap(b.bitmap, mx, my, paint);
       // TODO: Cache life string.
       canvas.drawText(Integer.toString(b.life) + "/" + Integer.toString(b.max_life), mx, my + 16 - 4, paint);
@@ -95,17 +138,28 @@ public class Arena extends View {
 
     // Avatars.
     for (int i = 0; i < being_list_count; i++) {
-      if (anim == ANIM_MOVE) {
+      if (anim == ANIM_MOVE || anim == ANIM_MOVE_BACK || anim == ANIM_DAMAGE) {
 	if (i == source) {
 	  continue;
 	}
       }
-      MainView.Being b = being_list[i];
+      Being b = being_list[i];
       drawBeing(i, b.x, b.y, canvas);
     }
 
-    if (anim == ANIM_MOVE) {
-      drawBeing(source, x, y, canvas);
+    switch(anim) {
+      case ANIM_MOVE:
+      case ANIM_MOVE_BACK:
+	drawBeing(source, x, y, canvas);
+	break;
+      case ANIM_DAMAGE:
+	drawBeing(source, x, y, canvas);
+	if (-1 != target) {
+	  Being b = being_list[target];
+	  canvas.drawRect(b.x, b.y, b.x + 64 - 1, b.y + 64 - 1, damage_paint);
+	  canvas.drawText(damage, b.x + 32 - damagex, b.y + 32 + damagey, big_white_paint);
+	}
+	break;
     }
   }
 
@@ -113,13 +167,13 @@ public class Arena extends View {
   class RefreshHandler extends Handler {
     @Override
     public void handleMessage(Message msg) {
-	Arena.this.update();
-	Arena.this.invalidate();
+      Arena.this.update();
+      Arena.this.invalidate();
     }
 
     public void sleep(long delayMillis) {
-	    this.removeMessages(0);
-	sendMessageDelayed(obtainMessage(0), delayMillis);
+      this.removeMessages(0);
+      sendEmptyMessageDelayed(0, delayMillis);
     }
-  };
+  }
 }

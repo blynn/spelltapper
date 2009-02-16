@@ -9,6 +9,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.os.Handler;
+import android.os.Message;
 
 public class MainView extends View {
   static Paint paint, selpaint;
@@ -342,7 +344,7 @@ public class MainView extends View {
 
     for(int i = 0; i < exec_queue_count; i++) {
       SpellCast sc = exec_queue[i];
-      sc.spell.cast(sc.source, sc.target);
+      sc.spell.execute(sc.source, sc.target);
     }
 
     // TODO: Clear gestures, spell text.
@@ -409,11 +411,29 @@ public class MainView extends View {
       target = def_target;
     }
 
-    abstract public void cast(int source, int target);
+    abstract public void cast(int init_source, int init_target);
     Bitmap bitmap;
     String name;
     String gesture;
     int target;
+    int state;
+    int cast_source, cast_target;
+
+    public void execute(int init_source, int init_target) {
+      state = 0;
+      arena.set_notify_me(done_handler);
+      cast_source = init_source;
+      cast_target = init_target;
+      cast(cast_source, cast_target);
+    }
+    private DoneHandler done_handler = new DoneHandler();
+    class DoneHandler extends Handler {
+      @Override
+      public void handleMessage(Message msg) {
+	state++;
+	cast(cast_source, cast_target);
+      }
+    }
   }
 
   public class ShieldSpell extends Spell {
@@ -430,7 +450,17 @@ public class MainView extends View {
       init("Stab", "K", R.drawable.stab, 1);
     }
     public void cast(int source, int target) {
-      arena.animate_move(source, target);
+      switch(state) {
+	case 0:
+	  arena.animate_move(source, target);
+	  return;
+	case 1:
+	  arena.animate_damage(target, 1);
+	  return;
+	case 2:
+	  arena.animate_move_back();
+	  return;
+      }
     }
   }
 
@@ -456,6 +486,7 @@ public class MainView extends View {
       y = posy;
       bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
       status = 0;
+      shield = 0;
     }
     Bitmap bitmap;
     int x, y;
@@ -463,5 +494,6 @@ public class MainView extends View {
     int max_life;
     int status;
     int target;
+    int shield;
   }
 }
