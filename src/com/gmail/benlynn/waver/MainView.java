@@ -1,3 +1,5 @@
+// TODO: Log, spellbook, character sheet.
+// Title menu, save state
 package com.gmail.benlynn.waver;
 
 import android.content.Context;
@@ -9,6 +11,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 import android.os.Handler;
 import android.os.Message;
 
@@ -18,6 +21,9 @@ public class MainView extends View {
   static Paint status_paint;
   static String msg;
   static float x0, y0, x1, y1;
+  static int tut_state;
+  static final int TUT_NONE = 0;
+  static final int TUT_KNIFE = 1;
   static int main_state;
   static final int STATE_NORMAL = 0;
   static final int STATE_BUSY = 1;
@@ -28,7 +34,6 @@ public class MainView extends View {
   static final int ylower = 128 + 144 + 4 * 4;
   static final int ystatus = ylower + 32 + 2 * 50 + 16 - 4;
   static final int yicon = 64 + 48 + 2 * 4;
-  // TODO: Use Rect.
   static final int KNIFE = flattenxy(0, -1);
   static final int NO_GESTURE = flattenxy(0, 0);
   static String spell_text[];
@@ -41,9 +46,13 @@ public class MainView extends View {
   static int being_list_count;
   static Being being_list[];
   static Arena arena;
+  static TextView speech;
   static ArrowView arrow_view;
   void set_arena(Arena a) {
     arena = a;
+  }
+  void set_speech(TextView a) {
+    speech = a;
   }
   void set_arrow_view(ArrowView a) {
     arrow_view = a;
@@ -116,7 +125,9 @@ public class MainView extends View {
 
     arena.being_list = being_list;
     arena.being_list_count = being_list_count;
- 
+
+    speech.setVisibility(View.GONE);
+    tut_state = TUT_NONE;
     get_ready(); 
   }
 
@@ -360,13 +371,18 @@ public class MainView extends View {
       exec_queue_count++;
     }
 
-    // TODO: Clear gestures, spell text.
     ready_spell_count[0] = 0;
     ready_spell_count[1] = 0;
-    invalidate();
+    choice[0] = NO_GESTURE;
+    choice[1] = NO_GESTURE;
+    spell_text[0] = "";
+    spell_text[1] = "";
 
     exec_cursor = 0;
     // TODO: Print message and delay if there are no spells.
+    // Or maybe flash the screen and make a sound unconditionally to get
+    // attention; in multiplayer, there can be a delay while waiting for
+    // opponent.
     next_spell();
   }
 
@@ -414,6 +430,7 @@ public class MainView extends View {
       exec_cursor++;
     } else {
       get_ready();
+      invalidate();
     }
   }
 
