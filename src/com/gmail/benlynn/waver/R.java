@@ -13,11 +13,12 @@ public final class R {
     public static final class drawable {
         public static final int clown=0x7f020000;
         public static final int dummy=0x7f020001;
-        public static final int missile=0x7f020002;
-        public static final int shield=0x7f020003;
-        public static final int stab=0x7f020004;
-        public static final int wiz=0x7f020005;
-        public static final int wound=0x7f020006;
+        public static final int goblin=0x7f020002;
+        public static final int missile=0x7f020003;
+        public static final int shield=0x7f020004;
+        public static final int stab=0x7f020005;
+        public static final int wiz=0x7f020006;
+        public static final int wound=0x7f020007;
     }
     public static final class id {
         public static final int arena=0x7f050002;
@@ -31,10 +32,16 @@ public final class R {
     }
     public static final class string {
         public static final int app_name=0x7f040000;
+        public static final int dummytut=0x7f040006;
+        public static final int dummytut1=0x7f040007;
+        public static final int dummytutdraw=0x7f040009;
+        public static final int dummytutlose=0x7f04000a;
+        public static final int dummytutwin=0x7f040008;
         public static final int howtoknife=0x7f040001;
         public static final int howtoknife2=0x7f040002;
         public static final int howtoknifepass1=0x7f040003;
         public static final int howtoknifepass2=0x7f040004;
         public static final int howtoknifepass3=0x7f040005;
+        public static final int targettut=0x7f04000b;
     }
 }

@@ -47,6 +47,8 @@ public class MainView extends View {
   static int spell_target[];
   static int being_list_count;
   static Being being_list[];
+  static int winner;
+
   static Arena arena;
   static ArrowView arrow_view;
   static TextView speech_box;
@@ -102,7 +104,7 @@ public class MainView extends View {
 	    switch(count) {
 	    case 3:
 	      speech_box.setText(R.string.howtoknifepass3);
-	      tut = new NoTutorial();
+	      tut = new DummyTutorial();
 	      break;
 	    case 2:
 	      speech_box.setText(R.string.howtoknifepass2);
@@ -123,6 +125,90 @@ public class MainView extends View {
     }
     int state;
     int count;
+  }
+
+  class DummyTutorial extends Tutorial {
+    DummyTutorial() {
+      put_gest("Knife", 0, -1);
+      state = 0;
+    }
+    void run() {
+      for(;;) switch(state) {
+      case 0:
+	clear_choices();
+	main_state = STATE_SPEECH;
+	speech_box.setVisibility(View.VISIBLE);
+	speech_box.setText(R.string.dummytut);
+	arena.setVisibility(View.VISIBLE);
+	arrow_view.setVisibility(View.VISIBLE);
+	invalidate();
+	state = 1;
+        return;
+      case 1:
+	speech_box.setText(R.string.dummytut1);
+	main_state = STATE_SPEECH;
+	state = 2;
+        return;
+      case 2:
+	speech_box.setVisibility(View.GONE);
+	get_ready(); 
+	state = 3;
+        return;
+      case 3:
+	speech_box.setVisibility(View.VISIBLE);
+	switch(winner) {
+	case 0:
+	  speech_box.setText(R.string.dummytutwin);
+	  break;
+	case 1:
+	  speech_box.setText(R.string.dummytutlose);
+	  break;
+	case 2:
+	  speech_box.setText(R.string.dummytutdraw);
+	  break;
+	}
+	main_state = STATE_SPEECH;
+	tut = new TargetTutorial();
+        return;
+      }
+    }
+    int state;
+  }
+
+  class TargetTutorial extends Tutorial {
+    TargetTutorial() {
+      state = 0;
+      put_gest("Knife", 0, -1);
+    }
+    void run() {
+      clear_choices();
+      for(;;) switch(state) {
+      case 0:
+        // Resurrect and restore HP
+	being_list[0].life = 5;
+	being_list[0].dead = false;
+	being_list[1].life = 3;
+	being_list[1].dead = false;
+	clear_choices();
+	main_state = STATE_SPEECH;
+	speech_box.setVisibility(View.VISIBLE);
+	speech_box.setText(R.string.targettut);
+	arena.setVisibility(View.VISIBLE);
+	arrow_view.setVisibility(View.VISIBLE);
+	state = 1;
+	invalidate();
+        return;
+      case 1:
+	speech_box.setVisibility(View.GONE);
+        get_ready();
+	state = 2;
+        return;
+      case 2:
+        Log.i("TODO!", "target tut");
+        return;
+      }
+    }
+    int state;
   }
 
   class NoTutorial extends Tutorial {
@@ -194,6 +280,7 @@ public class MainView extends View {
     being_list[0].life = 5;
     being_list[0].life_max = 5;
     being_list_count++;
+
     being_list[1] = new Being("The Dummy", 160 - 32, 0, R.drawable.dummy);
     being_list[1].w = 64;
     being_list[1].h = 64;
@@ -324,7 +411,7 @@ public class MainView extends View {
   public boolean onTouchEvent(MotionEvent event) {
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
-	Log.i("M", "D");
+	Log.i("M", "D " + main_state);
 	if (STATE_BUSY == main_state) return false;
 	if (STATE_SPEECH == main_state) return true;
 	x0 = event.getX();
@@ -349,7 +436,7 @@ public class MainView extends View {
 	okstate = y0 > ystatus;
 	return true;
       case MotionEvent.ACTION_UP:
-	Log.i("M", "U");
+	Log.i("M", "U " + main_state);
 	if (STATE_BUSY == main_state) return false;
 	if (STATE_SPEECH == main_state) {
 	  tut.run();
@@ -466,12 +553,7 @@ public class MainView extends View {
       exec_queue_count++;
     }
 
-    ready_spell_count[0] = 0;
-    ready_spell_count[1] = 0;
-    choice[0] = NO_GESTURE;
-    choice[1] = NO_GESTURE;
-    spell_text[0] = "";
-    spell_text[1] = "";
+    clear_choices();
 
     exec_cursor = 0;
     // TODO: Print message and delay if there are no spells.
@@ -523,6 +605,35 @@ public class MainView extends View {
       print(s);
       sc.spell.execute(sc.source, sc.target);
       exec_cursor++;
+    } else {
+      end_of_round();
+    }
+  }
+
+  // End of round. Check for death, shield expiration, etc.
+  void end_of_round() {
+    for(int i = being_list_count - 1; i >= 0; i--) {
+      Being b = being_list[i];
+      if (b.shield > 0) b.shield--;
+      // TODO: Shield off animation.
+      if (b.life <= 0) b.dead = true;
+    }
+    boolean gameover = false;
+    if (being_list[1].dead) {
+      gameover = true;
+      winner = 0;
+      Log.i("endofround", "opponent dead");
+      if (being_list[0].dead) {
+	Log.i("endofround", "so is player");
+	winner = 2;
+      }
+    } else if (being_list[0].dead) {
+      winner = 1;
+      gameover = true;
+      Log.i("endofround", "player dead");
+    }
+    if (gameover) {
+      tut.run();
     } else {
       get_ready();
       invalidate();
@@ -654,7 +765,21 @@ public class MainView extends View {
 	  arena.animate_move(source, target);
 	  return;
 	case 1:
-	  arena.animate_move_damage(target, 1);
+	  if (target != -1) {
+	    Being b = being_list[target];
+	    if (0 == b.shield) {
+	      b.get_hurt(1);
+	      arena.animate_move_damage(target, 1);
+	    } else {
+	      // TODO: Block animation.
+	      Log.i("TODO", "block animation");
+	      arena.animate_move_damage(target, 0);
+	    }
+	  } else {
+	    // TODO: This just delays. I ought to have a dedicated delay
+	    // "animation".
+	    arena.animate_move_damage(target, 0);
+	  }
 	  return;
 	case 2:
 	  is_finished = true;
@@ -693,18 +818,13 @@ public class MainView extends View {
 	case 1:
 	  is_finished = true;
 	  if (-1 != target) {
-	    hurt(target, 2);
+	    being_list[target].get_hurt(2);
 	    print("Cause Light Wounds deals 2 damage.");
 	  }
 	  arena.animate_damage(target, 2);
 	  return;
       }
     }
-  }
-
-  void hurt(int target, int amount) {
-    Being b = being_list[target];
-    b.life -= amount;
   }
 
   public class Being {
@@ -715,7 +835,12 @@ public class MainView extends View {
       status = 0;
       shield = 0;
       name = init_name;
+      dead = false;
     }
+    void get_hurt(int amount) {
+      life -= amount;
+    }
+
     Bitmap bitmap;
     String name;
     int x, y;
@@ -726,5 +851,7 @@ public class MainView extends View {
     int shield;
     int w, h;
     int midw, midh;
+    short controller;
+    boolean dead;
   }
 }
