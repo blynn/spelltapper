@@ -721,6 +721,8 @@ public class MainView extends View {
     add_spell(new ShieldSpell());
     add_spell(new MissileSpell());
     add_spell(new CauseLightWoundsSpell());
+    add_spell(new ConfusionSpell());
+    add_spell(new SummonGoblinSpell());
 
     being_list = new Being[16];
 
@@ -748,7 +750,7 @@ public class MainView extends View {
       monatt[i] = new MonsterAttack(i);
     }
 
-    tut = new KnifeTutorial();
+    tut = new NoTutorial();
     msg = "";
     bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
     oppmove = new SpellTapMove();
@@ -1303,9 +1305,7 @@ public class MainView extends View {
 	      arena.animate_move_damage(target, 0);
 	    }
 	  } else {
-	    // TODO: This just delays. I ought to have a dedicated delay
-	    // "animation".
-	    arena.animate_move_damage(target, 0);
+	    arena.animate_delay();
 	  }
 	  return;
 	case 2:
@@ -1337,9 +1337,7 @@ public class MainView extends View {
 	      arena.animate_damage(target, 0);
 	    }
 	  } else {
-	    // TODO: This just delays. I ought to have a dedicated delay
-	    // "animation".
-	    arena.animate_damage(target, 0);
+	    arena.animate_delay();
 	  }
 	  return;
       }
@@ -1367,6 +1365,42 @@ public class MainView extends View {
     }
   }
 
+  public class SummonGoblinSpell extends Spell {
+    SummonGoblinSpell() {
+      init("Summon Goblin", "SFW", R.drawable.summon1, 0);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  if (-1 != target) {
+	    // TODO: Summon a goblin and animate it.
+	    arena.animate_spell(target, bitmap);
+	  } else {
+	    arena.animate_delay();
+	  }
+	  return;
+      }
+    }
+  }
+
+  public class ConfusionSpell extends Spell {
+    ConfusionSpell() {
+      init("Confusion", "DSF", R.drawable.confusion, 1);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  if (-1 != target) {
+	    being_list[target].status = STATUS_CONFUSED;
+	  }
+	  arena.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
   public class MonsterAttack extends Spell {
     MonsterAttack(int n) {
       init("", "", R.drawable.goblin, 1);
@@ -1388,9 +1422,7 @@ public class MainView extends View {
 	      arena.animate_move_damage(target, 0);
 	    }
 	  } else {
-	    // TODO: This just delays. I ought to have a dedicated delay
-	    // "animation".
-	    arena.animate_move_damage(target, 0);
+	    arena.animate_delay();
 	  }
 	  return;
 	case 2:
@@ -1402,12 +1434,15 @@ public class MainView extends View {
     int level;
   }
 
+  static final int STATUS_OK = 0;
+  static final int STATUS_CONFUSED = 1;
+
   static Bitmap bmcorpse;
   public class Being {
     public Being(String init_name, int posx, int posy, int bitmapid) {
       x = posx;
       y = posy;
-      status = 0;
+      status = STATUS_OK;
       shield = 0;
       dead = false;
       setup(init_name, bitmapid, 0);

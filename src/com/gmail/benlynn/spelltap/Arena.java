@@ -55,6 +55,7 @@ public class Arena extends View {
   static int xdelta, ydelta;
   static int frame;
   static int anim;
+  static final int ANIM_DELAY = -1;
   static final int ANIM_NONE = 0;
   static final int ANIM_MOVE = 1;
   static final int ANIM_MOVE_BACK = 2;
@@ -99,11 +100,22 @@ public class Arena extends View {
       anim_handler.sleep(delay);
     } else {
       frame = 0;
-      anim = ANIM_NONE;
       x = x1;
       y = y1;
-      notify_me.sendEmptyMessage(0);
+      if (anim == ANIM_SPELL && alphadelta < 0) {
+	// Fade out the spell.
+	alphadelta = -alphadelta;
+	anim_handler.sleep(delay);
+      } else {
+	anim = ANIM_NONE;
+	notify_me.sendEmptyMessage(0);
+      }
     }
+  }
+
+  public void animate_delay() {
+    anim = ANIM_DELAY;
+    anim_handler.sleep(delay);
   }
 
   public void animate_bullet(int init_source, int init_target) {
