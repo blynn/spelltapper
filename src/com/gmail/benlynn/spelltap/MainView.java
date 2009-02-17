@@ -25,7 +25,11 @@ public class MainView extends View {
   static float x0, y0, x1, y1;
   static Tutorial tut;
   static int main_state;
-  static int drag_hand;
+
+  // If 0 or 1, represents left or right spell icon, otherwise represents
+  // controlled monster.
+  static int drag_i;
+
   static boolean is_animating;
   static BeingPosition being_pos[];
 
@@ -689,7 +693,7 @@ public class MainView extends View {
 
   public MainView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    drag_hand = -1;
+    drag_i = -1;
     is_animating = false;
     paint = new Paint();
     paint.setARGB(255, 255, 255, 255);
@@ -816,17 +820,15 @@ public class MainView extends View {
 	if (spell_target[h] >= 0) {
 	  Being b = being_list[spell_target[h]];
 	  arrow_view.add_arrow(x + 24, y + 24, b.x + b.midw, b.y + b.midh);
-	  arrow_view.invalidate();
 	}
       }
       x = 320 - 48 - 1;
     }
     for (int i = 2; i < being_list_count; i++) {
       Being b = being_list[i];
-      if (-1 != b.target) {
+      if (!b.dead && 0 == b.controller && -1 != b.target) {
 	Being b2 = being_list[b.target];
 	arrow_view.add_arrow(b.x + b.midw, b.y + b.midh, b2.x + b2.midw, b2.y + b2.midh);
-	arrow_view.invalidate();
       }
     }
 
@@ -899,11 +901,24 @@ public class MainView extends View {
 	  // Check for spell retargeting drag.
 	  if (y0 >= yicon && y0 < yicon + 48) {
 	    if (x0 < 48) {
-	      drag_hand = 0;
+	      drag_i = 0;
 	      return true;
 	    } else if (x0 >= 320 - 48) {
-	      drag_hand = 1;
+	      drag_i = 1;
 	      return true;
+	    }
+	  } else {
+	    // Check for monster retargeting drag.
+	    for (int i = 2; i < being_list_count; i++) {
+	      Being b = being_list[i];
+	      // It might not matter if you can retarget a corpse's
+	      // attack, but it doesn't seem useful.
+	      if (b.dead || 0 != b.controller) continue;
+	      if (b.contains(x0, y0)) {
+		Log.i("Drag", "" + i);
+		drag_i = i;
+		return true;
+	      }
 	    }
 	  }
 	  return false;
@@ -924,19 +939,20 @@ public class MainView extends View {
 	}
 	x1 = event.getX();
 	y1 = event.getY();
-	if (drag_hand != -1) {
-	  for(int i = 0; i < being_list_count; i++) {
-	    Being b = being_list[i];
-	    if (x1 >= b.x && y1 >= b.y && x1 < b.x + 64 && y1 < b.y + 64) {
-	      spell_target[drag_hand] = i;
-	      drag_hand = -1;
-	      arrow_view.invalidate();
-	      return true;
-	    }
+	if (drag_i != -1) {
+	  int target;
+	  for(target = being_list_count - 1; target >= 0; target--) {
+	    Being b = being_list[target];
+	    if (b.contains(x1, y1)) break;
 	  }
-	  spell_target[drag_hand] = -1;
-	  drag_hand = -1;
-	  arrow_view.invalidate();
+	  if (drag_i <= 1) {
+	    spell_target[drag_i] = target;
+	  } else {
+	    Being b = being_list[drag_i];
+	    b.target = target;
+	  }
+	  drag_i = -1;
+	  invalidate();
 	  return true;
 	}
 	float dx = x1 - x0;
@@ -1511,6 +1527,11 @@ public class MainView extends View {
     void die() {
       dead = true;
       lifeline = "Dead";
+    }
+    boolean contains(float xf, float yf) {
+      int x0 = (int) xf;
+      int y0 = (int) yf;
+      return x0 >= x && x0 < x + w && y0 >= y && y0 < y + h;
     }
 
     Bitmap bitmap;

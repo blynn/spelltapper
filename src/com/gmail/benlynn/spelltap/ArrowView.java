@@ -36,7 +36,6 @@ public class ArrowView extends View {
   }
 
   public void add_arrow(int from_x, int from_y, int to_x, int to_y) {
-    Log.i("add_arrow", "" + from_x + " " + from_y);
     x0[arrow_count] = from_x;
     y0[arrow_count] = from_y;
     x1[arrow_count] = to_x;
