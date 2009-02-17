@@ -16,7 +16,6 @@
 
     <string name="targettut">In this fight, you must direct your first stabs to the goblins, who each inflict one point of damage. Make a Knife gesture, then drag your finger from the Stab icon to a goblin. </string>
     <string name="targettutwin">Capital! At last you are ready to learn magic. The first gesture you\'ll learn is the easiest, but also the most powerful.</string>
-    <string name="targettutdraw">Close enough. Let\'s move on anyway. The first gesture you\'ll learn is the easiest, but also the most powerful.</string>
     <string name="targettutlose">You\'re lucky I know the Raise Dead spell. Let\'s try that again.</string>
     
     <string name="palmtut">Drag your finger downwards ( &#x2193; ) in the lower part of the screen to make the Palm gesture (P). </string>

@@ -222,16 +222,15 @@ public class MainView extends View {
   class TargetTutorial extends Tutorial {
     TargetTutorial() {
       state = 0;
-      put_gest("Knife", 0, -1);
     }
     void run() {
       for(;;) switch(state) {
       case 0:
+	put_gest("Knife", 0, -1);
         // Resurrect and restore HP
 	being_list[0].start_life(5);
 	being_list[1].start_life(3);
 	// Two goblins.
-	being_list_count++;
 	being_list[2] = new Being(
 	    "Porsap", 160 - 32 - 10 - 48, 0, R.drawable.goblin);
 	being_list[2].set_size_48();
@@ -239,13 +238,13 @@ public class MainView extends View {
 	being_list[2].controller = 1;
 	being_list[2].target = 0;
 
-	being_list_count++;
 	being_list[3] = new Being(
 	    "Dedmeet", 160 + 32 + 10, 0, R.drawable.goblin);
 	being_list[3].set_size_48();
 	being_list[3].start_life(1);
 	being_list[3].controller = 1;
 	being_list[3].target = 0;
+	being_list_count = 4;
 
 	clear_choices();
 	jack_says(R.string.targettut);
@@ -270,7 +269,7 @@ public class MainView extends View {
 	  state = 0;
 	  break;
 	case 2:
-	  jack_says(R.string.targettutdraw);
+	  jack_says(R.string.targettutlose);
 	  tut = new PalmTutorial();
 	  break;
 	}
@@ -284,15 +283,15 @@ public class MainView extends View {
   // times, starting from the lower part of the screen.
   class PalmTutorial extends Tutorial {
     PalmTutorial() {
-      put_gest("Knife", 0, -1);
-      put_gest("Palm", 0, 1);
-      stab_spell.learned = true;
       state = 0;
       count = 0;
     }
     void run() {
       for(;;) switch(state) {
 	case 0:
+	  put_gest("Knife", 0, -1);
+	  put_gest("Palm", 0, 1);
+	  stab_spell.learned = true;
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
 	  jack_says(R.string.palmtut);
@@ -725,16 +724,13 @@ public class MainView extends View {
     add_spell(new CauseLightWoundsSpell());
 
     being_list = new Being[16];
-    being_list_count = 0;
 
-    being_list_count++;
     being_list[0] = new Being("Player", 160 - 32, ylower - 64, R.drawable.wiz);
     being_list[0].w = 64;
     being_list[0].h = 64;
     being_list[0].midw = 32;
     being_list[0].midh = 32;
     being_list[0].start_life(5);
-    being_list_count++;
 
     being_list[1] = new Being("The Dummy", 160 - 32, 0, R.drawable.dummy);
     being_list[1].w = 64;
@@ -742,6 +738,8 @@ public class MainView extends View {
     being_list[1].midw = 32;
     being_list[1].midh = 32;
     being_list[1].start_life(3);
+
+    being_list_count = 2;
 
     spell_target = new int[2];
     exec_queue = new SpellCast[16];

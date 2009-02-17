@@ -220,7 +220,6 @@ public class Arena extends View {
   public void onDraw(Canvas canvas) {
     super.onDraw(canvas);
     if (null == MainView.being_list) return;
-
     // Avatars.
     for (int i = 0; i < MainView.being_list_count; i++) {
       if (anim == ANIM_MOVE || anim == ANIM_MOVE_BACK || anim == ANIM_MOVE_DAMAGE) {
