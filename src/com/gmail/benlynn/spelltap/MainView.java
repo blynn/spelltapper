@@ -723,6 +723,7 @@ public class MainView extends View {
     add_spell(new CauseLightWoundsSpell());
     add_spell(new ConfusionSpell());
     add_spell(new SummonGoblinSpell());
+    add_spell(new CureLightWoundsSpell());
 
     being_list = new Being[16];
 
@@ -1051,11 +1052,11 @@ public class MainView extends View {
     for (int i = 2; i < being_list_count; i++) {
       Being b = being_list[i];
       if (b.dead) continue;
-      if (-1 != b.target) {
+      //if (-1 != b.target) {
 	SpellCast sc = new SpellCast(monatt[b.life_max], i, b.target);
 	exec_queue[exec_queue_count] = sc;
 	exec_queue_count++;
-      }
+      //}
     }
 
     clear_choices();
@@ -1112,6 +1113,7 @@ public class MainView extends View {
 	s += tgtname + ".";
       }
       print(s);
+      Log.i("MV", s);
       sc.spell.execute(sc.source, sc.target);
       exec_cursor++;
     } else {
@@ -1402,6 +1404,24 @@ public class MainView extends View {
     }
   }
 
+  public class CureLightWoundsSpell extends Spell {
+    CureLightWoundsSpell() {
+      // TODO: Draw an icon for this.
+      init("Cure Light Wounds", "DFW", R.drawable.confusion, 0);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  if (-1 != target) {
+	    being_list[target].heal(1);
+	  }
+	  arena.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
   public class ConfusionSpell extends Spell {
     ConfusionSpell() {
       init("Confusion", "DSF", R.drawable.confusion, 1);
@@ -1504,6 +1524,13 @@ public class MainView extends View {
       name = init_name;
       bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
       start_life(life);
+    }
+    void heal(int amount) {
+      if (!dead) {
+	life += amount;
+	if (life > life_max) life = life_max;
+	lifeline = Integer.toString(life) + "/" + Integer.toString(life_max);
+      }
     }
     void get_hurt(int amount) {
       if (!dead) {
