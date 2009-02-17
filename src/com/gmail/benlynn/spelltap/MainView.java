@@ -232,18 +232,12 @@ public class MainView extends View {
 	being_list[0].start_life(5);
 	being_list[1].start_life(3);
 	// Two goblins.
-	being_list[2] = new Being(
-	    "Porsap", being_pos[15].x, being_pos[15].y, R.drawable.goblin);
-	being_list[2].set_size_48();
+	being_list[2] = new Being("Porsap", R.drawable.goblin, 1);
 	being_list[2].start_life(1);
-	being_list[2].controller = 1;
 	being_list[2].target = 0;
 
-	being_list[3] = new Being(
-	    "Dedmeet", being_pos[14].x, being_pos[14].y, R.drawable.goblin);
-	being_list[3].set_size_48();
+	being_list[3] = new Being("Dedmeet", R.drawable.goblin, 1);
 	being_list[3].start_life(1);
-	being_list[3].controller = 1;
 	being_list[3].target = 0;
 	being_list_count = 4;
 
@@ -274,6 +268,7 @@ public class MainView extends View {
 	  tut = new PalmTutorial();
 	  break;
 	}
+	reset_being_pos();
         return;
       }
     }
@@ -727,22 +722,13 @@ public class MainView extends View {
 
     being_list = new Being[16];
 
-    being_list[0] = new Being("Player", 160 - 32, ylower - 64, R.drawable.wiz);
-    being_list[0].w = 64;
-    being_list[0].h = 64;
-    being_list[0].midw = 32;
-    being_list[0].midh = 32;
-    being_list[0].start_life(5);
-
-    being_list[1] = new Being("The Dummy", 160 - 32, 0, R.drawable.dummy);
-    being_list[1].w = 64;
-    being_list[1].h = 64;
-    being_list[1].midw = 32;
-    being_list[1].midh = 32;
-    being_list[1].start_life(3);
-
-    being_list_count = 2;
     init_being_pos();
+
+    being_list[0] = new Being("Player", R.drawable.wiz, -1);
+    being_list[0].start_life(5);
+    being_list[1] = new Being("The Dummy", R.drawable.dummy, -2);
+    being_list[1].start_life(3);
+    being_list_count = 2;
 
     spell_target = new int[2];
     exec_queue = new SpellCast[16];
@@ -784,10 +770,6 @@ public class MainView extends View {
   public void onDraw(Canvas canvas) {
     super.onDraw(canvas);
     int x, y;
-
-    for (int i = 0; i < 16; i++) {
-      canvas.drawBitmap(bmcorpse, being_pos[i].x, being_pos[i].y, paint);
-    }
 
     // Arena class handles avatars and status line.
 
@@ -1445,9 +1427,41 @@ public class MainView extends View {
 
   static Bitmap bmcorpse;
   public class Being {
-    public Being(String init_name, int posx, int posy, int bitmapid) {
-      x = posx;
-      y = posy;
+    public Being(String init_name, int bitmapid, int owner) {
+      switch(owner) {
+	case -1:  // This being is the player.
+	  y = ylower - 64;
+	  index = -1;
+	  break;
+	case -2:  // This being is the opponent.
+	  y = 0;
+	  index = -2;
+	  break;
+        case 0:  // Player controls this being.
+	  for (index = 0; index < 16; index++) {
+	    if (null == being_pos[index].being) break;
+	  }
+	  break;
+        case 1:  // Player controls this being.
+	  for (index = 16 - 1; index >= 0; index--) {
+	    if (null == being_pos[index].being) break;
+	  }
+	  break;
+	default:
+	  Log.e("Being", "Ctor given bad owner.");
+	  break;
+      }
+      controller = (short) owner;
+      if (owner < 0) {
+	x = 160 - 32;
+	set_size_64();
+      } else {
+	if (index < 0 || index >= 16) Log.e("Being", "index out of range! Summon should never have been successful?");
+	x = being_pos[index].x;
+	y = being_pos[index].y;
+	being_pos[index].being = this;
+	set_size_48();
+      }
       status = STATUS_OK;
       shield = 0;
       dead = false;
@@ -1468,6 +1482,10 @@ public class MainView extends View {
       w = h = 48;
       midw = midh = 24;
     }
+    void set_size_64() {
+      w = h = 64;
+      midw = midh = 32;
+    }
     void start_life(int n) {
       life = life_max = n;
       dead = false;
@@ -1481,6 +1499,7 @@ public class MainView extends View {
     Bitmap bitmap;
     String name;
     String lifeline;
+    int index;
     int x, y;
     int life;
     int life_max;
@@ -1503,8 +1522,7 @@ public class MainView extends View {
     Being being;
   }
 
-  // Summoned creatures should appear close to their owner.
-  // Hence this mess.
+  // Summoned creatures should appear close to their owner, hence this mess.
   void init_being_pos() {
     int x, y;
     x = 160 - 32;
@@ -1522,5 +1540,8 @@ public class MainView extends View {
       being_pos[8 + i] = new BeingPosition(
 	  being_pos[8 - i - 1].x, ylower - 64 - being_pos[8 - i - 1].y + 16);
     }
+  }
+  void reset_being_pos() {
+    for (int i = 0; i < 16; i++) being_pos[i].being = null;
   }
 }
