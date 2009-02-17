@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
+import android.util.Log;
 
 public class ArrowView extends View {
   public ArrowView(Context context, AttributeSet attrs) {
@@ -17,11 +18,12 @@ public class ArrowView extends View {
     init();
   }
 
+  static final int ARROW_MAX = 18;
   private void init() {
-    x0 = new int[16];
-    y0 = new int[16];
-    x1 = new int[16];
-    y1 = new int[16];
+    x0 = new int[ARROW_MAX];
+    y0 = new int[ARROW_MAX];
+    x1 = new int[ARROW_MAX];
+    y1 = new int[ARROW_MAX];
     arrow_count = 0;
     paint = new Paint();
     paint.setARGB(191, 127, 255, 127);
@@ -34,6 +36,7 @@ public class ArrowView extends View {
   }
 
   public void add_arrow(int from_x, int from_y, int to_x, int to_y) {
+    Log.i("add_arrow", "" + from_x + " " + from_y);
     x0[arrow_count] = from_x;
     y0[arrow_count] = from_y;
     x1[arrow_count] = to_x;

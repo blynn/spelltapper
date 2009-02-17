@@ -738,7 +738,8 @@ public class MainView extends View {
       monatt[i] = new MonsterAttack(i);
     }
 
-    tut = new KnifeTutorial();
+    //tut = new KnifeTutorial();
+    tut = new NoTutorial();
     msg = "";
     bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
     oppmove = new SpellTapMove();
@@ -819,6 +820,14 @@ public class MainView extends View {
 	}
       }
       x = 320 - 48 - 1;
+    }
+    for (int i = 2; i < being_list_count; i++) {
+      Being b = being_list[i];
+      if (-1 != b.target) {
+	Being b2 = being_list[b.target];
+	arrow_view.add_arrow(b.x + b.midw, b.y + b.midh, b2.x + b2.midw, b2.y + b2.midh);
+	arrow_view.invalidate();
+      }
     }
 
     // Gesture area.
@@ -1362,7 +1371,12 @@ public class MainView extends View {
 	case 0:
 	  is_finished = true;
 	  if (-1 != target) {
-	    // TODO: Summon a goblin and animate it.
+	    int k = being_list[target].controller;
+	    Being b = being_list[being_list_count] = new Being("Goblin", R.drawable.goblin, k);
+	    being_list_count++;
+	    b.start_life(1);
+	    b.target = 1 - k;
+	    // TODO: Fade in goblin.
 	    arena.animate_spell(target, bitmap);
 	  } else {
 	    arena.animate_delay();
@@ -1432,26 +1446,29 @@ public class MainView extends View {
 	case -1:  // This being is the player.
 	  y = ylower - 64;
 	  index = -1;
+	  controller = 0;
 	  break;
 	case -2:  // This being is the opponent.
 	  y = 0;
 	  index = -2;
+	  controller = 1;
 	  break;
         case 0:  // Player controls this being.
 	  for (index = 0; index < 16; index++) {
 	    if (null == being_pos[index].being) break;
 	  }
+	  controller = 0;
 	  break;
         case 1:  // Player controls this being.
 	  for (index = 16 - 1; index >= 0; index--) {
 	    if (null == being_pos[index].being) break;
 	  }
+	  controller = 1;
 	  break;
 	default:
 	  Log.e("Being", "Ctor given bad owner.");
 	  break;
       }
-      controller = (short) owner;
       if (owner < 0) {
 	x = 160 - 32;
 	set_size_64();
