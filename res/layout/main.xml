@@ -19,11 +19,53 @@
     android:layout_width="fill_parent" 
     android:layout_height="fill_parent" 
     />
-<TextView
- android:id="@+id/speech_box"
+<LinearLayout
+ android:id="@+id/speech_layout"
     android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:background="#ff0000aa"
-    android:textColor="#ffffffff"
-    />
+    android:layout_height="fill_parent" 
+    android:orientation="vertical" 
+    >
+
+  <TextView
+      android:layout_width="fill_parent" 
+      android:layout_height="wrap_content" 
+      android:background="#ff5555aa"
+      android:textColor="#ffffffff"
+      android:textSize="18sp"
+      android:text="[Tap screen to continue]"
+      android:layout_marginBottom="16dip"
+      />
+  <LinearLayout
+      android:layout_width="wrap_content" 
+      android:layout_height="wrap_content" 
+      android:paddingLeft="16dip"
+      android:paddingRight="16dip"
+      >
+    <ImageView
+      android:layout_width="wrap_content" 
+      android:layout_height="wrap_content" 
+      android:src="@drawable/jack"
+	/>
+    <TextView
+	android:paddingLeft="10dip"
+	android:paddingRight="10dip"
+	android:layout_width="wrap_content" 
+	android:layout_height="wrap_content" 
+	android:background="#ff0000aa"
+	android:textColor="#ffffffff"
+	android:textSize="18sp"
+	android:text="One-eyed Jack"
+	android:layout_gravity="center_vertical"
+	/>
+  </LinearLayout>
+  <TextView
+   android:id="@+id/speech_box"
+      android:layout_width="fill_parent" 
+      android:layout_height="wrap_content" 
+      android:background="#ff0000aa"
+      android:textColor="#ffffffff"
+      android:textSize="18sp"
+      android:layout_marginTop="16dip"
+      />
+</LinearLayout>
 </FrameLayout>

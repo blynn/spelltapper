@@ -2,35 +2,35 @@
 <resources>
     <string name="app_name">SpellTap</string>
 
-    <string name="howtoknife">Before any spells, you must learn to wield a weapon. Physical violence may be the last resort, but many a wizard owes their life to combat training. Take this knife, and let me see a few practice stabs.</string>
-    <string name="howtoknife2">Starting from the lower part of the screen, slide your finger straight up ( &#x2191; ). </string>
+    <string name="welcome">So you want to be a wizard? And partake in duels of osorcery? Then listen carefully... </string>
+    <string name="howtoknife">Before any spells, you must learn to wield your knife. Physical violence may be the last resort, but many a wizard owes their life to combat training. You must first learn to stab.</string>
+    <string name="howtoknife2">Starting from the lower part of the screen, slide your finger up ( &#x2191; ). </string>
     <string name="howtoknifepass1">Good! Do it again.</string>
-    <string name="howtoknifepass2">Observe using the left half of the screen gives a left-handed stab; similarly, using the right half gives a right-handed stab.</string>
-    <string name="howtoknifepass3">Excellent. Let us move on.</string> 
+    <string name="howtoknifepass2">Observe using the left half of the screen gives a left-handed stab, and using the right half gives a right-handed stab.</string>
+    <string name="howtoknifepass3">Excellent. Let\'s go find a target.</string> 
 
-    <string name="dummytut">Stab this wooden dummy 3 times to destroy it. Use the motion you just learned, then tap the bottom of the screen to confirm each stab.</string>
-    <string name="dummytut1">Notice you cannot stab with both hands simultaneously. You only have one knife. You can only stab once per turn.</string>
-    <string name="dummytutwin">Good job. Beware! You will face armed and dangerous monsters in the next lesson.</string>
-    <string name="dummytutdraw">Very funny, though strictly speaking you did destroy the dummy. You're lucky I know the Raise Dead spell. Clearly you know how to play, so we'll skip a lesson. </string>
-    <string name="dummytutlose">Very funny. You're lucky I know the Raise Dead spell. We'll move on, even though you lost to a wooden dummy.</string>
+    <string name="dummytut">Stab the wooden dummy 3 times to destroy it. Use the motion you just learned, then tap the bottom of the screen to confirm each stab.</string>
+    <string name="dummytutwin">Good! But soon you will face armed and dangerous monsters.</string>
+    <string name="dummytutdraw">Very funny, though strictly speaking you did destroy the dummy. You\'re lucky I know the Raise Dead spell. Clearly you know how to play, so we\'ll skip a lesson. </string>
+    <string name="dummytutlose">Very funny. You\'re lucky I know the Raise Dead spell. We\'ll move on, even though you lost to a wooden dummy.</string>
 
-    <string name="targettut">In this fight, you must direct your first stabs to the goblins, who each inflict one point of damage. Drag your finger from the Stab icon to move the green line to a goblin. </string>
-    <string name="targettutwin">Capital! At last you are ready to learn magic. The first gesture you'll learn is the easiest, but also the most powerful.</string>
-    <string name="targettutdraw">Close enough. Let's move on anyway. The first gesture you'll learn is the easiest, but also the most powerful.</string>
-    <string name="targettutlose">You're lucky I know the Raise Dead spell. Let's try that again.</string>
+    <string name="targettut">In this fight, you must direct your first stabs to the goblins, who each inflict one point of damage. Make a Knife gesture, then drag your finger from the Stab icon to a goblin. </string>
+    <string name="targettutwin">Capital! At last you are ready to learn magic. The first gesture you\'ll learn is the easiest, but also the most powerful.</string>
+    <string name="targettutdraw">Close enough. Let\'s move on anyway. The first gesture you\'ll learn is the easiest, but also the most powerful.</string>
+    <string name="targettutlose">You\'re lucky I know the Raise Dead spell. Let\'s try that again.</string>
     
     <string name="palmtut">Drag your finger downwards ( &#x2193; ) in the lower part of the screen to make the Palm gesture (P). </string>
     <string name="palmtutpass1">Good, try another Palm.</string>
     <string name="palmtutpass2">Good, try another Palm.</string>
-    <string name="palmtutpass3">That's plenty for now.</string>
+    <string name="palmtutpass3">That\'s plenty for now.</string>
     
     <string name="shieldtut">The Shield spell can be cast with a single Palm. Shield protects you from all physical attacks.</string>
 
     <string name="shieldtut2">Beware! Gesturing Palm with both hands simultaneously is the universal gesture of surrender: you lose at the end of the round, unless your opponent is dead.</string>
     <string name="shieldtut3">Sendin is your next opponent. Cast Shield to block his stabs.</string>
     <string name="shieldtutdraw">A draw is not good enough. With the Shield spell you should be able to win easily.</string>
-    <string name="shieldtutwin">Well done. Let's learn some more gestures.</string>
-    <string name="shieldtutlose">Let's try it again, shall we?</string>
+    <string name="shieldtutwin">Well done. Let\'s learn some more gestures.</string>
+    <string name="shieldtutlose">Let\'s try it again, shall we?</string>
 
     <string name="SDtut">Do a Snap gesture (S) by drawing a diagonal that goes up and away from the center, like a Knife gesture that veers outwards (L: &#x2196; R: &#x2197; ). Make Snap with both hands and end your turn.</string>
     <string name="SDtutpass1">Well done. the Digit gesture (D) is the same except you go toward to center (L: &#x2197; R: &#x2196; ). Make Digit with both hands and end the turn, causing both hands to cast the Missile spell.</string>
@@ -47,7 +47,7 @@
     <string name="PKfighttut">Your next opponent always tries to casts Shield on himself. </string>
     <string name="PKfighttut2"> Cause Light Wounds (WFP) may help. Another handy spell is Confusion (DSF): its target must gesture identically with both hands. Good luck!</string>
     <string name="PKfighttutwin">Impressive!</string>
-    <string name="PKfighttutlose">This is a tough fight. Don't lose heart!</string>
-    <string name="PKfighttutdraw">I'll let you pass, but remember you won't always have someone around to cast Raise Dead on you.</string>
+    <string name="PKfighttutlose">This is a tough fight. Don\'t lose heart!</string>
+    <string name="PKfighttutdraw">I\'ll let you pass, but remember you won\'t always have someone around to cast Raise Dead on you.</string>
 
 </resources>

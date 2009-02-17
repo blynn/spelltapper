@@ -1,6 +1,7 @@
 // TODO: Log, spellbook, character sheet.
 // Title menu, save state, victory screen.
 // Don't retarget if player taps on already-selected ready spell.
+// Resize event.
 package com.gmail.benlynn.spelltap;
 
 import android.content.Context;
@@ -63,6 +64,7 @@ public class MainView extends View {
   static Arena arena;
   static ArrowView arrow_view;
   static TextView speech_box;
+  static View speech_layout;
   void set_arena(Arena a) {
     arena = a;
   }
@@ -71,7 +73,6 @@ public class MainView extends View {
   }
   void set_speech_box(TextView a) {
     speech_box = a;
-    tut.run();
   }
 
   static SpellTapMove oppmove;
@@ -89,13 +90,13 @@ public class MainView extends View {
   }
 
   void jack_says(int string_constant) {
-    speech_box.setVisibility(View.VISIBLE);
+    speech_layout.setVisibility(View.VISIBLE);
     speech_box.setText(string_constant);
     main_state = STATE_SPEECH;
   }
 
   void jack_shutup(int new_state) {
-    speech_box.setVisibility(View.GONE);
+    speech_layout.setVisibility(View.GONE);
     main_state = new_state;
   }
 
@@ -124,6 +125,10 @@ public class MainView extends View {
 	case 0:
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
+	  jack_says(R.string.welcome);
+	  state = 100;
+	  return;
+	case 100:
 	  jack_says(R.string.howtoknife);
 	  state = 1;
 	  return;
@@ -183,10 +188,6 @@ public class MainView extends View {
 	arena.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
 	invalidate();
-	state = 1;
-        return;
-      case 1:
-	jack_says(R.string.dummytut1);
 	state = 2;
         return;
       case 2:
