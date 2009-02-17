@@ -27,6 +27,7 @@ public class MainView extends View {
   static int main_state;
   static int drag_hand;
   static boolean is_animating;
+  static BeingPosition being_pos[];
 
   static final int STATE_NORMAL = 0;
   static final int STATE_BUSY = 1;
@@ -232,14 +233,14 @@ public class MainView extends View {
 	being_list[1].start_life(3);
 	// Two goblins.
 	being_list[2] = new Being(
-	    "Porsap", 160 - 32 - 10 - 48, 0, R.drawable.goblin);
+	    "Porsap", being_pos[15].x, being_pos[15].y, R.drawable.goblin);
 	being_list[2].set_size_48();
 	being_list[2].start_life(1);
 	being_list[2].controller = 1;
 	being_list[2].target = 0;
 
 	being_list[3] = new Being(
-	    "Dedmeet", 160 + 32 + 10, 0, R.drawable.goblin);
+	    "Dedmeet", being_pos[14].x, being_pos[14].y, R.drawable.goblin);
 	being_list[3].set_size_48();
 	being_list[3].start_life(1);
 	being_list[3].controller = 1;
@@ -741,6 +742,7 @@ public class MainView extends View {
     being_list[1].start_life(3);
 
     being_list_count = 2;
+    init_being_pos();
 
     spell_target = new int[2];
     exec_queue = new SpellCast[16];
@@ -750,7 +752,7 @@ public class MainView extends View {
       monatt[i] = new MonsterAttack(i);
     }
 
-    tut = new NoTutorial();
+    tut = new KnifeTutorial();
     msg = "";
     bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
     oppmove = new SpellTapMove();
@@ -782,6 +784,10 @@ public class MainView extends View {
   public void onDraw(Canvas canvas) {
     super.onDraw(canvas);
     int x, y;
+
+    for (int i = 0; i < 16; i++) {
+      canvas.drawBitmap(bmcorpse, being_pos[i].x, being_pos[i].y, paint);
+    }
 
     // Arena class handles avatars and status line.
 
@@ -1485,5 +1491,36 @@ public class MainView extends View {
     int midw, midh;
     short controller;
     boolean dead;
+  }
+
+  class BeingPosition {
+    BeingPosition(int init_x, int init_y) {
+      x = init_x;
+      y = init_y;
+      being = null;
+    }
+    int x, y;
+    Being being;
+  }
+
+  // Summoned creatures should appear close to their owner.
+  // Hence this mess.
+  void init_being_pos() {
+    int x, y;
+    x = 160 - 32;
+    y = ylower - 64;
+    being_pos = new BeingPosition[16];
+    being_pos[0] = new BeingPosition(x - 48 - 10, y);
+    being_pos[1] = new BeingPosition(x + 64 + 10, y);
+    being_pos[2] = new BeingPosition(x - 48 - 10, y - 48 - 4);
+    being_pos[3] = new BeingPosition(x + 64 + 10, y - 48 - 4);
+    being_pos[4] = new BeingPosition(x - 2 * 48 - 2 * 10, y);
+    being_pos[5] = new BeingPosition(x + 64 + 48 + 2 * 10, y);
+    being_pos[6] = new BeingPosition(x - 2 * 48 - 2 * 10, y - 48 - 4);
+    being_pos[7] = new BeingPosition(x + 64 + 48 + 2 * 10, y - 48 - 4);
+    for (int i = 0; i < 8; i++) {
+      being_pos[8 + i] = new BeingPosition(
+	  being_pos[8 - i - 1].x, ylower - 64 - being_pos[8 - i - 1].y + 16);
+    }
   }
 }
