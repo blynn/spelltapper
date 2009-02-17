@@ -32,21 +32,23 @@ public final class R {
         public static final int main=0x7f030000;
     }
     public static final class string {
-        public static final int SDtut=0x7f04001e;
-        public static final int SDtut2=0x7f04001f;
-        public static final int SDtut3=0x7f040020;
-        public static final int WFPtut=0x7f040018;
-        public static final int WFPtut2=0x7f040019;
-        public static final int WFPtut3=0x7f04001a;
-        public static final int WFPtutdraw=0x7f04001d;
-        public static final int WFPtutlose=0x7f04001c;
-        public static final int WFPtutwin=0x7f04001b;
+        public static final int SDtut=0x7f040023;
+        public static final int SDtutpass1=0x7f040024;
+        public static final int SDtutpass2=0x7f040025;
+        public static final int WFPtut=0x7f04001e;
+        public static final int WFPtut2=0x7f04001f;
+        public static final int WFPtutdraw=0x7f040022;
+        public static final int WFPtutlose=0x7f040021;
+        public static final int WFPtutwin=0x7f040020;
         public static final int app_name=0x7f040000;
         public static final int dummytut=0x7f040006;
         public static final int dummytut1=0x7f040007;
         public static final int dummytutdraw=0x7f040009;
         public static final int dummytutlose=0x7f04000a;
         public static final int dummytutwin=0x7f040008;
+        public static final int fingerstut=0x7f04001b;
+        public static final int fingerstutpass1=0x7f04001c;
+        public static final int fingerstutpass2=0x7f04001d;
         public static final int howtoknife=0x7f040001;
         public static final int howtoknife2=0x7f040002;
         public static final int howtoknifepass1=0x7f040003;
@@ -65,5 +67,8 @@ public final class R {
         public static final int targettutdraw=0x7f04000d;
         public static final int targettutlose=0x7f04000e;
         public static final int targettutwin=0x7f04000c;
+        public static final int wavetut=0x7f040018;
+        public static final int wavetutpass1=0x7f040019;
+        public static final int wavetutpass2=0x7f04001a;
     }
 }

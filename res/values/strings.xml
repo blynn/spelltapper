@@ -3,7 +3,7 @@
     <string name="app_name">Waver</string>
 
     <string name="howtoknife">Before any spells, you must learn to wield a weapon. Physical violence may be the last resort, but many a wizard owes their life to combat training. Take this knife, and let me see a few practice stabs.</string>
-    <string name="howtoknife2">Starting from the lower part of the screen, slide your finger straight up. </string>
+    <string name="howtoknife2">Starting from the lower part of the screen, slide your finger straight up ( &#x2191; ). </string>
     <string name="howtoknifepass1">Good! Do it again.</string>
     <string name="howtoknifepass2">Observe using the left half of the screen gives a left-handed stab; similarly, using the right half gives a right-handed stab.</string>
     <string name="howtoknifepass3">Excellent. Let us move on.</string> 
@@ -31,14 +31,22 @@
     <string name="shieldtutwin">Well done. But what if the opponent also knows Shield? Listen carefully...</string>
     <string name="shieldtutlose">Let's try it again, shall we?</string>
 
-    <string name="WFPtut">You must remember these 3 points. First, a Wave gesture (W) is executed by running your finger diagonally down the screen and away from the center.</string>
-    <string name="WFPtut2">Second, a Fingers gesture (F) is similar, except you run your finger diagonally down the screen and toward the center.</string>
-<string name="WFPtut3">Lastly, cast Cause Light Damage by gesturing W, F, P with the same hand in successive turns. This inflicts 2 damage, even if the target is shielded. Good luck!</string>
+    <string name="wavetut">Make a Wave gesture (W): run a finger diagonally downwards and away from the center.</string>
+    <string name="wavetutpass1">Good! Now gesture a Wave with the other hand.</string>
+    <string name="wavetutpass2">Great! Next is the Fingers gesture, which is only slightly different.</string>
+
+    <string name="fingerstut">The Fingers gesture (F): run a finger diagonally downwards and towards the center.</string>
+    <string name="fingerstutpass1">Good! Now gesture Fingers with the other hand.</string>
+    <string name="fingerstutpass2">Time to use these gestures in combat.</string>
+
+<string name="WFPtut">Your opponent always casts Shield on himself.
+To defeat him, cast Cause Light Wounds by gesturing W F P with the same hand over 3 successive turns. This spell deals 2 damage even to shielded targets.</string>
+    <string name="WFPtut2">A single gesture can only complete one spell, though it can take part in several spells. So after gesturing W F P, you must choose Cause Light Damage over Shield by tapping its icon.</string>
     <string name="WFPtutwin">Impressive! I have one last lesson for now.</string>
     <string name="WFPtutlose">This is a tough fight. Don't lose heart!</string>
     <string name="WFPtutdraw">I'll let you pass, but remember you won't always have someone around to cast Raise Dead on you.</string>
 
-    <string name="SDtut">Firstly, do a Snap gesture (S) by drawing a diagonal that goes up and away from the center, like a Knife gesture that veers outwards.</string>
-    <string name="SDtut2">Secondly, the Digit gesture (D) is the same except you go toward to center.</string>
-    <string name="SDtut3">SD shoots a projectile for 1 damage. SFW summons a goblin to fight for you. DFW restores up to one hit point.</string>
+    <string name="SDtut">Do a Snap gesture (S) by drawing a diagonal that goes up and away from the center, like a Knife gesture that veers outwards. Make Snap with both hands and end your turn.</string>
+    <string name="SDtutpass1">Well done. the Digit gesture (D) is the same except you go toward to center. Make Digit with both hands and end the turn, causing both hands to cast the Missile spell.</string>
+    <string name="SDtutpass2">Thus SD casts Missile. Some other spells: SFW is Summon Goblin, and DFW is Cure Light Wounds (heal one hit point).</string>
 </resources>

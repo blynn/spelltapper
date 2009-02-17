@@ -24,12 +24,16 @@ public class MainView extends View {
   static float x0, y0, x1, y1;
   static Tutorial tut;
   static int main_state;
-  static final int STATE_SPEECH = 128;
-  static final int STATE_GESTURE_ONLY = 129;
+  static int drag_hand;
+  static boolean is_animating;
+
   static final int STATE_NORMAL = 0;
   static final int STATE_BUSY = 1;
-  static final int STATE_LDRAG = 2;
-  static final int STATE_RDRAG = 3;
+  // Special states for tutorials.
+  static final int STATE_SPEECH = 128;
+  static final int STATE_GESTURE_ONLY = 129;
+  static final int STATE_ON_END_ROUND = 130;
+
   static String gestname[];
   static int choice[];  // Gesture choice.
   static int lastchoice[];
@@ -37,8 +41,12 @@ public class MainView extends View {
   static final int ylower = 128 + 144 + 4 * 4;
   static final int ystatus = ylower + 32 + 2 * 50 + 16 - 4;
   static final int yicon = 64 + 48 + 2 * 4;
+  static final int GESTURE_SNAP = flattenxy(-1, -1);
   static final int GESTURE_KNIFE = flattenxy(0, -1);
+  static final int GESTURE_DIGIT = flattenxy(1, -1);
+  static final int GESTURE_WAVE = flattenxy(-1, 1);
   static final int GESTURE_PALM = flattenxy(0, 1);
+  static final int GESTURE_FINGERS = flattenxy(1, 1);
   static final int GESTURE_NONE = flattenxy(0, 0);
   static String spell_text[];
   static int ready_spell_count[];
@@ -382,7 +390,7 @@ public class MainView extends View {
 	switch(winner) {
 	case 0:
 	  speech_box.setText(R.string.shieldtutwin);
-	  tut = new WFPTutorial();
+	  tut = new WaveTutorial();
 	  break;
 	case 1:
 	  speech_box.setText(R.string.shieldtutlose);
@@ -401,6 +409,125 @@ public class MainView extends View {
     int hand;
   }
 
+  // The Wave gestures tutorial. Both hands must do Wave.
+  class WaveTutorial extends Tutorial {
+    WaveTutorial() {
+      put_gest("Knife", 0, -1);
+      put_gest("Wave", -1, 1);
+      put_gest("Palm", 0, 1);
+      stab_spell.learned = true;
+      state = 0;
+    }
+    void run() {
+      for(;;) switch(state) {
+	case 0:
+	  arena.setVisibility(View.GONE);
+	  arrow_view.setVisibility(View.GONE);
+	  speech_box.setVisibility(View.VISIBLE);
+	  speech_box.setText(R.string.wavetut);
+	  main_state = STATE_SPEECH;
+	  state = 1;
+	  return;
+	case 1:
+	  speech_box.setVisibility(View.GONE);
+	  clear_choices();
+	  main_state = STATE_GESTURE_ONLY;
+	  state = 2;
+	  invalidate();
+	  return;
+	case 2:
+	  speech_box.setVisibility(View.VISIBLE);
+	  if (choice[0] == GESTURE_WAVE || choice[1] == GESTURE_WAVE) {
+	    state = 3;
+	    speech_box.setText(R.string.wavetutpass1);
+	    main_state = STATE_SPEECH;
+	  } else {
+	    state = 0;
+	    break;
+	  }
+	  return;
+	case 3:
+	  speech_box.setVisibility(View.GONE);
+	  main_state = STATE_GESTURE_ONLY;
+	  state = 4;
+	  invalidate();
+	  return;
+	case 4:
+	  if (choice[0] == GESTURE_WAVE && choice[1] == GESTURE_WAVE) {
+	    speech_box.setText(R.string.wavetutpass2);
+	    speech_box.setVisibility(View.VISIBLE);
+	    main_state = STATE_SPEECH;
+	    tut = new FingersTutorial();
+	  } else {
+	    state = 0;
+	    break;
+	  }
+	  return;
+      }
+    }
+    int state;
+  }
+
+  // The Fingers gestures tutorial. Both hands must do Fingers.
+  class FingersTutorial extends Tutorial {
+    FingersTutorial() {
+      put_gest("Knife", 0, -1);
+      put_gest("Wave", -1, 1);
+      put_gest("Palm", 0, 1);
+      put_gest("Fingers", 1, 1);
+      stab_spell.learned = true;
+      state = 0;
+    }
+    void run() {
+      for(;;) switch(state) {
+	case 0:
+	  arena.setVisibility(View.GONE);
+	  arrow_view.setVisibility(View.GONE);
+	  speech_box.setVisibility(View.VISIBLE);
+	  speech_box.setText(R.string.fingerstut);
+	  main_state = STATE_SPEECH;
+	  state = 1;
+	  return;
+	case 1:
+	  speech_box.setVisibility(View.GONE);
+	  clear_choices();
+	  main_state = STATE_GESTURE_ONLY;
+	  state = 2;
+	  invalidate();
+	  return;
+	case 2:
+	  speech_box.setVisibility(View.VISIBLE);
+	  if (choice[0] == GESTURE_FINGERS || choice[1] == GESTURE_FINGERS) {
+	    state = 3;
+	    speech_box.setText(R.string.fingerstutpass1);
+	    main_state = STATE_SPEECH;
+	  } else {
+	    state = 0;
+	    break;
+	  }
+	  return;
+	case 3:
+	  speech_box.setVisibility(View.GONE);
+	  main_state = STATE_GESTURE_ONLY;
+	  state = 4;
+	  invalidate();
+	  return;
+	case 4:
+	  if (choice[0] == GESTURE_FINGERS && choice[1] == GESTURE_FINGERS) {
+	    speech_box.setText(R.string.fingerstutpass2);
+	    speech_box.setVisibility(View.VISIBLE);
+	    main_state = STATE_SPEECH;
+	    tut = new WFPTutorial();
+	  } else {
+	    state = 0;
+	    break;
+	  }
+	  return;
+      }
+    }
+    int state;
+  }
+
   int indexOfSpell(String name) {
     if (name == "Stab") return 64;
     for(int i = 0; i < spell_list_count; i++) {
@@ -409,8 +536,8 @@ public class MainView extends View {
     return -1;
   }
 
-  // Introduce W F gestures, and spells that take multiple turns. Also
-  // WFP conflicts with P but hopefully they'll figure that out.
+  // Introduces W F P: this spells requires multiple turns, and also
+  // conflicts with another spell.
   class WFPTutorial extends Tutorial {
     WFPTutorial() {
       state = 0;
@@ -449,19 +576,11 @@ public class MainView extends View {
 	arrow_view.setVisibility(View.VISIBLE);
 	invalidate();
 	state = 1;
-	count = 0;
 	return;
       case 1:
-	switch(count) {
-	  case 0:
-	    speech_box.setText(R.string.WFPtut2);
-	    count++;
-	    return;
-	  case 1:
-	    speech_box.setText(R.string.WFPtut3);
-	    state = 2;
-	    return;
-	}
+	speech_box.setText(R.string.WFPtut2);
+	state = 2;
+	return;
       case 2:
 	speech_box.setVisibility(View.GONE);
         get_ready();
@@ -489,9 +608,8 @@ public class MainView extends View {
     }
     int hand;
     int state;
-    int count;
   }
- 
+
   // Introduce S D gestures.
   class SDTutorial extends Tutorial {
     SDTutorial() {
@@ -504,80 +622,66 @@ public class MainView extends View {
       put_gest("Palm", 0, 1);
       put_gest("Fingers", 1, 1);
     }
-    void AI_move(SpellTapMove turn) {
-      turn.gest[hand] = GESTURE_KNIFE;
-      turn.spell[hand] = 64;
-      turn.spell_target[hand] = 0;
-      hand = 1 - hand;
-      turn.gest[hand] = GESTURE_PALM;
-      turn.spell[hand] = indexOfSpell("Shield");
-      turn.spell_target[hand] = 1;
-    }
     void run() {
       for(;;) switch(state) {
-      case 0:
-        // Resurrect and restore HP
-	being_list[0].start_life(5);
-	being_list[1].start_life(5);
-	being_list[1].name = "Sendin";
-	being_list[1].bitmap = bmclown;
-	being_list_count = 2;
-	hist.reset();
-	opphist.reset();
-
-	main_state = STATE_SPEECH;
-	speech_box.setVisibility(View.VISIBLE);
-	speech_box.setText(R.string.SDtut);
-	clear_choices();
-	arena.setVisibility(View.VISIBLE);
-	arrow_view.setVisibility(View.VISIBLE);
-	invalidate();
-	state = 1;
-	count = 0;
-	return;
-      case 1:
-	switch(count) {
-	  case 0:
-	    speech_box.setText(R.string.SDtut2);
-	    count++;
-	    return;
-	  case 1:
-	    speech_box.setText(R.string.SDtut3);
-	    state = 2;
-	    return;
-	}
-      case 2:
-	speech_box.setVisibility(View.GONE);
-        get_ready();
-	state = 3;
-	return;
-      case 3:
-	/*
-	speech_box.setVisibility(View.VISIBLE);
-	switch(winner) {
 	case 0:
-	  speech_box.setText(R.string.SDtutwin);
-	  tut = new SDTutorial();
-	  break;
+	  being_list[0].start_life(5);
+	  being_list[1].start_life(5);
+	  hist.reset();
+	  opphist.reset();
+	  being_list_count = 2;
+	  arena.setVisibility(View.VISIBLE);
+	  arrow_view.setVisibility(View.VISIBLE);
+	  speech_box.setVisibility(View.VISIBLE);
+	  speech_box.setText(R.string.SDtut);
+	  main_state = STATE_SPEECH;
+	  state = 1;
+	  return;
 	case 1:
-	  speech_box.setText(R.string.SDtutlose);
-	  state = 0;
-	  break;
+	  speech_box.setVisibility(View.GONE);
+	  clear_choices();
+	  get_ready();
+	  main_state = STATE_ON_END_ROUND;
+	  state = 2;
+	  invalidate();
+	  return;
 	case 2:
-	  speech_box.setText(R.string.SDtutdraw);
-	  state = 0;
-	  break;
-	}
-	main_state = STATE_SPEECH;
-	*/
-	return;
+	  if (hist.gest[0][0] == GESTURE_SNAP &&
+	      hist.gest[0][1] == GESTURE_SNAP) {
+	    speech_box.setVisibility(View.VISIBLE);
+	    speech_box.setText(R.string.SDtutpass1);
+	    main_state = STATE_SPEECH;
+	    state = 3;
+	  } else {
+	    state = 0;
+	    break;
+	  }
+	  return;
+	case 3:
+	  speech_box.setVisibility(View.GONE);
+	  get_ready();
+	  main_state = STATE_ON_END_ROUND;
+	  state = 4;
+	  invalidate();
+	  return;
+	case 4:
+	  if (hist.gest[1][0] == GESTURE_DIGIT &&
+	      hist.gest[1][1] == GESTURE_DIGIT) {
+	    speech_box.setText(R.string.SDtutpass2);
+	    speech_box.setVisibility(View.VISIBLE);
+	    main_state = STATE_SPEECH;
+	    tut = new NoTutorial();
+	  } else {
+	    state = 0;
+	    break;
+	  }
+	  return;
       }
     }
     int hand;
     int state;
-    int count;
   }
-
+ 
   class NoTutorial extends Tutorial {
     NoTutorial() {}
     void run() {
@@ -594,7 +698,6 @@ public class MainView extends View {
       put_gest("Fingers", 1, 1);
       get_ready();
       invalidate();
-      main_state = STATE_NORMAL;
     }
   }
 
@@ -639,6 +742,8 @@ public class MainView extends View {
 
   public MainView(Context context, AttributeSet attrs) {
     super(context, attrs);
+    drag_hand = -1;
+    is_animating = false;
     paint = new Paint();
     paint.setARGB(255, 255, 255, 255);
     selpaint = new Paint();
@@ -832,7 +937,7 @@ public class MainView extends View {
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
 	Log.i("M", "D " + main_state);
-	if (STATE_BUSY == main_state) return false;
+	if (is_animating) return false;
 	if (STATE_SPEECH == main_state) return true;
 	x0 = event.getX();
 	y0 = event.getY();
@@ -844,10 +949,10 @@ public class MainView extends View {
 	  // Check for spell retargeting drag.
 	  if (y0 >= yicon && y0 < yicon + 48) {
 	    if (x0 < 48) {
-	      main_state = 2;
+	      drag_hand = 0;
 	      return true;
 	    } else if (x0 >= 320 - 48) {
-	      main_state = 3;
+	      drag_hand = 1;
 	      return true;
 	    }
 	  }
@@ -857,26 +962,26 @@ public class MainView extends View {
 	return true;
       case MotionEvent.ACTION_UP:
 	Log.i("M", "U " + main_state);
-	if (STATE_BUSY == main_state) return false;
+	if (is_animating) return false;
 	if (STATE_SPEECH == main_state) {
 	  tut.run();
 	  return true;
 	}
 	x1 = event.getX();
 	y1 = event.getY();
-	if (2 == main_state || 3 == main_state) {
+	if (drag_hand != -1) {
 	  for(int i = 0; i < being_list_count; i++) {
 	    Being b = being_list[i];
 	    if (x1 >= b.x && y1 >= b.y && x1 < b.x + 64 && y1 < b.y + 64) {
-	      spell_target[main_state - 2] = i;
+	      spell_target[drag_hand] = i;
+	      drag_hand = -1;
 	      arrow_view.invalidate();
-	      main_state = STATE_NORMAL;
 	      return true;
 	    }
 	  }
-	  spell_target[main_state - 2] = -1;
+	  spell_target[drag_hand] = -1;
+	  drag_hand = -1;
 	  arrow_view.invalidate();
-	  main_state = STATE_NORMAL;
 	  return true;
 	}
 	float dx = x1 - x0;
@@ -949,7 +1054,7 @@ public class MainView extends View {
   static SpellCast[] exec_queue;
 
   private void end_turn() {
-    main_state = STATE_BUSY;
+    is_animating = true;
     hist.add(choice);
 
     tut.AI_move(oppmove);
@@ -1069,11 +1174,12 @@ public class MainView extends View {
       print("You lose...");
     }
     invalidate();
-    if (gameover) {
+    if (gameover || STATE_ON_END_ROUND == main_state) {
       tut.run();
     } else {
       get_ready();
     }
+    is_animating = false;
   }
 
   private void handle_new_choice(int h) {
@@ -1205,13 +1311,13 @@ public class MainView extends View {
 	  arena.animate_move(source, target);
 	  return;
 	case 1:
+	  // TODO: Remove duplicated code.
 	  if (target != -1) {
 	    Being b = being_list[target];
 	    if (0 == b.shield) {
 	      b.get_hurt(1);
 	      arena.animate_move_damage(target, 1);
 	    } else {
-	      // TODO: Block animation.
 	      Log.i("TODO", "block animation");
 	      arena.animate_move_damage(target, 0);
 	    }
@@ -1240,7 +1346,20 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  is_finished = true;
-	  arena.animate_damage(target, 1);
+	  if (target != -1) {
+	    Being b = being_list[target];
+	    if (0 == b.shield) {
+	      b.get_hurt(1);
+	      arena.animate_damage(target, 1);
+	    } else {
+	      Log.i("TODO", "block animation");
+	      arena.animate_damage(target, 0);
+	    }
+	  } else {
+	    // TODO: This just delays. I ought to have a dedicated delay
+	    // "animation".
+	    arena.animate_damage(target, 0);
+	  }
 	  return;
       }
     }
@@ -1284,7 +1403,6 @@ public class MainView extends View {
 	      b.get_hurt(1);
 	      arena.animate_move_damage(target, 1);
 	    } else {
-	      // TODO: Block animation.
 	      Log.i("TODO", "block animation");
 	      arena.animate_move_damage(target, 0);
 	    }
