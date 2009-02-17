@@ -1,5 +1,5 @@
 // TODO: Log, spellbook, character sheet.
-// Title menu, save state, victory screen.
+// Title menu, save state, victory/defeat screen with stats.
 // Don't retarget if player taps on already-selected ready spell.
 // Resize event.
 package com.gmail.benlynn.spelltap;
@@ -115,14 +115,14 @@ public class MainView extends View {
   // times, starting from the lower part of the screen.
   class KnifeTutorial extends Tutorial {
     KnifeTutorial() {
-      put_gest("Knife", 0, -1);
-      stab_spell.learned = true;
       state = 0;
       count = 0;
     }
     void run() {
       for(;;) switch(state) {
 	case 0:
+	  put_gest("Knife", 0, -1);
+	  stab_spell.learned = true;
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
 	  jack_says(R.string.welcome);
@@ -176,13 +176,13 @@ public class MainView extends View {
   // they're doing.
   class DummyTutorial extends Tutorial {
     DummyTutorial() {
-      put_gest("Knife", 0, -1);
-      stab_spell.learned = true;
       state = 0;
     }
     void run() {
       for(;;) switch(state) {
       case 0:
+	put_gest("Knife", 0, -1);
+	stab_spell.learned = true;
 	clear_choices();
 	jack_says(R.string.dummytut);
 	arena.setVisibility(View.VISIBLE);
@@ -336,8 +336,6 @@ public class MainView extends View {
     ShieldTutorial() {
       state = 0;
       hand = 0;
-      put_gest("Knife", 0, -1);
-      put_gest("Palm", 0, 1);
     }
     void AI_move(SpellTapMove turn) {
       super.AI_move(turn);
@@ -349,12 +347,12 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
+	put_gest("Knife", 0, -1);
+	put_gest("Palm", 0, 1);
         // Resurrect and restore HP
 	being_list[0].start_life(5);
-	being_list[1].start_life(5);
 	// A new challenger.
-	being_list[1].name = "Sendin";
-	being_list[1].bitmap = bmclown;
+	being_list[1].setup("Sendin", R.drawable.clown, 5);
 	being_list_count = 2;
 	hist.reset();
 	opphist.reset();
@@ -414,10 +412,10 @@ public class MainView extends View {
 	  put_gest("Knife", 0, -1);
 	  put_gest("Palm", 0, 1);
 	  being_list[0].start_life(5);
-	  being_list[1].start_life(5);
+	  being_list[1].setup("The Dummy", R.drawable.dummy, 5);
+	  being_list_count = 2;
 	  hist.reset();
 	  opphist.reset();
-	  being_list_count = 2;
 	  arena.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
 	  jack_says(R.string.SDtut);
@@ -585,9 +583,7 @@ public class MainView extends View {
       case 0:
         // Resurrect and restore HP
 	being_list[0].start_life(5);
-	being_list[1].start_life(5);
-	being_list[1].name = "Sendin";
-	being_list[1].bitmap = bmclown;
+	being_list[1].setup("Sendin", R.drawable.clown, 5);
 	being_list_count = 2;
 	hist.reset();
 	opphist.reset();
@@ -612,7 +608,7 @@ public class MainView extends View {
 	switch(winner) {
 	case 0:
 	  jack_says(R.string.PKfighttutwin);
-	  tut = new SDTutorial();
+	  tut = new NoTutorial();
 	  break;
 	case 1:
 	  jack_says(R.string.PKfighttutlose);
@@ -634,6 +630,9 @@ public class MainView extends View {
     NoTutorial() {}
     void run() {
       clear_choices();
+      being_list[0].start_life(5);
+      being_list[1].start_life(5);
+      being_list_count = 2;
       jack_shutup(STATE_NORMAL);
       arena.setVisibility(View.VISIBLE);
       arrow_view.setVisibility(View.VISIBLE);
@@ -752,8 +751,8 @@ public class MainView extends View {
     tut = new KnifeTutorial();
     msg = "";
     bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
-    bmclown = BitmapFactory.decodeResource(getResources(), R.drawable.clown);
     oppmove = new SpellTapMove();
+    gameover = false;
   }
 
   public void get_ready() {
@@ -888,6 +887,7 @@ public class MainView extends View {
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
 	Log.i("M", "D " + main_state);
+	if (gameover) return true;
 	if (is_animating) return false;
 	if (STATE_SPEECH == main_state) return true;
 	x0 = event.getX();
@@ -913,6 +913,11 @@ public class MainView extends View {
 	return true;
       case MotionEvent.ACTION_UP:
 	Log.i("M", "U " + main_state);
+	if (gameover) {
+	  gameover = false;
+	  tut.run();
+	  return true;
+	}
 	if (is_animating) return false;
 	if (STATE_SPEECH == main_state) {
 	  tut.run();
@@ -1099,6 +1104,7 @@ public class MainView extends View {
     }
   }
 
+  static boolean gameover;
   // End of round. Check for death, shield expiration, etc.
   void end_round() {
     for(int i = being_list_count - 1; i >= 0; i--) {
@@ -1110,7 +1116,8 @@ public class MainView extends View {
 	b.die();
       }
     }
-    boolean gameover = false;
+
+    is_animating = false;
     winner = -1;
     if (being_list[1].dead) {
       gameover = true;
@@ -1145,12 +1152,15 @@ public class MainView extends View {
     }
 
     invalidate();
-    if (gameover || STATE_ON_END_ROUND == main_state) {
+
+    if (gameover) {
+      // Call tut.run() later once the player has tapped through the
+      // victory screen.
+    } else if (STATE_ON_END_ROUND == main_state) {
       tut.run();
     } else {
       get_ready();
     }
-    is_animating = false;
   }
 
   private void handle_new_choice(int h) {
@@ -1392,17 +1402,20 @@ public class MainView extends View {
     int level;
   }
 
-  static Bitmap bmcorpse, bmclown;
+  static Bitmap bmcorpse;
   public class Being {
     public Being(String init_name, int posx, int posy, int bitmapid) {
       x = posx;
       y = posy;
-      bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
       status = 0;
       shield = 0;
-      name = init_name;
       dead = false;
-      lifeline = "?";
+      setup(init_name, bitmapid, 0);
+    }
+    void setup(String init_name, int bitmapid, int life) {
+      name = init_name;
+      bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
+      start_life(life);
     }
     void get_hurt(int amount) {
       if (!dead) {

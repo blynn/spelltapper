@@ -4,54 +4,46 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-<com.gmail.benlynn.spelltap.MainView  
+<com.gmail.benlynn.spelltap.MainView
  android:id="@+id/mainview"
-    android:layout_width="fill_parent" 
-    android:layout_height="fill_parent" 
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     />
 <com.gmail.benlynn.spelltap.Arena
  android:id="@+id/arena"
-    android:layout_width="fill_parent" 
-    android:layout_height="fill_parent" 
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     />
 <com.gmail.benlynn.spelltap.ArrowView
  android:id="@+id/arrow_view"
-    android:layout_width="fill_parent" 
-    android:layout_height="fill_parent" 
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     />
 <LinearLayout
  android:id="@+id/speech_layout"
-    android:layout_width="fill_parent" 
-    android:layout_height="fill_parent" 
-    android:orientation="vertical" 
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:paddingTop="16dip"
     >
 
-  <TextView
-      android:layout_width="fill_parent" 
-      android:layout_height="wrap_content" 
-      android:background="#ff5555aa"
-      android:textColor="#ffffffff"
-      android:textSize="18sp"
-      android:text="[Tap screen to continue]"
-      android:layout_marginBottom="16dip"
-      />
   <LinearLayout
-      android:layout_width="wrap_content" 
-      android:layout_height="wrap_content" 
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
       android:paddingLeft="16dip"
       android:paddingRight="16dip"
       >
     <ImageView
-      android:layout_width="wrap_content" 
-      android:layout_height="wrap_content" 
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
       android:src="@drawable/jack"
 	/>
     <TextView
 	android:paddingLeft="10dip"
 	android:paddingRight="10dip"
-	android:layout_width="wrap_content" 
-	android:layout_height="wrap_content" 
-	android:background="#ff0000aa"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:background="#ff5555aa"
 	android:textColor="#ffffffff"
 	android:textSize="18sp"
 	android:text="One-eyed Jack"
@@ -60,12 +52,23 @@
   </LinearLayout>
   <TextView
    android:id="@+id/speech_box"
-      android:layout_width="fill_parent" 
-      android:layout_height="wrap_content" 
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
       android:background="#ff0000aa"
       android:textColor="#ffffffff"
       android:textSize="18sp"
       android:layout_marginTop="16dip"
       />
+      <!-- I want this along the bottom of the screen. TODO: Figure out how.
+  <TextView
+   android:id="@+id/reminder"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:background="#ff0000aa"
+      android:textColor="#ffffffff"
+      android:textSize="18sp"
+      android:text="[Tap screen to continue]"
+      />
+      -->
 </LinearLayout>
 </FrameLayout>
