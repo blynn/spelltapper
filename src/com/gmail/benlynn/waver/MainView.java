@@ -912,9 +912,10 @@ public class MainView extends View {
 	  canvas.drawRect(x, y, x + 50, y + 50, selpaint);
 	}
 	canvas.drawBitmap(ready_spell[i][h].bitmap, x + 1, y + 1, paint);
-	x += 50;
+	if (h == 0) x += 50;
+	else x -= 50;
       }
-      x = 160;
+      x = 320 - 50;
     }
 
     // Spell choice row 2
@@ -1001,7 +1002,7 @@ public class MainView extends View {
 	      int i;
 	      if (h == 1) {
 		if (x1 < 160) break;
-		i = ((int) x1 - 160) / 50;
+		i = (320 - (int) x1) / 50;
 	      } else {
 		i = ((int) x1) / 50;
 	      }
@@ -1434,8 +1435,10 @@ public class MainView extends View {
       lifeline = "?";
     }
     void get_hurt(int amount) {
-      life -= amount;
-      lifeline = Integer.toString(life) + "/" + Integer.toString(life_max);
+      if (!dead) {
+	life -= amount;
+	lifeline = Integer.toString(life) + "/" + Integer.toString(life_max);
+      }
     }
     void set_size_48() {
       w = h = 48;

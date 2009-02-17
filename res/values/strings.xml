@@ -9,7 +9,7 @@
     <string name="howtoknifepass3">Excellent. Let us move on.</string> 
 
     <string name="dummytut">Stab this wooden dummy 3 times to destroy it. Use the motion you just learned, then tap the bottom of the screen to confirm each stab.</string>
-    <string name="dummytut1">Notice you cannot stab with both hands simultaneously. You only have one knife; you can only stab once per turn.</string>
+    <string name="dummytut1">Notice you cannot stab with both hands simultaneously. You only have one knife. You can only stab once per turn.</string>
     <string name="dummytutwin">Good job. Beware! You will face armed and dangerous monsters in the next lesson.</string>
     <string name="dummytutdraw">Very funny, though strictly speaking you did destroy the dummy. You're lucky I know the Raise Dead spell. Clearly you know how to play, so we'll skip a lesson. </string>
     <string name="dummytutlose">Very funny. You're lucky I know the Raise Dead spell. We'll move on, even though you lost to a wooden dummy.</string>
@@ -19,7 +19,7 @@
     <string name="targettutdraw">Close enough. Let's move on anyway. The first gesture you'll learn is the easiest, but also the most powerful.</string>
     <string name="targettutlose">You're lucky I know the Raise Dead spell. Let's try that again.</string>
     
-    <string name="palmtut">Drag your finger downwards, in the lower part of the screen (the reverse of the Knife gesture). This makes the Palm gesture (P). </string>
+    <string name="palmtut">Drag your finger downwards ( &#x2193; ), in the lower part of the screen (the reverse of the Knife gesture). This makes the Palm gesture (P). </string>
     <string name="palmtutpass1">Good, try another Palm.</string>
     <string name="palmtutpass2">Good, try another Palm.</string>
     <string name="palmtutpass3">That's plenty for now.</string>
@@ -31,11 +31,11 @@
     <string name="shieldtutwin">Well done. But what if the opponent also knows Shield? Listen carefully...</string>
     <string name="shieldtutlose">Let's try it again, shall we?</string>
 
-    <string name="wavetut">Make a Wave gesture (W): run a finger diagonally downwards and away from the center.</string>
+    <string name="wavetut">Make a Wave gesture (W): run a finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ).</string>
     <string name="wavetutpass1">Good! Now gesture a Wave with the other hand.</string>
     <string name="wavetutpass2">Great! Next is the Fingers gesture, which is only slightly different.</string>
 
-    <string name="fingerstut">The Fingers gesture (F): run a finger diagonally downwards and towards the center.</string>
+    <string name="fingerstut">The Fingers gesture (F): run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ).</string>
     <string name="fingerstutpass1">Good! Now gesture Fingers with the other hand.</string>
     <string name="fingerstutpass2">Time to use these gestures in combat.</string>
 
@@ -46,7 +46,7 @@ To defeat him, cast Cause Light Wounds by gesturing W F P with the same hand ove
     <string name="WFPtutlose">This is a tough fight. Don't lose heart!</string>
     <string name="WFPtutdraw">I'll let you pass, but remember you won't always have someone around to cast Raise Dead on you.</string>
 
-    <string name="SDtut">Do a Snap gesture (S) by drawing a diagonal that goes up and away from the center, like a Knife gesture that veers outwards. Make Snap with both hands and end your turn.</string>
-    <string name="SDtutpass1">Well done. the Digit gesture (D) is the same except you go toward to center. Make Digit with both hands and end the turn, causing both hands to cast the Missile spell.</string>
+    <string name="SDtut">Do a Snap gesture (S) by drawing a diagonal that goes up and away from the center, like a Knife gesture that veers outwards (L: &#x2196; R: &#x2197; ). Make Snap with both hands and end your turn.</string>
+    <string name="SDtutpass1">Well done. the Digit gesture (D) is the same except you go toward to center (L: &#x2197; R: &#x2196; ). Make Digit with both hands and end the turn, causing both hands to cast the Missile spell.</string>
     <string name="SDtutpass2">Thus SD casts Missile. Some other spells: SFW is Summon Goblin, and DFW is Cure Light Wounds (heal one hit point).</string>
 </resources>
