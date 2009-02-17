@@ -14,39 +14,40 @@
     <string name="dummytutdraw">Very funny, though strictly speaking you did destroy the dummy. You're lucky I know the Raise Dead spell. Clearly you know how to play, so we'll skip a lesson. </string>
     <string name="dummytutlose">Very funny. You're lucky I know the Raise Dead spell. We'll move on, even though you lost to a wooden dummy.</string>
 
-    <string name="targettut">Did you notice the green line indicating the target? In this fight, you must direct your first stabs to the goblins, who each inflict one point of damage. Drag your finger from the Stab icon to a goblin before ending your turn. </string>
+    <string name="targettut">In this fight, you must direct your first stabs to the goblins, who each inflict one point of damage. Drag your finger from the Stab icon to a goblin before ending your turn. The green line indicates the current target. </string>
     <string name="targettutwin">Capital! At last you are ready to learn magic. The first gesture you'll learn is the easiest, but also the most powerful.</string>
     <string name="targettutdraw">Close enough. Let's move on anyway. The first gesture you'll learn is the easiest, but also the most powerful.</string>
     <string name="targettutlose">You're lucky I know the Raise Dead spell. Let's try that again.</string>
     
-    <string name="palmtut">Drag your finger downwards ( &#x2193; ), in the lower part of the screen (the reverse of the Knife gesture). This makes the Palm gesture (P). </string>
+    <string name="palmtut">Drag your finger downwards ( &#x2193; ) in the lower part of the screen to make the Palm gesture (P). </string>
     <string name="palmtutpass1">Good, try another Palm.</string>
     <string name="palmtutpass2">Good, try another Palm.</string>
     <string name="palmtutpass3">That's plenty for now.</string>
     
     <string name="shieldtut">The Shield spell can be cast with a single Palm. Shield protects you from all physical attacks.</string>
 
-    <string name="shieldtut2">But be warned! Due to its power, gesturing Palm with both hands simultaneously causes you to lose at the end of the round, unless doing so kills your opponent.</string>
+    <string name="shieldtut2">Beware! Gesturing Palm with both hands simultaneously is the universal gesture of surrender: you lose at the end of the round, unless your opponent is dead.</string>
+    <string name="shieldtut3">Sendin is your next opponent. He only knows how to stab right now.</string>
     <string name="shieldtutdraw">A draw is not good enough. With the Shield spell you should be able to win easily.</string>
-    <string name="shieldtutwin">Well done. But what if the opponent also knows Shield? Listen carefully...</string>
+    <string name="shieldtutwin">Well done. Let's learn some more gestures.</string>
     <string name="shieldtutlose">Let's try it again, shall we?</string>
-
-    <string name="wavetut">Make a Wave gesture (W): run a finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ).</string>
-    <string name="wavetutpass1">Good! Now gesture a Wave with the other hand.</string>
-    <string name="wavetutpass2">Great! Next is the Fingers gesture, which is only slightly different.</string>
-
-    <string name="fingerstut">The Fingers gesture (F): run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ).</string>
-    <string name="fingerstutpass1">Good! Now gesture Fingers with the other hand.</string>
-    <string name="fingerstutpass2">Time to use these gestures in combat.</string>
-
-<string name="WFPtut">Your opponent always casts Shield on himself.
-To defeat him, cast Cause Light Wounds by gesturing W F P with the same hand over 3 successive turns. This spell deals 2 damage even to shielded targets.</string>
-    <string name="WFPtut2">A single gesture can only complete one spell, though it can take part in several spells. So after gesturing W F P, you must choose Cause Light Damage over Shield by tapping its icon.</string>
-    <string name="WFPtutwin">Impressive! I have one last lesson for now.</string>
-    <string name="WFPtutlose">This is a tough fight. Don't lose heart!</string>
-    <string name="WFPtutdraw">I'll let you pass, but remember you won't always have someone around to cast Raise Dead on you.</string>
 
     <string name="SDtut">Do a Snap gesture (S) by drawing a diagonal that goes up and away from the center, like a Knife gesture that veers outwards (L: &#x2196; R: &#x2197; ). Make Snap with both hands and end your turn.</string>
     <string name="SDtutpass1">Well done. the Digit gesture (D) is the same except you go toward to center (L: &#x2197; R: &#x2196; ). Make Digit with both hands and end the turn, causing both hands to cast the Missile spell.</string>
-    <string name="SDtutpass2">Thus SD casts Missile. Some other spells: SFW is Summon Goblin, and DFW is Cure Light Wounds (heal one hit point).</string>
+    <string name="SDtutpass2">Thus S followed by D casts Missile. Now for a longer spell.</string>
+
+    <string name="wavetut">Make a Wave gesture (W) with both hands: run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ). Then end your turn.</string>
+    <string name="fingerstut">Good. Now make the Fingers gesture (F) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ). Then end your turn.</string>
+    <string name="fingerstutpass1">Perfect! Now gesture Palm with both hands. Normally this loses, but since W F P is Cause Light Wounds, you can do 4 points of damage to kill your opponent.</string>
+    <string name="fingerstutpass2">In the turn you kill the opponent, you win even if you gestured Palm with both hands.</string>
+    <string name="fingerstutpass3">A single gesture can only complete one spell, so you must choose Cause Light Wounds over Shield by tapping its icon. Otherwise, you will lose!</string>
+    <string name="fingerstutpass4">Well done! Cause Light Wounds deals 2 damage even to shielded targets.</string>
+    <string name="fingerstutfail">Almost. Try again.</string>
+
+    <string name="PKfighttut">Your next opponent always tries to casts Shield on himself. </string>
+    <string name="PKfighttut2"> Cause Light Wounds (WFP) may help. Another handy spell is Confusion (DSF): its target must gesture identically with both hands.</string>
+    <string name="PKfighttutwin">Impressive!</string>
+    <string name="PKfighttutlose">This is a tough fight. Don't lose heart!</string>
+    <string name="PKfighttutdraw">I'll let you pass, but remember you won't always have someone around to cast Raise Dead on you.</string>
+
 </resources>
