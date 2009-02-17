@@ -88,6 +88,17 @@ public class MainView extends View {
     //int monster_target[];
   }
 
+  void jack_says(int string_constant) {
+    speech_box.setVisibility(View.VISIBLE);
+    speech_box.setText(string_constant);
+    main_state = STATE_SPEECH;
+  }
+
+  void jack_shutup(int new_state) {
+    speech_box.setVisibility(View.GONE);
+    main_state = new_state;
+  }
+
   abstract class Tutorial {
     abstract void run();
     void AI_move(SpellTapMove turn) {
@@ -113,42 +124,36 @@ public class MainView extends View {
 	case 0:
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
-	  speech_box.setVisibility(View.VISIBLE);
-	  speech_box.setText(R.string.howtoknife);
-	  main_state = STATE_SPEECH;
+	  jack_says(R.string.howtoknife);
 	  state = 1;
 	  return;
 	case 1:
-	  speech_box.setText(R.string.howtoknife2);
-	  main_state = STATE_SPEECH;
+	  jack_says(R.string.howtoknife2);
 	  state = 2;
 	  return;
 	case 2:
-	  speech_box.setVisibility(View.GONE);
 	  clear_choices();
 	  invalidate();
-	  main_state = STATE_GESTURE_ONLY;
+	  jack_shutup(STATE_GESTURE_ONLY);
 	  state = 3;
 	  return;
 	case 3:
-	  speech_box.setVisibility(View.VISIBLE);
 	  if (choice[0] == GESTURE_KNIFE || choice[1] == GESTURE_KNIFE) {
 	    count++;
 	    switch(count) {
 	    case 3:
-	      speech_box.setText(R.string.howtoknifepass3);
+	      jack_says(R.string.howtoknifepass3);
 	      tut = new DummyTutorial();
 	      break;
 	    case 2:
-	      speech_box.setText(R.string.howtoknifepass2);
+	      jack_says(R.string.howtoknifepass2);
 	      state = 2;
 	      break;
 	    case 1:
-	      speech_box.setText(R.string.howtoknifepass1);
+	      jack_says(R.string.howtoknifepass1);
 	      state = 2;
 	      break;
 	    }
-	    main_state = STATE_SPEECH;
 	  } else {
 	    state = 1;
 	    break;
@@ -174,41 +179,36 @@ public class MainView extends View {
       for(;;) switch(state) {
       case 0:
 	clear_choices();
-	main_state = STATE_SPEECH;
-	speech_box.setVisibility(View.VISIBLE);
-	speech_box.setText(R.string.dummytut);
+	jack_says(R.string.dummytut);
 	arena.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
 	invalidate();
 	state = 1;
         return;
       case 1:
-	speech_box.setText(R.string.dummytut1);
-	main_state = STATE_SPEECH;
+	jack_says(R.string.dummytut1);
 	state = 2;
         return;
       case 2:
-	speech_box.setVisibility(View.GONE);
+	jack_shutup(STATE_NORMAL);
 	get_ready();
 	state = 3;
         return;
       case 3:
-	speech_box.setVisibility(View.VISIBLE);
 	switch(winner) {
 	case 0:
-	  speech_box.setText(R.string.dummytutwin);
+	  jack_says(R.string.dummytutwin);
 	  tut = new TargetTutorial();
 	  break;
 	case 1:
-	  speech_box.setText(R.string.dummytutlose);
+	  jack_says(R.string.dummytutlose);
 	  tut = new PalmTutorial();
 	  break;
 	case 2:
-	  speech_box.setText(R.string.dummytutdraw);
+	  jack_says(R.string.dummytutdraw);
 	  tut = new PalmTutorial();
 	  break;
 	}
-	main_state = STATE_SPEECH;
         return;
       }
     }
@@ -247,36 +247,32 @@ public class MainView extends View {
 	being_list[3].target = 0;
 
 	clear_choices();
-	main_state = STATE_SPEECH;
-	speech_box.setVisibility(View.VISIBLE);
-	speech_box.setText(R.string.targettut);
+	jack_says(R.string.targettut);
 	arena.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
 	state = 1;
 	invalidate();
         return;
       case 1:
-	speech_box.setVisibility(View.GONE);
+	jack_shutup(STATE_NORMAL);
         get_ready();
 	state = 2;
         return;
       case 2:
-	speech_box.setVisibility(View.VISIBLE);
 	switch(winner) {
 	case 0:
-	  speech_box.setText(R.string.targettutwin);
+	  jack_says(R.string.targettutwin);
 	  tut = new PalmTutorial();
 	  break;
 	case 1:
-	  speech_box.setText(R.string.targettutlose);
+	  jack_says(R.string.targettutlose);
 	  state = 0;
 	  break;
 	case 2:
-	  speech_box.setText(R.string.targettutdraw);
+	  jack_says(R.string.targettutdraw);
 	  tut = new PalmTutorial();
 	  break;
 	}
-	main_state = STATE_SPEECH;
         return;
       }
     }
@@ -298,37 +294,32 @@ public class MainView extends View {
 	case 0:
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
-	  speech_box.setVisibility(View.VISIBLE);
-	  speech_box.setText(R.string.palmtut);
-	  main_state = STATE_SPEECH;
+	  jack_says(R.string.palmtut);
 	  state = 1;
 	  return;
 	case 1:
-	  speech_box.setVisibility(View.GONE);
 	  clear_choices();
-	  main_state = STATE_GESTURE_ONLY;
+	  jack_shutup(STATE_GESTURE_ONLY);
 	  invalidate();
 	  state = 2;
 	  return;
 	case 2:
-	  speech_box.setVisibility(View.VISIBLE);
 	  if (choice[0] == GESTURE_PALM || choice[1] == GESTURE_PALM) {
 	    count++;
 	    switch(count) {
 	    case 3:
-	      speech_box.setText(R.string.palmtutpass3);
+	      jack_says(R.string.palmtutpass3);
 	      tut = new ShieldTutorial();
 	      break;
 	    case 2:
-	      speech_box.setText(R.string.palmtutpass2);
+	      jack_says(R.string.palmtutpass2);
 	      state = 1;
 	      break;
 	    case 1:
-	      speech_box.setText(R.string.palmtutpass1);
+	      jack_says(R.string.palmtutpass1);
 	      state = 1;
 	      break;
 	    }
-	    main_state = STATE_SPEECH;
 	  } else {
 	    state = 0;
 	    break;
@@ -367,9 +358,7 @@ public class MainView extends View {
 	being_list_count = 2;
 	hist.reset();
 	opphist.reset();
-	main_state = STATE_SPEECH;
-	speech_box.setVisibility(View.VISIBLE);
-	speech_box.setText(R.string.shieldtut);
+	jack_says(R.string.shieldtut);
 	clear_choices();
 	arena.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
@@ -377,35 +366,33 @@ public class MainView extends View {
 	state = 1;
 	return;
       case 1:
-	speech_box.setText(R.string.shieldtut2);
+	jack_says(R.string.shieldtut2);
 	state = 100;
 	return;
       case 100:
-	speech_box.setText(R.string.shieldtut3);
+	jack_says(R.string.shieldtut3);
 	state = 2;
 	return;
       case 2:
-	speech_box.setVisibility(View.GONE);
+	jack_shutup(STATE_NORMAL);
         get_ready();
 	state = 3;
         return;
       case 3:
-	speech_box.setVisibility(View.VISIBLE);
 	switch(winner) {
 	case 0:
-	  speech_box.setText(R.string.shieldtutwin);
+	  jack_says(R.string.shieldtutwin);
 	  tut = new SDTutorial();
 	  break;
 	case 1:
-	  speech_box.setText(R.string.shieldtutlose);
+	  jack_says(R.string.shieldtutlose);
 	  state = 0;
 	  break;
 	case 2:
-	  speech_box.setText(R.string.shieldtutdraw);
+	  jack_says(R.string.shieldtutdraw);
 	  state = 0;
 	  break;
 	}
-	main_state = STATE_SPEECH;
         return;
       }
     }
@@ -432,25 +419,20 @@ public class MainView extends View {
 	  being_list_count = 2;
 	  arena.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
-	  speech_box.setVisibility(View.VISIBLE);
-	  speech_box.setText(R.string.SDtut);
-	  main_state = STATE_SPEECH;
+	  jack_says(R.string.SDtut);
 	  state = 1;
 	  return;
 	case 1:
-	  speech_box.setVisibility(View.GONE);
 	  clear_choices();
 	  get_ready();
-	  main_state = STATE_ON_END_ROUND;
+	  jack_shutup(STATE_ON_END_ROUND);
 	  state = 2;
 	  invalidate();
 	  return;
 	case 2:
 	  if (hist.gest[0][0] == GESTURE_SNAP &&
 	      hist.gest[0][1] == GESTURE_SNAP) {
-	    speech_box.setVisibility(View.VISIBLE);
-	    speech_box.setText(R.string.SDtutpass1);
-	    main_state = STATE_SPEECH;
+	    jack_says(R.string.SDtutpass1);
 	    state = 3;
 	  } else {
 	    state = 0;
@@ -458,19 +440,16 @@ public class MainView extends View {
 	  }
 	  return;
 	case 3:
-	  speech_box.setVisibility(View.GONE);
 	  put_gest("Digit", 1, -1);
 	  get_ready();
-	  main_state = STATE_ON_END_ROUND;
+	  jack_shutup(STATE_ON_END_ROUND);
 	  state = 4;
 	  invalidate();
 	  return;
 	case 4:
 	  if (hist.gest[1][0] == GESTURE_DIGIT &&
 	      hist.gest[1][1] == GESTURE_DIGIT) {
-	    speech_box.setText(R.string.SDtutpass2);
-	    speech_box.setVisibility(View.VISIBLE);
-	    main_state = STATE_SPEECH;
+	    jack_says(R.string.SDtutpass2);
 	    tut = new WFPTutorial();
 	  } else {
 	    state = 0;
@@ -506,25 +485,20 @@ public class MainView extends View {
 	  being_list_count = 2;
 	  arena.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
-	  speech_box.setVisibility(View.VISIBLE);
-	  speech_box.setText(R.string.wavetut);
-	  main_state = STATE_SPEECH;
+	  jack_says(R.string.wavetut);
 	  state = 1;
 	  return;
 	case 1:
-	  speech_box.setVisibility(View.GONE);
 	  clear_choices();
 	  get_ready();
-	  main_state = STATE_ON_END_ROUND;
+	  jack_shutup(STATE_ON_END_ROUND);
 	  state = 2;
 	  invalidate();
 	  return;
 	case 2:
 	  if (hist.gest[0][0] == GESTURE_WAVE &&
 	      hist.gest[0][1] == GESTURE_WAVE) {
-	    speech_box.setVisibility(View.VISIBLE);
-	    speech_box.setText(R.string.fingerstut);
-	    main_state = STATE_SPEECH;
+	    jack_says(R.string.fingerstut);
 	    state = 3;
 	  } else {
 	    state = 0;
@@ -532,19 +506,16 @@ public class MainView extends View {
 	  }
 	  return;
 	case 3:
-	  speech_box.setVisibility(View.GONE);
 	  put_gest("Fingers", 1, 1);
 	  get_ready();
-	  main_state = STATE_ON_END_ROUND;
+	  jack_shutup(STATE_ON_END_ROUND);
 	  state = 4;
 	  invalidate();
 	  return;
 	case 4:
 	  if (hist.gest[1][0] == GESTURE_FINGERS &&
 	      hist.gest[1][1] == GESTURE_FINGERS) {
-	    speech_box.setText(R.string.fingerstutpass1);
-	    speech_box.setVisibility(View.VISIBLE);
-	    main_state = STATE_SPEECH;
+	    jack_says(R.string.fingerstutpass1);
 	    state = 5;
 	  } else {
 	    state = 0;
@@ -552,31 +523,26 @@ public class MainView extends View {
 	  }
 	  return;
 	case 5:
-	  speech_box.setText(R.string.fingerstutpass2);
-	  speech_box.setVisibility(View.VISIBLE);
+	  jack_says(R.string.fingerstutpass2);
 	  state = 6;
 	  return;
 	case 6:
-	  speech_box.setText(R.string.fingerstutpass3);
-	  speech_box.setVisibility(View.VISIBLE);
+	  jack_says(R.string.fingerstutpass3);
 	  state = 7;
 	  return;
 	case 7:
-	  speech_box.setVisibility(View.GONE);
 	  get_ready();
-	  main_state = STATE_ON_END_ROUND;
+	  jack_shutup(STATE_ON_END_ROUND);
 	  invalidate();
 	  state = 8;
 	  return;
 	case 8:
-	  speech_box.setVisibility(View.VISIBLE);
-	  main_state = STATE_SPEECH;
 	  if (hist.gest[2][0] == GESTURE_PALM &&
 	      hist.gest[2][1] == GESTURE_PALM && 0 == winner) {
-	    speech_box.setText(R.string.fingerstutpass4);
+	    jack_says(R.string.fingerstutpass4);
 	    tut = new PKFightTutorial();
 	  } else {
-	    speech_box.setText(R.string.fingerstutfail);
+	    jack_says(R.string.fingerstutfail);
 	    state = 0;
 	  }
 	  return;
@@ -625,9 +591,7 @@ public class MainView extends View {
 	hist.reset();
 	opphist.reset();
 
-	main_state = STATE_SPEECH;
-	speech_box.setVisibility(View.VISIBLE);
-	speech_box.setText(R.string.PKfighttut);
+	jack_says(R.string.PKfighttut);
 	clear_choices();
 	arena.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
@@ -635,31 +599,29 @@ public class MainView extends View {
 	state = 1;
 	return;
       case 1:
-	speech_box.setText(R.string.PKfighttut2);
+	jack_says(R.string.PKfighttut2);
 	state = 2;
 	return;
       case 2:
-	speech_box.setVisibility(View.GONE);
+	jack_shutup(STATE_NORMAL);
         get_ready();
 	state = 3;
 	return;
       case 3:
-	speech_box.setVisibility(View.VISIBLE);
 	switch(winner) {
 	case 0:
-	  speech_box.setText(R.string.PKfighttutwin);
+	  jack_says(R.string.PKfighttutwin);
 	  tut = new SDTutorial();
 	  break;
 	case 1:
-	  speech_box.setText(R.string.PKfighttutlose);
+	  jack_says(R.string.PKfighttutlose);
 	  state = 0;
 	  break;
 	case 2:
-	  speech_box.setText(R.string.PKfighttutdraw);
+	  jack_says(R.string.PKfighttutdraw);
 	  state = 0;
 	  break;
 	}
-	main_state = STATE_SPEECH;
 	return;
       }
     }
@@ -671,7 +633,7 @@ public class MainView extends View {
     NoTutorial() {}
     void run() {
       clear_choices();
-      speech_box.setVisibility(View.GONE);
+      jack_shutup(STATE_NORMAL);
       arena.setVisibility(View.VISIBLE);
       arrow_view.setVisibility(View.VISIBLE);
       put_gest("Snap", -1, -1);
@@ -787,7 +749,7 @@ public class MainView extends View {
       monatt[i] = new MonsterAttack(i);
     }
 
-    tut = new WFPTutorial();
+    tut = new SDTutorial();
     msg = "";
     bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
     bmclown = BitmapFactory.decodeResource(getResources(), R.drawable.clown);
