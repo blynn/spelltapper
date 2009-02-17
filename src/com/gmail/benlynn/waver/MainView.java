@@ -1,5 +1,5 @@
 // TODO: Log, spellbook, character sheet.
-// Title menu, save state
+// Title menu, save state, victory screen.
 // Don't retarget if player taps on already-selected ready spell.
 package com.gmail.benlynn.waver;
 
@@ -376,6 +376,7 @@ public class MainView extends View {
       case 2:
 	jack_shutup(STATE_NORMAL);
         get_ready();
+	invalidate();
 	state = 3;
         return;
       case 3:
@@ -749,7 +750,7 @@ public class MainView extends View {
       monatt[i] = new MonsterAttack(i);
     }
 
-    tut = new SDTutorial();
+    tut = new KnifeTutorial();
     msg = "";
     bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
     bmclown = BitmapFactory.decodeResource(getResources(), R.drawable.clown);
@@ -757,7 +758,6 @@ public class MainView extends View {
   }
 
   public void get_ready() {
-    main_state = STATE_NORMAL;
     print("Tap this line to confirm moves.");
   }
 
@@ -1127,16 +1127,22 @@ public class MainView extends View {
       print("You lose...");
     }
 
-    if (hist.is_doubleP() && !being_list[1].dead) {
-      winner = 1;
-      gameover = true;
-      print("You surrender...");
-    }
-
-    if (opphist.is_doubleP() && !being_list[0].dead) {
-      winner = 0;
-      gameover = true;
-      print("Your opponent surrenders. You win!");
+    if (!gameover) {
+      if (hist.is_doubleP()) {
+	if (opphist.is_doubleP()) {
+	  winner = 2;
+	  gameover = true;
+	  print("You both surrender.");
+	} else {
+	  winner = 1;
+	  gameover = true;
+	  print("You surrender...");
+	}
+      } else if (opphist.is_doubleP()) {
+	winner = 0;
+	gameover = true;
+	print("Your opponent surrenders. You win!");
+      }
     }
 
     invalidate();
