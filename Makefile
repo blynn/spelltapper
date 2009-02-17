@@ -4,7 +4,7 @@ SDKDIR=~/android-sdk-linux_x86-1.1_r1
 AAPT=$(SDKDIR)/tools/aapt
 DX=$(SDKDIR)/tools/dx
 APKBUILDER=$(SDKDIR)/tools/apkbuilder
-MUCK=com/gmail/benlynn/waver/
+MUCK=com/gmail/benlynn/spelltap/
 
 target: bin/out.apk
 

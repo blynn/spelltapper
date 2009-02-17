@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Waver</string>
+    <string name="app_name">SpellTap</string>
 
     <string name="howtoknife">Before any spells, you must learn to wield a weapon. Physical violence may be the last resort, but many a wizard owes their life to combat training. Take this knife, and let me see a few practice stabs.</string>
     <string name="howtoknife2">Starting from the lower part of the screen, slide your finger straight up ( &#x2191; ). </string>

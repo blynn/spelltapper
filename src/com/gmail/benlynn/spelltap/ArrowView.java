@@ -1,4 +1,4 @@
-package com.gmail.benlynn.waver;
+package com.gmail.benlynn.spelltap;
 
 import android.content.Context;
 import android.graphics.Canvas;

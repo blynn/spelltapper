@@ -1,4 +1,4 @@
-package com.gmail.benlynn.waver;
+package com.gmail.benlynn.spelltap;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -11,7 +11,7 @@ import android.view.View;
 import android.os.Handler;
 import android.os.Message;
 
-import com.gmail.benlynn.waver.MainView.Being;
+import com.gmail.benlynn.spelltap.MainView.Being;
 
 public class Arena extends View {
   public Arena(Context context, AttributeSet attrs) {

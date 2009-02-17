@@ -1,7 +1,7 @@
 // TODO: Log, spellbook, character sheet.
 // Title menu, save state, victory screen.
 // Don't retarget if player taps on already-selected ready spell.
-package com.gmail.benlynn.waver;
+package com.gmail.benlynn.spelltap;
 
 import android.content.Context;
 import android.graphics.Bitmap;

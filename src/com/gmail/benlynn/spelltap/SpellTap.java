@@ -1,4 +1,4 @@
-package com.gmail.benlynn.waver;
+package com.gmail.benlynn.spelltap;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import android.util.Log;
-public class Waver extends Activity {
+public class SpellTap extends Activity {
   /** Called when the activity is first created. */
   @Override
   public void onCreate(Bundle savedInstanceState) {
