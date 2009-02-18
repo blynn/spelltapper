@@ -36,7 +36,6 @@ public class MainView extends View {
   static final int STATE_NORMAL = 0;
   static final int STATE_BUSY = 1;
   // Special states for tutorials.
-  static final int STATE_SPEECH = 128;
   static final int STATE_GESTURE_ONLY = 129;
   static final int STATE_ON_END_ROUND = 130;
 
@@ -86,11 +85,14 @@ public class MainView extends View {
   void set_state_palmtutorial() {
     tut = new PalmTutorial();
   }
-  void set_state_shieldtutorial() {
+  void set_state_stabatha() {
     tut = new ShieldTutorial();
   }
   void set_state_practicemode() {
     tut = new PracticeMode();
+  }
+  void set_state_missilelesson() {
+    tut = new SDTutorial();
   }
 
   static SpellTapMove oppmove;
@@ -109,11 +111,9 @@ public class MainView extends View {
 
   void jack_says(int string_constant) {
     spelltap.jack_says(string_constant);
-    main_state = STATE_SPEECH;
   }
 
-  void jack_shutup(int new_state) {
-    spelltap.jack_shutup();
+  void set_main_state(int new_state) {
     main_state = new_state;
   }
 
@@ -156,7 +156,7 @@ public class MainView extends View {
 	case 2:
 	  clear_choices();
 	  invalidate();
-	  jack_shutup(STATE_GESTURE_ONLY);
+	  set_main_state(STATE_GESTURE_ONLY);
 	  state = 3;
 	  return;
 	case 3:
@@ -182,7 +182,7 @@ public class MainView extends View {
 	  }
 	  return;
 	case 4:
-	  jack_shutup(STATE_NORMAL);
+	  set_main_state(STATE_NORMAL);
 	  spelltap.next_state();
 	  spelltap.goto_town();
 	  return;
@@ -213,7 +213,7 @@ public class MainView extends View {
 	state = 2;
         return;
       case 2:
-	jack_shutup(STATE_NORMAL);
+	set_main_state(STATE_NORMAL);
 	get_ready();
 	state = 3;
         return;
@@ -275,7 +275,7 @@ public class MainView extends View {
 	invalidate();
         return;
       case 1:
-	jack_shutup(STATE_NORMAL);
+	set_main_state(STATE_NORMAL);
         get_ready();
 	state = 2;
         return;
@@ -297,7 +297,6 @@ public class MainView extends View {
 	reset_being_pos();
         return;
       case 3:
-	jack_shutup(STATE_NORMAL);
 	spelltap.next_state();
 	spelltap.goto_town();
 	return;
@@ -330,7 +329,7 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  clear_choices();
-	  jack_shutup(STATE_GESTURE_ONLY);
+	  set_main_state(STATE_GESTURE_ONLY);
 	  invalidate();
 	  state = 2;
 	  return;
@@ -361,7 +360,7 @@ public class MainView extends View {
 	  state = 4;
 	  return;
 	case 4:
-	  jack_shutup(STATE_NORMAL);
+	  set_main_state(STATE_NORMAL);
 	  spelltap.next_state();
 	  spelltap.goto_town();
 	  return;
@@ -389,7 +388,7 @@ public class MainView extends View {
 	  clear_choices();
 	  arena.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
-	  jack_shutup(STATE_NORMAL);
+	  set_main_state(STATE_NORMAL);
 	  get_ready();
 	  invalidate();
 	  return;
@@ -427,24 +426,20 @@ public class MainView extends View {
 	being_list_count = 2;
 	hist.reset();
 	opphist.reset();
-	jack_says(R.string.shieldtut3);
 	clear_choices();
 	arena.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
+	set_main_state(STATE_NORMAL);
+	get_ready();
 	invalidate();
-	state = 2;
+	state = 1;
 	return;
-      case 2:
-	jack_shutup(STATE_NORMAL);
-        get_ready();
-	invalidate();
-	state = 3;
-        return;
-      case 3:
+      case 1:
+        // TODO: Should have to return to academy to hear Jack's message.
 	switch(winner) {
 	case 0:
 	  jack_says(R.string.shieldtutwin);
-	  tut = new SDTutorial();
+	  state = 2;
 	  break;
 	case 1:
 	  jack_says(R.string.shieldtutlose);
@@ -456,6 +451,10 @@ public class MainView extends View {
 	  break;
 	}
         return;
+      case 2:
+        spelltap.next_state();
+        spelltap.goto_town();
+	return;
       }
     }
     int state;
@@ -487,7 +486,7 @@ public class MainView extends View {
 	case 1:
 	  clear_choices();
 	  get_ready();
-	  jack_shutup(STATE_ON_END_ROUND);
+	  set_main_state(STATE_ON_END_ROUND);
 	  state = 2;
 	  invalidate();
 	  return;
@@ -504,7 +503,6 @@ public class MainView extends View {
 	case 3:
 	  put_gest("Digit", 1, -1);
 	  get_ready();
-	  jack_shutup(STATE_ON_END_ROUND);
 	  state = 4;
 	  invalidate();
 	  return;
@@ -553,7 +551,7 @@ public class MainView extends View {
 	case 1:
 	  clear_choices();
 	  get_ready();
-	  jack_shutup(STATE_ON_END_ROUND);
+	  set_main_state(STATE_ON_END_ROUND);
 	  state = 2;
 	  invalidate();
 	  return;
@@ -570,7 +568,6 @@ public class MainView extends View {
 	case 3:
 	  put_gest("Fingers", 1, 1);
 	  get_ready();
-	  jack_shutup(STATE_ON_END_ROUND);
 	  state = 4;
 	  invalidate();
 	  return;
@@ -594,7 +591,6 @@ public class MainView extends View {
 	  return;
 	case 7:
 	  get_ready();
-	  jack_shutup(STATE_ON_END_ROUND);
 	  invalidate();
 	  state = 8;
 	  return;
@@ -663,7 +659,7 @@ public class MainView extends View {
 	state = 2;
 	return;
       case 2:
-	jack_shutup(STATE_NORMAL);
+	set_main_state(STATE_NORMAL);
         get_ready();
 	state = 3;
 	return;
@@ -696,7 +692,7 @@ public class MainView extends View {
       being_list[0].start_life(5);
       being_list[1].start_life(5);
       being_list_count = 2;
-      jack_shutup(STATE_NORMAL);
+      set_main_state(STATE_NORMAL);
       arena.setVisibility(View.VISIBLE);
       arrow_view.setVisibility(View.VISIBLE);
       put_gest("Snap", -1, -1);
@@ -952,7 +948,6 @@ public class MainView extends View {
 	Log.i("M", "D " + main_state);
 	if (gameover) return true;
 	if (is_animating) return false;
-	if (STATE_SPEECH == main_state) return true;
 	x0 = event.getX();
 	y0 = event.getY();
 	if (y0 < ylower) {
@@ -995,10 +990,6 @@ public class MainView extends View {
 	  return true;
 	}
 	if (is_animating) return false;
-	if (STATE_SPEECH == main_state) {
-	  tut.run();
-	  return true;
-	}
 	x1 = event.getX();
 	y1 = event.getY();
 	if (drag_i != -1) {

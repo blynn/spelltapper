@@ -12,6 +12,9 @@ class Dojo extends SpellTapMachine {
   void set_state_dummy() {
     machine = new DummyMachine();
   }
+  void set_state_missilelesson() {
+    machine = new MissileMachine();
+  }
 
   class FirstMachine extends Machine {
     FirstMachine() {}
@@ -25,6 +28,14 @@ class Dojo extends SpellTapMachine {
     DummyMachine() {}
     void run() {
       spelltap.mainview.set_state_practicemode();
+      spelltap.goto_mainframe();
+    }
+  }
+
+  class MissileMachine extends Machine {
+    MissileMachine() {}
+    void run() {
+      spelltap.mainview.set_state_missilelesson();
       spelltap.goto_mainframe();
     }
   }

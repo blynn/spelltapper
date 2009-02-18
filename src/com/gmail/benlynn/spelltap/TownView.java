@@ -51,11 +51,6 @@ public class TownView extends View {
 
   void narrate(int string_constant) {
     spelltap.narrate(string_constant);
-    ui_state = STATE_NARRATE;
-  }
-
-  void narrate_off() {
-    spelltap.narrate_off();
   }
 
   abstract class Machine {
@@ -70,24 +65,19 @@ public class TownView extends View {
       for(;;) switch(state) {
 	case 0:
 	  narrate(R.string.town0);
-	  ui_state = STATE_NARRATE;
-	  state = 100;
-	  return;
-	case 100:
-	  narrate(R.string.town1);
 	  state = 1;
 	  return;
 	case 1:
-	  narrate_off();
-	  ui_state = STATE_ON_TAP;
+	  narrate(R.string.town1);
 	  state = 2;
+	  ui_state = STATE_ON_TAP;
+	  count = 0;
 	  return;
 	case 2:
 	  if (choice != 0) {
 	    count++;
 	    if (count == 3) {
 	      narrate(R.string.academynag);
-	      state = 1;
 	      count = 0;
 	    }
 	  } else {
@@ -126,7 +116,6 @@ public class TownView extends View {
     if (is_animating) return false;
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
-	if (STATE_NARRATE == ui_state) return true;
 	x0 = event.getX();
 	y0 = event.getY();
 	choice = -1;
@@ -141,10 +130,6 @@ public class TownView extends View {
 	}
 	return true;
       case MotionEvent.ACTION_UP:
-	if (STATE_NARRATE == ui_state) {
-	  machine.run();
-	  return true;
-	}
 	x1 = event.getX();
 	y1 = event.getY();
 	if (choice != -1) {
@@ -161,17 +146,7 @@ public class TownView extends View {
 	  else  {
 	    // TODO: Fade screen.
 	    setVisibility(View.GONE);
-	    switch(location) {
-	    case SpellTap.PLACE_SCHOOL:
-	      spelltap.goto_school();
-	      break;
-	    case SpellTap.PLACE_DOJO:
-	      spelltap.goto_dojo();
-	      break;
-	    case SpellTap.PLACE_PIT:
-	      spelltap.goto_pit();
-	      break;
-	    }
+	    spelltap.set_place(location);
 	  }
 	}
 	return true;
@@ -232,6 +207,16 @@ public class TownView extends View {
     boolean is_locked;
   }
 
+  void set_spelltap(SpellTap i_spelltap) {
+    spelltap = i_spelltap;
+    stmach = new Kludge(spelltap);
+  }
+  class Kludge extends SpellTapMachine {
+    Kludge(SpellTap st) { super(st); }
+    void run() { machine.run(); }
+  }
+  static SpellTapMachine stmach;
+
   static Place place_list[];
   static boolean is_animating;
   static Paint paint;
@@ -243,8 +228,7 @@ public class TownView extends View {
   static float xdelta, ydelta;
   static Machine machine;
   static final int STATE_NORMAL = 0;
-  static final int STATE_NARRATE = 1;
-  static final int STATE_ON_TAP = 2;
+  static final int STATE_ON_TAP = 1;
   static int ui_state;
   static int delay = 32;
   static int frame_max = 24;

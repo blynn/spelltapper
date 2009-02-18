@@ -99,4 +99,9 @@
 	android:layout_marginTop="16dip"
 	/>
   </LinearLayout>
+<com.gmail.benlynn.spelltap.InputHog
+ android:id="@+id/inputhog"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    />
 </FrameLayout>

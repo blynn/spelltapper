@@ -33,11 +33,11 @@
     <string name="palmtutpass4">Now go to the Arena for your first duel. Or pracice more at the Training Hall.</string>
 
     <string name="jackfirstadvice">Sendin is your next opponent. Cast Shield to block his stabs.</string>
-    <string name="shieldtut3">Sendin is your next opponent. Cast Shield to block his stabs.</string>
     <string name="shieldtutdraw">A draw is not good enough. With the Shield spell you should be able to win easily.</string>
-    <string name="shieldtutwin">Well done. Let's pick up the pace.</string>
     <string name="shieldtutlose">Let\'s try it again, shall we?</string>
+    <string name="shieldtutwin">Well done. Meet me at the Training Hall for your next lesson.</string>
 
+    <string name="arenashut">The Arena is closed.</string>
     <string name="SDtut">Do a Snap gesture (S) by drawing a diagonally up and away from the center, like a Knife gesture that veers outwards (L: &#x2196; R: &#x2197; ). Make Snap with both hands and end your turn.</string>
     <string name="SDtutpass1">Now, the Digit gesture (D) is the same except you go toward to center (L: &#x2197; R: &#x2196; ). Make Digit with both hands and end the turn.</string>
     <string name="SDtutpass2">Surprise! S followed by D casts Missile. Unlike Shield, most spells take several turns to cast.</string>

@@ -34,13 +34,20 @@ public class SpellTap extends Activity {
     mainframe.setVisibility(View.GONE);
 
     townview = (TownView) findViewById(R.id.townview);
-    townview.spelltap = this;
+    townview.set_spelltap(this);
 
-    school = new School(this);
-    dojo = new Dojo(this);
-    pit = new Pit(this);
+    mach = new SpellTapMachine[PLACE_COUNT];
+    mach[PLACE_SCHOOL] = school = new School(this);
+    mach[PLACE_DOJO] = dojo = new Dojo(this);
+    mach[PLACE_PIT] = pit = new Pit(this);
+    for (int i = 0; i < PLACE_COUNT; i++) {
+      if (null == mach[i]) Log.e("SpellTap", "null mach remains");
+    }
+    hog = (InputHog) findViewById(R.id.inputhog);
+    hog.spelltap = this;
 
-    townview.machine.run();
+    curmach = townview.stmach;
+    curmach.run();
     state = 0;
     next_state();
   }
@@ -70,32 +77,26 @@ public class SpellTap extends Activity {
       school.set_state_firstadvice();
       state = 4;
       break;
+    case 4:  // One win. Time to learn SD.
+      pit.set_state_closed();
+      school.set_state_jackwaits();
+      dojo.set_state_missilelesson();
+      state = 5;
+      break;
     }
   }
 
-  void narrate(int string_constant) {
-    narrator.setVisibility(View.GONE);
-    narrator.setVisibility(View.VISIBLE);
-    narratortext.setText(string_constant);
-  }
-  void narrate_off() {
-    narrator.setVisibility(View.GONE);
-  }
-
-  void goto_school() {
-    school.run();
-  }
-  void goto_dojo() {
-    dojo.run();
-  }
-  void goto_pit() {
-    pit.run();
+  void set_place(int i) {
+    curmach = mach[i];
+    curmach.run();
   }
   void goto_town() {
-    townview.machine.run();
+    curmach = townview.stmach;
+    curmach.run();
     townview.setVisibility(View.VISIBLE);
   }
   void goto_mainframe() {
+    curmach = null;
     mainview.run();
     mainframe.setVisibility(View.VISIBLE);
   }
@@ -106,9 +107,20 @@ public class SpellTap extends Activity {
   void jack_says(int string_constant) {
     speech_layout.setVisibility(View.VISIBLE);
     speech_box.setText(string_constant);
+    hog.setVisibility(View.VISIBLE);
   }
-  void jack_shutup() {
+  void narrate(int string_constant) {
+    narratortext.setText(string_constant);
+    narrator.setVisibility(View.VISIBLE);
+    hog.setVisibility(View.VISIBLE);
+  }
+
+  void hogup() {
     speech_layout.setVisibility(View.GONE);
+    narrator.setVisibility(View.GONE);
+    hog.setVisibility(View.GONE);
+    if (null == curmach) mainview.run();
+    else curmach.run();
   }
 
   static MainView mainview;
@@ -120,10 +132,13 @@ public class SpellTap extends Activity {
   static final int PLACE_PIT = 2;
   static final int PLACE_COUNT = 3;
   static TownView townview;
-  static School school;
+  static InputHog hog;
   static int state;
   static View speech_layout;
   static TextView speech_box;
+  static SpellTapMachine[] mach;
+  static SpellTapMachine curmach;
   static Pit pit;
   static Dojo dojo;
+  static School school;
 }

@@ -38,7 +38,6 @@ class School extends SpellTapMachine {
 	  state = 1;
 	  return;
 	case 1:
-	  spelltap.narrate_off();
 	  state = 0;
 	  spelltap.goto_town();
 	  return;
@@ -67,7 +66,6 @@ class School extends SpellTapMachine {
 	  state = 1;
 	  return;
 	case 1:
-	  spelltap.jack_shutup();
 	  state = 0;
 	  spelltap.goto_town();
 	  return;
