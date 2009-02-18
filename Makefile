@@ -26,10 +26,10 @@ bin/resources.ap_ : src/$(MUCK)/R.java
 bin/out.apk : bin/resources.ap_ bin/classes.dex
 	$(APKBUILDER) bin/out.apk -z bin/resources.ap_ -f bin/classes.dex -rf src -rj libs
 
-red :
+red : bin/out.apk
 	$(ADB) -d uninstall com.gmail.benlynn.spelltap
 	$(ADB) -d install bin/out.apk
 
-ree :
+ree : bin/out.apk
 	$(ADB) -e uninstall com.gmail.benlynn.spelltap
 	$(ADB) -e install bin/out.apk

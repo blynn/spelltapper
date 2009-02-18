@@ -1197,31 +1197,33 @@ public class MainView extends View {
 	add_ready_spell(h, stab_spell);
 	spell_text[h] = "";
       }
-    } else if (choice[h] != GESTURE_NONE) {
+    } else {
       if (lastchoice[h] == GESTURE_KNIFE && choice[1 - h] == GESTURE_KNIFE) {
 	ready_spell_count[1 - h] = 0;
 	add_ready_spell(1 - h, stab_spell);
 	choose_spell(1 - h, 0);
       }
       spell_text[h] = "";
-      for (int i = 0; i < spell_list_count; i++) {
-	String g = spell_list[i].gesture;
-	int k = g.length();
-	if (k > hist.cur - hist.start[h] + 1) continue;
-	k--;
-	if (g.charAt(k) != gestname[choice[h]].charAt(0)) continue;
-	k--;
-	int k2 = hist.cur - 1;
-	while (k >= 0) {
-	  if (g.charAt(k) != gestname[hist.gest[k2][h]].charAt(0)) {
-	    break;
-	  }
-	  k2--;
+      if (choice[h] != GESTURE_NONE) {
+	for (int i = 0; i < spell_list_count; i++) {
+	  String g = spell_list[i].gesture;
+	  int k = g.length();
+	  if (k > hist.cur - hist.start[h] + 1) continue;
 	  k--;
-	}
-	if (0 > k) {
-	  // At last we have a match.
-	  add_ready_spell(h, spell_list[i]);
+	  if (g.charAt(k) != gestname[choice[h]].charAt(0)) continue;
+	  k--;
+	  int k2 = hist.cur - 1;
+	  while (k >= 0) {
+	    if (g.charAt(k) != gestname[hist.gest[k2][h]].charAt(0)) {
+	      break;
+	    }
+	    k2--;
+	    k--;
+	  }
+	  if (0 > k) {
+	    // At last we have a match.
+	    add_ready_spell(h, spell_list[i]);
+	  }
 	}
       }
     }
