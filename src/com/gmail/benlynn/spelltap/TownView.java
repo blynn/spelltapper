@@ -158,7 +158,10 @@ public class TownView extends View {
 	if (STATE_ON_TAP == ui_state) machine.run();
 	if (choice != -1) {
 	  if (choice != location) travel();
-	  else switch(location) {
+	  else  {
+	    // TODO: Fade screen.
+	    setVisibility(View.GONE);
+	    switch(location) {
 	    case SpellTap.PLACE_SCHOOL:
 	      spelltap.goto_school();
 	      break;
@@ -168,6 +171,7 @@ public class TownView extends View {
 	    case SpellTap.PLACE_PIT:
 	      spelltap.goto_pit();
 	      break;
+	    }
 	  }
 	}
 	return true;

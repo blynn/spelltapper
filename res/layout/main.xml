@@ -8,16 +8,6 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     />
-<com.gmail.benlynn.spelltap.SchoolView
- android:id="@+id/schoolview"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    />
-<com.gmail.benlynn.spelltap.DojoView
- android:id="@+id/dojoview"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    />
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
  android:id="@+id/mainframe"
     android:layout_width="fill_parent"

@@ -36,44 +36,38 @@ public class SpellTap extends Activity {
     townview = (TownView) findViewById(R.id.townview);
     townview.spelltap = this;
 
-    schoolview = (SchoolView) findViewById(R.id.schoolview);
-    schoolview.setVisibility(View.GONE);
-    schoolview.spelltap = this;
-
-    dojoview = (DojoView) findViewById(R.id.dojoview);
-    dojoview.setVisibility(View.GONE);
-    dojoview.spelltap = this;
-
+    school = new School(this);
+    dojo = new Dojo(this);
     pit = new Pit(this);
 
     townview.machine.run();
-    curview = townview;
     state = 0;
     next_state();
   }
 
   void next_state() {
+    mainframe.setVisibility(View.GONE);
     switch(state) {
     case 0:  // N00b. Can only go to Academy to get schooled.
-      schoolview.set_state_noob();
+      school.set_state_noob();
       state = 1;
       break;
     case 1:  // Jack waits in the Training Hall for the first lesson.
       unlock_place(SpellTap.PLACE_DOJO);
-      dojoview.set_state_firstlesson();
-      schoolview.set_state_jackwaits();
+      dojo.set_state_firstlesson();
+      school.set_state_jackwaits();
       state = 2;
       break;
     case 2:  // Knows Stab. Can train on dummy, or learn Palm in Academy.
       mainview.dummyhp = 3;
-      dojoview.set_state_dummy();
-      schoolview.set_state_palmlesson();
+      dojo.set_state_dummy();
+      school.set_state_palmlesson();
       state = 3;
       break;
     case 3:  // Knows Palm, Shield. Arena is open.
       unlock_place(SpellTap.PLACE_PIT);
       pit.set_state_stabatha();
-      schoolview.set_state_firstadvice();
+      school.set_state_firstadvice();
       state = 4;
       break;
     }
@@ -88,36 +82,22 @@ public class SpellTap extends Activity {
     narrator.setVisibility(View.GONE);
   }
 
-  // TODO: Fade screen for these transitions.
-  // TODO: Remove duplicated code.
   void goto_school() {
-    if (null != curview) curview.setVisibility(View.GONE);
-    curview = schoolview;
-    schoolview.run();
-    curview.setVisibility(View.VISIBLE);
+    school.run();
   }
   void goto_dojo() {
-    if (null != curview) curview.setVisibility(View.GONE);
-    curview = dojoview;
-    dojoview.run();
-    curview.setVisibility(View.VISIBLE);
+    dojo.run();
   }
   void goto_pit() {
-    curview.setVisibility(View.GONE);
-    curview = null;
     pit.run();
   }
   void goto_town() {
-    if (null != curview) curview.setVisibility(View.GONE);
-    curview = townview;
     townview.machine.run();
-    curview.setVisibility(View.VISIBLE);
+    townview.setVisibility(View.VISIBLE);
   }
   void goto_mainframe() {
-    if (null != curview) curview.setVisibility(View.GONE);
-    curview = mainframe;
     mainview.run();
-    curview.setVisibility(View.VISIBLE);
+    mainframe.setVisibility(View.VISIBLE);
   }
   void unlock_place(int place) {
     townview.unlock(place);
@@ -132,7 +112,6 @@ public class SpellTap extends Activity {
   }
 
   static MainView mainview;
-  static View curview;
   static View mainframe;
   static View narrator;
   static TextView narratortext;
@@ -141,10 +120,10 @@ public class SpellTap extends Activity {
   static final int PLACE_PIT = 2;
   static final int PLACE_COUNT = 3;
   static TownView townview;
-  static SchoolView schoolview;
-  static DojoView dojoview;
+  static School school;
   static int state;
   static View speech_layout;
   static TextView speech_box;
   static Pit pit;
+  static Dojo dojo;
 }
