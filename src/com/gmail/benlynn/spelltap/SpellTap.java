@@ -15,19 +15,59 @@ public class SpellTap extends Activity {
     // No title bar.
     requestWindowFeature(Window.FEATURE_NO_TITLE);
     setContentView(R.layout.main);
-    MainView mv = (MainView) findViewById(R.id.mainview);
-    mv.set_arena((Arena) findViewById(R.id.arena));
-    mv.set_arrow_view((ArrowView) findViewById(R.id.arrow_view));
-    mv.set_speech_box((TextView) findViewById(R.id.speech_box));
-    mv.speech_layout = findViewById(R.id.speech_layout);
-    mv.tut.run();
 
-    View v = findViewById(R.id.mainframe);
-    v.setVisibility(View.GONE);
-    TownView townview = (TownView) findViewById(R.id.townview);
-    townview.narrator = findViewById(R.id.narrator);
-    townview.narratortext = (TextView) findViewById(R.id.narratortext);
-    townview.mainframe = v;
+    narrator = findViewById(R.id.narrator);
+    narratortext = (TextView) findViewById(R.id.narratortext);
+
+    mainview = (MainView) findViewById(R.id.mainview);
+    mainview.spelltap = this;
+    mainview.set_arena((Arena) findViewById(R.id.arena));
+    mainview.set_arrow_view((ArrowView) findViewById(R.id.arrow_view));
+    mainview.set_speech_box((TextView) findViewById(R.id.speech_box));
+    mainview.speech_layout = findViewById(R.id.speech_layout);
+
+    mainframe = findViewById(R.id.mainframe);
+    mainframe.setVisibility(View.GONE);
+
+    townview = (TownView) findViewById(R.id.townview);
+    townview.spelltap = this;
     townview.machine.run();
+
+    curview = townview;
   }
+
+  void narrate(int string_constant) {
+    narrator.setVisibility(View.GONE);
+    narrator.setVisibility(View.VISIBLE);
+    narratortext.setText(string_constant);
+  }
+  void narrate_off() {
+    narrator.setVisibility(View.GONE);
+  }
+  // TODO: Fade screen for these transitions.
+  void goto_mainframe() {
+    curview.setVisibility(View.GONE);
+    curview = mainframe;
+    mainview.tut.run();
+    curview.setVisibility(View.VISIBLE);
+  }
+  void goto_town() {
+    curview.setVisibility(View.GONE);
+    curview = townview;
+    townview.machine.run();
+    curview.setVisibility(View.VISIBLE);
+  }
+  void unlock_place(int place) {
+    townview.unlock(place);
+  }
+
+  static MainView mainview;
+  static View curview;
+  static View mainframe;
+  static View narrator;
+  static TextView narratortext;
+  static final int PLACE_SCHOOL = 0;
+  static final int PLACE_DOJO = 1;
+  static final int PLACE_COUNT = 2;
+  static TownView townview;
 }

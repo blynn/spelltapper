@@ -42,11 +42,24 @@
       android:paddingLeft="16dip"
       android:paddingRight="16dip"
       >
-    <ImageView
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:src="@drawable/jack"
-	/>
+    <!-- TODO: There must be an easier way to do borders -->
+    <FrameLayout
+      android:layout_width="68px"
+      android:layout_height="68px"
+      >
+      <ImageView
+	android:layout_width="68px"
+	android:layout_height="68px"
+	android:src="#ff5555aa"
+	  />
+      <ImageView
+	android:layout_width="64px"
+	android:layout_height="64px"
+	android:paddingTop="4px"
+	android:paddingLeft="4px"
+	android:src="@drawable/jack"
+	  />
+    </FrameLayout>
     <TextView
 	android:paddingLeft="10dip"
 	android:paddingRight="10dip"
@@ -68,17 +81,6 @@
       android:textSize="18sp"
       android:layout_marginTop="16dip"
       />
-      <!-- I want this along the bottom of the screen. TODO: Figure out how.
-  <TextView
-   android:id="@+id/reminder"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      android:background="#ff0000aa"
-      android:textColor="#ffffffff"
-      android:textSize="18sp"
-      android:text="[Tap screen to continue]"
-      />
-      -->
 </LinearLayout>
 </FrameLayout>
   <LinearLayout
@@ -95,7 +97,6 @@
       android:background="#ff0000aa"
       android:textColor="#ffffffff"
       android:textSize="18sp"
-      android:text="Welcome to Spell Tap! At last, you have arrived at the world's most renowned school of magic. You've been traveling for days, but your journey has just begun. [Tap screen to continue.]"
       />
   </LinearLayout>
 </FrameLayout>

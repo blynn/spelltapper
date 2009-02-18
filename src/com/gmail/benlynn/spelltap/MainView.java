@@ -153,7 +153,7 @@ public class MainView extends View {
 	    switch(count) {
 	    case 3:
 	      jack_says(R.string.howtoknifepass3);
-	      tut = new DummyTutorial();
+	      state = 4;
 	      break;
 	    case 2:
 	      jack_says(R.string.howtoknifepass2);
@@ -168,6 +168,12 @@ public class MainView extends View {
 	    state = 1;
 	    break;
 	  }
+	  return;
+	case 4:
+	  jack_shutup(STATE_NORMAL);
+	  tut = new DummyTutorial();
+	  spelltap.unlock_place(SpellTap.PLACE_DOJO);
+	  spelltap.goto_town();
 	  return;
       }
     }
@@ -743,8 +749,8 @@ public class MainView extends View {
       monatt[i] = new MonsterAttack(i);
     }
 
-    //tut = new KnifeTutorial();
-    tut = new NoTutorial();
+    tut = new KnifeTutorial();
+    //tut = new NoTutorial();
     msg = "";
     bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
     oppmove = new SpellTapMove();
@@ -1611,4 +1617,6 @@ public class MainView extends View {
   void reset_being_pos() {
     for (int i = 0; i < 16; i++) being_pos[i].being = null;
   }
+
+  static SpellTap spelltap;
 }

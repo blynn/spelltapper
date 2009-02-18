@@ -22,22 +22,39 @@ public class TownView extends View {
     bgpaint = new Paint();
     bgpaint.setARGB(255, 0, 0, 191);
     bmplayer = BitmapFactory.decodeResource(getResources(), R.drawable.wiz);
-    bmacademy = BitmapFactory.decodeResource(getResources(), R.drawable.academy);
     xplayer = 160 - 32;
     yplayer = 240 - 32;
     machine = new FirstMachine();
     is_animating = false;
+
+    place_list = new Place[SpellTap.PLACE_COUNT];
+    put_place(SpellTap.PLACE_SCHOOL, "Academy", 0, 0, R.drawable.academy);
+    put_place(SpellTap.PLACE_DOJO, "Training Hall",
+	320 - 128, 0, R.drawable.training);
+    unlock(SpellTap.PLACE_SCHOOL);
+    for (int i = 0; i < SpellTap.PLACE_COUNT; i++) {
+      if (null == place_list[i]) {
+	Log.e("TownView", "null Place remains.");
+      }
+    }
+  }
+
+  void put_place(int i, String name, int x, int y, int bitmapid) {
+    Place p = new Place(name, x, y, bitmapid);
+    place_list[i] = p;
+  }
+
+  void unlock(int i) {
+    place_list[i].is_locked = false;
   }
 
   void narrate(int string_constant) {
-    narrator.setVisibility(View.GONE);
-    narrator.setVisibility(View.VISIBLE);
-    narratortext.setText(string_constant);
+    spelltap.narrate(string_constant);
     ui_state = STATE_NARRATE;
   }
 
   void narrate_off() {
-    narrator.setVisibility(View.GONE);
+    spelltap.narrate_off();
   }
 
   abstract class Machine {
@@ -51,14 +68,18 @@ public class TownView extends View {
     void run() {
       for(;;) switch(state) {
 	case 0:
+	  narrate(R.string.town0);
 	  ui_state = STATE_NARRATE;
+	  state = 100;
+	  return;
+	case 100:
+	  narrate(R.string.town1);
 	  state = 1;
 	  return;
 	case 1:
 	  narrate_off();
 	  ui_state = STATE_ON_TAP;
 	  state = 2;
-	  count = 0;
 	  return;
 	case 2:
 	  if (choice != 0) {
@@ -80,21 +101,19 @@ public class TownView extends View {
   }
 
   class NormalMachine extends Machine {
-    void run() {
-      if (location == 0) {
-	// TODO: Fade screen.
-	setVisibility(View.GONE);
-	mainframe.setVisibility(View.VISIBLE);
-      }
-    }
+    void run() {}
   }
 
   @Override
   public void onDraw(Canvas canvas) {
-    canvas.drawRect(0, 0, 128, 16, bgpaint);
-    canvas.drawText("Academy", 5, 16 - 4, fgpaint);
-    canvas.drawBitmap(bmacademy, 0, 16, paint);
-
+    for (int i = 0; i < SpellTap.PLACE_COUNT; i++) {
+      Place p = place_list[i];
+      if (!p.is_locked) {
+	canvas.drawRect(p.x, p.y, p.x + 128, p.y + 16, bgpaint);
+	canvas.drawText(p.name, p.x + 5, p.y + 16 - 4, fgpaint);
+	canvas.drawBitmap(p.bitmap, p.x, p.y + 16, paint);
+      }
+    }
     canvas.drawBitmap(bmplayer, xplayer, yplayer, paint);
   }
 
@@ -109,8 +128,14 @@ public class TownView extends View {
 	x0 = event.getX();
 	y0 = event.getY();
 	choice = -1;
-	if (x0 < 128 && y0 < 96) {
-	  choice = 0;
+	for (int i = 0; i < SpellTap.PLACE_COUNT; i++) {
+	  Place p = place_list[i];
+	  if (!p.is_locked) {
+	    if (x0 >= p.x && x0 < p.x + 128 && y0 >= p.y && y0 < p.y + 96) {
+	      choice = i;
+	      break;
+	    }
+	  }
 	}
 	return true;
       case MotionEvent.ACTION_UP:
@@ -120,8 +145,14 @@ public class TownView extends View {
 	}
 	x1 = event.getX();
 	y1 = event.getY();
-	if (choice == 0 && x1 < 128 && y1 < 96) {
-	} else choice = -1;
+	if (choice != -1) {
+	  // If a tap landed on a building, it must leave on the
+	  // same building to count.
+	  Place p = place_list[choice];
+	  if (!(x0 >= p.x && x0 < p.x + 128 && y0 >= p.y && y0 < p.y + 96)) {
+	    choice = -1;
+	  }
+	}
 	if (STATE_ON_TAP == ui_state) machine.run();
 	if (choice != -1) travel();
 	return true;
@@ -137,7 +168,15 @@ public class TownView extends View {
       anim_handler.sleep(delay);
     } else {
       is_animating = false;
-      machine.run();
+      location = choice;
+      switch(location) {
+	case SpellTap.PLACE_SCHOOL:
+	  spelltap.goto_mainframe();
+	  break;
+	case SpellTap.PLACE_DOJO:
+	  spelltap.goto_mainframe();
+	  break;
+      }
     }
   }
 
@@ -156,16 +195,31 @@ public class TownView extends View {
   }
 
   void travel() {
-    location = choice;
+    Place p = place_list[choice];
     is_animating = true;
-    xtarget = 64 - 32;
-    ytarget = 96;
+    xtarget = p.x + 64 - 32;
+    ytarget = p.y + 96;
     ydelta = (ytarget - yplayer) / frame_max;
     xdelta = (xtarget - xplayer) / frame_max;
     frame = 0;
     anim_handler.sleep(delay);
   }
 
+  class Place {
+    Place(String i_name, int i_x, int i_y, int bitmapid){
+      name = i_name;
+      x = i_x;
+      y = i_y;
+      bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
+      is_locked = true;
+    }
+    String name;
+    int x, y;
+    Bitmap bitmap;
+    boolean is_locked;
+  }
+
+  static Place place_list[];
   static boolean is_animating;
   static Paint paint;
   static Paint fgpaint, bgpaint;
@@ -179,11 +233,9 @@ public class TownView extends View {
   static final int STATE_NARRATE = 1;
   static final int STATE_ON_TAP = 2;
   static int ui_state;
-  static View narrator;
-  static TextView narratortext;
   static int delay = 32;
   static int frame_max = 24;
   static int frame;
   static int location = -1;
-  static View mainframe;
+  static SpellTap spelltap;
 }

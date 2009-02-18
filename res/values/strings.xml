@@ -2,6 +2,8 @@
 <resources>
     <string name="app_name">Spell Tap</string>
 
+<string name="town0">Welcome to Spell Tap! [Tap the screen to continue.]</string>
+<string name="town1">You\'ve travelled for days, but your journey has just begun. At last, you stand before Spell Tap Academy, the world\'s top magic school. [Tap on the Academy to enter.]</string>
     <string name="academynag">Tap on the Academy.</string>
 
     <string name="welcome">So you want to be a wizard? And partake in duels of sorcery? Then listen carefully... </string>
@@ -9,9 +11,9 @@
     <string name="howtoknife2">Starting from the lower part of the screen, slide your finger up ( &#x2191; ). </string>
     <string name="howtoknifepass1">Good stab! Do it again.</string>
     <string name="howtoknifepass2">Observe using the left half of the screen gives a left-handed stab, and using the right half gives a right-handed stab.</string>
-    <string name="howtoknifepass3">Excellent. Let\'s go find a target.</string>
+    <string name="howtoknifepass3">You show promise. Meet me at the training hall.</string>
 
-    <string name="dummytut">Stab the wooden dummy 3 times to destroy it. Use the motion you just learned, then tap the bottom of the screen to confirm each stab.</string>
+    <string name="dummytut">Stab this wooden dummy 3 times to destroy it. Use the motion you just learned, then tap the bottom of the screen to confirm each stab.</string>
     <string name="dummytutwin">Well done. Let\'s see how you handle hostile targets.</string>
     <string name="dummytutdraw">Very funny, though strictly speaking you did destroy the dummy. You\'re lucky I know the Raise Dead spell. Clearly you know how to play, so we\'ll skip a lesson. </string>
     <string name="dummytutlose">Very funny. You\'re lucky I know the Raise Dead spell. We\'ll move on, even though you lost to a wooden dummy.</string>
