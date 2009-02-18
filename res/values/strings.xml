@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SpellTap</string>
+    <string name="app_name">Spell Tap</string>
+
+    <string name="academynag">Tap on the Academy.</string>
 
     <string name="welcome">So you want to be a wizard? And partake in duels of sorcery? Then listen carefully... </string>
     <string name="howtoknife">Before any spells, you must learn to wield your knife. Physical violence may be the last resort, but many a wizard owes their life to combat training.</string>

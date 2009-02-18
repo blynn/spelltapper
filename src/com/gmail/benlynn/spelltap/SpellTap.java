@@ -21,5 +21,13 @@ public class SpellTap extends Activity {
     mv.set_speech_box((TextView) findViewById(R.id.speech_box));
     mv.speech_layout = findViewById(R.id.speech_layout);
     mv.tut.run();
+
+    View v = findViewById(R.id.mainframe);
+    v.setVisibility(View.GONE);
+    TownView townview = (TownView) findViewById(R.id.townview);
+    townview.narrator = findViewById(R.id.narrator);
+    townview.narratortext = (TextView) findViewById(R.id.narratortext);
+    townview.mainframe = v;
+    townview.machine.run();
   }
 }

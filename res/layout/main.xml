@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
- android:id="@+id/container"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+<com.gmail.benlynn.spelltap.TownView
+ android:id="@+id/townview"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    />
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+ android:id="@+id/mainframe"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
@@ -71,4 +80,22 @@
       />
       -->
 </LinearLayout>
+</FrameLayout>
+  <LinearLayout
+   android:id="@+id/narrator"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:layout_gravity="bottom"
+      >
+  <TextView
+   android:id="@+id/narratortext"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:background="#ff0000aa"
+      android:textColor="#ffffffff"
+      android:textSize="18sp"
+      android:text="Welcome to Spell Tap! At last, you have arrived at the world's most renowned school of magic. You've been traveling for days, but your journey has just begun. [Tap screen to continue.]"
+      />
+  </LinearLayout>
 </FrameLayout>
