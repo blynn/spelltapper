@@ -29,9 +29,10 @@
     <string name="palmtut1">Drag your finger downwards ( &#x2193; ) in the lower part of the screen to make the Palm gesture (P). </string>
     <string name="palmtutpass1">Good. In a duel, you could cast Shield now.</string>
     <string name="palmtutpass2">Great! Shield protects you from all physical attacks.</string>
-    <string name="palmtutpass3">Excellent. But take care: gesturing Palm with both hands means you surrender: you lose at the end of the round, unless your opponent is dead!</string>
-    <string name="palmtutpass4">Now go to the Arena for your first duel. Or train some more first.</string>
+    <string name="palmtutpass3">Take care. Gesturing Palm with both hands means you surrender! You lose at the end of the round, unless your opponent is dead.</string>
+    <string name="palmtutpass4">Now go to the Arena for your first duel. Or pracice more at the Training Hall.</string>
 
+    <string name="jackfirstadvice">Sendin is your next opponent. Cast Shield to block his stabs.</string>
     <string name="shieldtut3">Sendin is your next opponent. Cast Shield to block his stabs.</string>
     <string name="shieldtutdraw">A draw is not good enough. With the Shield spell you should be able to win easily.</string>
     <string name="shieldtutwin">Well done. Let's pick up the pace.</string>

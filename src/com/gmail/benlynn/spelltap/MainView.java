@@ -68,16 +68,11 @@ public class MainView extends View {
 
   static Arena arena;
   static ArrowView arrow_view;
-  static TextView speech_box;
-  static View speech_layout;
   void set_arena(Arena a) {
     arena = a;
   }
   void set_arrow_view(ArrowView a) {
     arrow_view = a;
-  }
-  void set_speech_box(TextView a) {
-    speech_box = a;
   }
 
   void run() { tut.run(); }
@@ -93,6 +88,9 @@ public class MainView extends View {
   }
   void set_state_shieldtutorial() {
     tut = new ShieldTutorial();
+  }
+  void set_state_practicemode() {
+    tut = new PracticeMode();
   }
 
   static SpellTapMove oppmove;
@@ -110,13 +108,12 @@ public class MainView extends View {
   }
 
   void jack_says(int string_constant) {
-    speech_layout.setVisibility(View.VISIBLE);
-    speech_box.setText(string_constant);
+    spelltap.jack_says(string_constant);
     main_state = STATE_SPEECH;
   }
 
   void jack_shutup(int new_state) {
-    speech_layout.setVisibility(View.GONE);
+    spelltap.jack_shutup();
     main_state = new_state;
   }
 
@@ -355,7 +352,7 @@ public class MainView extends View {
 	      break;
 	    }
 	  } else {
-	    state = 0;
+	    state = 100;
 	    break;
 	  }
 	  return;
@@ -372,6 +369,37 @@ public class MainView extends View {
     }
     int state;
     int count;
+  }
+
+  static int dummyhp;
+  // Practice Mode. A defenceless dummy.
+  class PracticeMode extends Tutorial {
+    PracticeMode() {
+      state = 0;
+    }
+    void run() {
+      for(;;) switch(state) {
+	case 0:
+	  being_list[0].start_life(5);
+	  being_list[1].setup("The Dummy", R.drawable.dummy, dummyhp);
+	  being_list_count = 2;
+	  state = 1;
+	  hist.reset();
+	  opphist.reset();
+	  clear_choices();
+	  arena.setVisibility(View.VISIBLE);
+	  arrow_view.setVisibility(View.VISIBLE);
+	  jack_shutup(STATE_NORMAL);
+	  get_ready();
+	  invalidate();
+	  return;
+	case 1:
+	  state = 0;
+	  spelltap.goto_town();
+	  return;
+      }
+    }
+    int state;
   }
 
   // The opponent just stabs every turn, but he also has 5 hitpoints.

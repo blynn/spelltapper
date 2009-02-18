@@ -46,7 +46,7 @@ Log.i("DV", "made it here");
   class DummyMachine extends Machine {
     DummyMachine() {}
     void run() {
-      spelltap.mainview.set_state_dummytutorial();
+      spelltap.mainview.set_state_practicemode();
       spelltap.goto_mainframe();
     }
   }

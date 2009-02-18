@@ -1,3 +1,6 @@
+// TODO: Perhaps I'm better off separating the graphics from the state machines.
+// i.e. hide all Views first, and each state machine chooses which ones to
+// display. Like I'm already doing with MainView.
 package com.gmail.benlynn.spelltap;
 
 import android.app.Activity;
@@ -23,9 +26,9 @@ public class SpellTap extends Activity {
     mainview.spelltap = this;
     mainview.set_arena((Arena) findViewById(R.id.arena));
     mainview.set_arrow_view((ArrowView) findViewById(R.id.arrow_view));
-    mainview.set_speech_box((TextView) findViewById(R.id.speech_box));
-    mainview.speech_layout = findViewById(R.id.speech_layout);
-    findViewById(R.id.speech_layout).setVisibility(View.GONE);
+    speech_layout = findViewById(R.id.speech_layout);
+    speech_layout.setVisibility(View.GONE);
+    speech_box = (TextView) findViewById(R.id.speech_box);
 
     mainframe = findViewById(R.id.mainframe);
     mainframe.setVisibility(View.GONE);
@@ -60,12 +63,14 @@ public class SpellTap extends Activity {
       state = 2;
       break;
     case 2:  // Knows Stab. Can train on dummy, or learn Palm in Academy.
+      mainview.dummyhp = 3;
       dojoview.set_state_dummy();
       schoolview.set_state_palmlesson();
       state = 3;
       break;
     case 3:  // Knows Palm, Shield. Arena is open.
       unlock_place(SpellTap.PLACE_PIT);
+      schoolview.set_state_firstadvice();
       state = 4;
       break;
     }
@@ -81,6 +86,7 @@ public class SpellTap extends Activity {
   }
 
   // TODO: Fade screen for these transitions.
+  // TODO: Remove duplicated code.
   void goto_school() {
     curview.setVisibility(View.GONE);
     curview = schoolview;
@@ -109,6 +115,14 @@ public class SpellTap extends Activity {
     townview.unlock(place);
   }
 
+  void jack_says(int string_constant) {
+    speech_layout.setVisibility(View.VISIBLE);
+    speech_box.setText(string_constant);
+  }
+  void jack_shutup() {
+    speech_layout.setVisibility(View.GONE);
+  }
+
   static MainView mainview;
   static View curview;
   static View mainframe;
@@ -122,4 +136,6 @@ public class SpellTap extends Activity {
   static SchoolView schoolview;
   static DojoView dojoview;
   static int state;
+  static View speech_layout;
+  static TextView speech_box;
 }
