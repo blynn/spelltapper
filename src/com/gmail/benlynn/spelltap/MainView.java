@@ -1027,6 +1027,7 @@ public class MainView extends View {
 
   private void end_turn() {
     is_animating = true;
+    arrow_view.setVisibility(View.GONE);
     hist.add(choice);
 
     tut.AI_move(oppmove);
@@ -1135,6 +1136,7 @@ public class MainView extends View {
     }
 
     is_animating = false;
+    arrow_view.setVisibility(View.VISIBLE);
     winner = -1;
     if (being_list[1].dead) {
       gameover = true;
