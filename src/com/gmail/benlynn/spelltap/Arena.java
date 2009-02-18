@@ -1,3 +1,4 @@
+// Confusing name: the "Arena" of the game is found in Pit.java
 package com.gmail.benlynn.spelltap;
 
 import android.content.Context;

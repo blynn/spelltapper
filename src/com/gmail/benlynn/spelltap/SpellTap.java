@@ -44,6 +44,8 @@ public class SpellTap extends Activity {
     dojoview.setVisibility(View.GONE);
     dojoview.spelltap = this;
 
+    pit = new Pit(this);
+
     townview.machine.run();
     curview = townview;
     state = 0;
@@ -70,6 +72,7 @@ public class SpellTap extends Activity {
       break;
     case 3:  // Knows Palm, Shield. Arena is open.
       unlock_place(SpellTap.PLACE_PIT);
+      pit.set_state_stabatha();
       schoolview.set_state_firstadvice();
       state = 4;
       break;
@@ -88,25 +91,30 @@ public class SpellTap extends Activity {
   // TODO: Fade screen for these transitions.
   // TODO: Remove duplicated code.
   void goto_school() {
-    curview.setVisibility(View.GONE);
+    if (null != curview) curview.setVisibility(View.GONE);
     curview = schoolview;
     schoolview.run();
     curview.setVisibility(View.VISIBLE);
   }
   void goto_dojo() {
-    curview.setVisibility(View.GONE);
+    if (null != curview) curview.setVisibility(View.GONE);
     curview = dojoview;
     dojoview.run();
     curview.setVisibility(View.VISIBLE);
   }
-  void goto_town() {
+  void goto_pit() {
     curview.setVisibility(View.GONE);
+    curview = null;
+    pit.run();
+  }
+  void goto_town() {
+    if (null != curview) curview.setVisibility(View.GONE);
     curview = townview;
     townview.machine.run();
     curview.setVisibility(View.VISIBLE);
   }
   void goto_mainframe() {
-    curview.setVisibility(View.GONE);
+    if (null != curview) curview.setVisibility(View.GONE);
     curview = mainframe;
     mainview.run();
     curview.setVisibility(View.VISIBLE);
@@ -138,4 +146,5 @@ public class SpellTap extends Activity {
   static int state;
   static View speech_layout;
   static TextView speech_box;
+  static Pit pit;
 }

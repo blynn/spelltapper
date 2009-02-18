@@ -165,6 +165,9 @@ public class TownView extends View {
 	    case SpellTap.PLACE_DOJO:
 	      spelltap.goto_dojo();
 	      break;
+	    case SpellTap.PLACE_PIT:
+	      spelltap.goto_pit();
+	      break;
 	  }
 	}
 	return true;

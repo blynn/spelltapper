@@ -16,7 +16,6 @@ import android.os.Message;
 public class DojoView extends View {
   public DojoView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    paint = new Paint();
   }
 
   abstract class Machine {
@@ -37,7 +36,6 @@ public class DojoView extends View {
   class FirstMachine extends Machine {
     FirstMachine() {}
     void run() {
-Log.i("DV", "made it here");
       spelltap.mainview.set_state_dummytutorial();
       spelltap.goto_mainframe();
     }
@@ -67,7 +65,6 @@ Log.i("DV", "made it here");
     }
     return false;
   }
-  static Paint paint;
   static SpellTap spelltap;
   static Machine machine;
 }
