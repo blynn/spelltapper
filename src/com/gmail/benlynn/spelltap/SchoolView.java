@@ -33,11 +33,14 @@ public class SchoolView extends View {
   void set_state_jackwaits() {
     machine = new JackWaitsMachine();
   }
+  void set_state_palmlesson() {
+    machine = new PalmMachine();
+  }
 
   class IntroMachine extends Machine {
     IntroMachine() {}
     void run() {
-      // TODO: Introduce jack.
+      // TODO: Introduce Jack.
       spelltap.mainview.set_state_knifetutorial();
       spelltap.goto_mainframe();
     }
@@ -61,6 +64,15 @@ public class SchoolView extends View {
       }
     }
     int state;
+  }
+
+  class PalmMachine extends Machine {
+    PalmMachine() {}
+    void run() {
+      // TODO: Another sort of intro?
+      spelltap.mainview.set_state_palmtutorial();
+      spelltap.goto_mainframe();
+    }
   }
 
   @Override

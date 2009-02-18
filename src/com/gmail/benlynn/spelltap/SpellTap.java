@@ -61,10 +61,11 @@ public class SpellTap extends Activity {
       break;
     case 2:  // Knows Stab. Can train on dummy, or learn Palm in Academy.
       dojoview.set_state_dummy();
-      //schoolview.set_state_palmlesson();
+      schoolview.set_state_palmlesson();
       state = 3;
       break;
     case 3:  // Knows Palm, Shield. Arena is open.
+      unlock_place(SpellTap.PLACE_PIT);
       state = 4;
       break;
     }
@@ -115,7 +116,8 @@ public class SpellTap extends Activity {
   static TextView narratortext;
   static final int PLACE_SCHOOL = 0;
   static final int PLACE_DOJO = 1;
-  static final int PLACE_COUNT = 2;
+  static final int PLACE_PIT = 2;
+  static final int PLACE_COUNT = 3;
   static TownView townview;
   static SchoolView schoolview;
   static DojoView dojoview;

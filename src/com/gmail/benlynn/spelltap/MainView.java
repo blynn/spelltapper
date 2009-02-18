@@ -88,6 +88,12 @@ public class MainView extends View {
   void set_state_knifetutorial() {
     tut = new KnifeTutorial();
   }
+  void set_state_palmtutorial() {
+    tut = new PalmTutorial();
+  }
+  void set_state_shieldtutorial() {
+    tut = new ShieldTutorial();
+  }
 
   static SpellTapMove oppmove;
   class SpellTapMove {
@@ -232,7 +238,8 @@ public class MainView extends View {
         return;
       case 123:
 	jack_says(R.string.dummytutskip);
-	tut = new PalmTutorial();
+	spelltap.next_state();
+	spelltap.goto_town();
         return;
       }
     }
@@ -279,7 +286,7 @@ public class MainView extends View {
 	switch(winner) {
 	case 0:
 	  jack_says(R.string.targettutwin);
-	  tut = new PalmTutorial();
+	  state = 3;
 	  break;
 	case 1:
 	  jack_says(R.string.targettutlose);
@@ -287,11 +294,16 @@ public class MainView extends View {
 	  break;
 	case 2:
 	  jack_says(R.string.targettutlose);
-	  tut = new PalmTutorial();
+	  state = 0;
 	  break;
 	}
 	reset_being_pos();
         return;
+      case 3:
+	jack_shutup(STATE_NORMAL);
+	spelltap.next_state();
+	spelltap.goto_town();
+	return;
       }
     }
     int state;
@@ -313,6 +325,10 @@ public class MainView extends View {
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
 	  jack_says(R.string.palmtut);
+	  state = 100;
+	  return;
+	case 100:
+	  jack_says(R.string.palmtut1);
 	  state = 1;
 	  return;
 	case 1:
@@ -327,7 +343,7 @@ public class MainView extends View {
 	    switch(count) {
 	    case 3:
 	      jack_says(R.string.palmtutpass3);
-	      tut = new ShieldTutorial();
+	      state = 3;
 	      break;
 	    case 2:
 	      jack_says(R.string.palmtutpass2);
@@ -342,6 +358,15 @@ public class MainView extends View {
 	    state = 0;
 	    break;
 	  }
+	  return;
+	case 3:
+	  jack_says(R.string.palmtutpass4);
+	  state = 4;
+	  return;
+	case 4:
+	  jack_shutup(STATE_NORMAL);
+	  spelltap.next_state();
+	  spelltap.goto_town();
 	  return;
       }
     }
@@ -374,19 +399,11 @@ public class MainView extends View {
 	being_list_count = 2;
 	hist.reset();
 	opphist.reset();
-	jack_says(R.string.shieldtut);
+	jack_says(R.string.shieldtut3);
 	clear_choices();
 	arena.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
 	invalidate();
-	state = 1;
-	return;
-      case 1:
-	jack_says(R.string.shieldtut2);
-	state = 100;
-	return;
-      case 100:
-	jack_says(R.string.shieldtut3);
 	state = 2;
 	return;
       case 2:

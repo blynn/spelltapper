@@ -31,6 +31,7 @@ public class TownView extends View {
     put_place(SpellTap.PLACE_SCHOOL, "Academy", 0, 0, R.drawable.academy);
     put_place(SpellTap.PLACE_DOJO, "Training Hall",
 	320 - 128, 0, R.drawable.training);
+    put_place(SpellTap.PLACE_PIT, "Arena", 0, 240, R.drawable.arena);
     unlock(SpellTap.PLACE_SCHOOL);
     for (int i = 0; i < SpellTap.PLACE_COUNT; i++) {
       if (null == place_list[i]) {
