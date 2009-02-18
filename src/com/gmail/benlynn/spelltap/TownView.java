@@ -106,6 +106,7 @@ public class TownView extends View {
 
   @Override
   public void onDraw(Canvas canvas) {
+    super.onDraw(canvas);
     for (int i = 0; i < SpellTap.PLACE_COUNT; i++) {
       Place p = place_list[i];
       if (!p.is_locked) {
@@ -154,7 +155,17 @@ public class TownView extends View {
 	  }
 	}
 	if (STATE_ON_TAP == ui_state) machine.run();
-	if (choice != -1) travel();
+	if (choice != -1) {
+	  if (choice != location) travel();
+	  else switch(location) {
+	    case SpellTap.PLACE_SCHOOL:
+	      spelltap.goto_school();
+	      break;
+	    case SpellTap.PLACE_DOJO:
+	      spelltap.goto_dojo();
+	      break;
+	  }
+	}
 	return true;
     }
     return false;
@@ -169,14 +180,6 @@ public class TownView extends View {
     } else {
       is_animating = false;
       location = choice;
-      switch(location) {
-	case SpellTap.PLACE_SCHOOL:
-	  spelltap.goto_mainframe();
-	  break;
-	case SpellTap.PLACE_DOJO:
-	  spelltap.goto_mainframe();
-	  break;
-      }
     }
   }
 

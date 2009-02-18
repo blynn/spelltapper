@@ -80,6 +80,15 @@ public class MainView extends View {
     speech_box = a;
   }
 
+  void run() { tut.run(); }
+
+  void set_state_dummytutorial() {
+    tut = new DummyTutorial();
+  }
+  void set_state_knifetutorial() {
+    tut = new KnifeTutorial();
+  }
+
   static SpellTapMove oppmove;
   class SpellTapMove {
     SpellTapMove() {
@@ -171,8 +180,7 @@ public class MainView extends View {
 	  return;
 	case 4:
 	  jack_shutup(STATE_NORMAL);
-	  tut = new DummyTutorial();
-	  spelltap.unlock_place(SpellTap.PLACE_DOJO);
+	  spelltap.next_state();
 	  spelltap.goto_town();
 	  return;
       }
@@ -214,13 +222,17 @@ public class MainView extends View {
 	  break;
 	case 1:
 	  jack_says(R.string.dummytutlose);
-	  tut = new PalmTutorial();
+	  state = 123;
 	  break;
 	case 2:
 	  jack_says(R.string.dummytutdraw);
-	  tut = new PalmTutorial();
+	  state = 123;
 	  break;
 	}
+        return;
+      case 123:
+	jack_says(R.string.dummytutskip);
+	tut = new PalmTutorial();
         return;
       }
     }
@@ -749,8 +761,6 @@ public class MainView extends View {
       monatt[i] = new MonsterAttack(i);
     }
 
-    tut = new KnifeTutorial();
-    //tut = new NoTutorial();
     msg = "";
     bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
     oppmove = new SpellTapMove();
