@@ -7,11 +7,13 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.View;
+import android.view.MenuItem;
+import android.view.Menu;
 import android.widget.TextView;
+import android.widget.Button;
 
 import android.util.Log;
 public class SpellTap extends Activity {
-  /** Called when the activity is first created. */
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -21,7 +23,8 @@ public class SpellTap extends Activity {
 
     narrator = findViewById(R.id.narrator);
     narratortext = (TextView) findViewById(R.id.narratortext);
-
+    spellbook = (TextView) findViewById(R.id.spellbook);
+    spellbook.setVisibility(View.GONE);
     mainview = (MainView) findViewById(R.id.mainview);
     mainview.spelltap = this;
     mainview.set_arena((Arena) findViewById(R.id.arena));
@@ -45,11 +48,48 @@ public class SpellTap extends Activity {
     }
     hog = (InputHog) findViewById(R.id.inputhog);
     hog.spelltap = this;
+    butv = findViewById(R.id.buttonhog);
+    butclo = (Button) findViewById(R.id.button_close);
+    butv.setVisibility(View.GONE);
 
     curmach = townview.stmach;
     curmach.run();
     state = 0;
     next_state();
+  }
+
+  static final int MENU_SPELLBOOK = 1;
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    super.onCreateOptionsMenu(menu);
+    menu.add(0, MENU_SPELLBOOK, 0, R.string.menu_spells);
+    return true;
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+      case MENU_SPELLBOOK:
+        hog.blockInput();
+	spellbook.setVisibility(View.VISIBLE);
+	butv.setVisibility(View.VISIBLE);
+	butclo.setOnClickListener(new SpellBookCloser());
+	return true;
+    }
+    return false;
+  }
+
+  class SpellBookCloser implements View.OnClickListener {
+    SpellBookCloser() {}
+    public void onClick(View v) {
+      SpellTap.this.close_spellbook();
+      hog.unblockInput();
+    }
+  }
+
+  void close_spellbook() {
+    spellbook.setVisibility(View.GONE);
+    butv.setVisibility(View.GONE);
   }
 
   void next_state() {
@@ -167,4 +207,7 @@ public class SpellTap extends Activity {
   static Pit pit;
   static Dojo dojo;
   static School school;
+  static TextView spellbook;
+  static Button butclo;
+  static View butv;
 }

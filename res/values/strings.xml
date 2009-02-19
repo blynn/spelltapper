@@ -3,8 +3,8 @@
     <string name="app_name">Spell Tap</string>
 
 <string name="town0">Welcome to Spell Tap! [Tap the screen to continue.]</string>
-<string name="town1">You\'ve travelled for days, but your journey has just begun. At last, you stand before the world\'s top magic school: Spell Tap Academy. [Tap on a building to enter it.]</string>
-    <string name="academynag">Tap on the Academy.</string>
+<string name="town1">You\'ve travelled for days, but your journey has just begun. At last, you stand before the world\'s top magic academy: The School of Thought. [Tap on a building to enter.]</string>
+    <string name="academynag">Tap on the academy.</string>
 
     <string name="welcome">So you want to be a wizard? And partake in duels of sorcery? Then listen carefully... </string>
     <string name="howtoknife">Before any spells, you must learn to wield your knife. Physical violence may be the last resort, but many a wizard owes their life to combat training. I will first teach you to stab.</string>
@@ -19,14 +19,14 @@
     <string name="dummytutwin">Well done. But let\'s see how you handle hostile targets.</string>
     <string name="dummytutdraw">Very funny, though strictly speaking you did destroy the dummy. You\'re lucky I know the Raise Dead spell.</string>
     <string name="dummytutlose">Very funny. You\'re lucky I know the Raise Dead spell. We\'ll move on, even though you lost to a wooden dummy.</string>
-    <string name="dummytutskip">Clearly you know how to target your spells, so we\'ll skip a lesson. Train more on the dummy, If you like. Then see me at the Academy for your first magic lesson.</string>
+    <string name="dummytutskip">Clearly you know how to target your spells, so we\'ll skip a lesson. Train more on the dummy, If you like. Then see me back at school for your first magic lesson.</string>
 
     <string name="targettut">You must direct your first stabs to the goblins. Make a Knife gesture, then drag your finger from the Stab icon to a goblin. </string>
-    <string name="targettutwin">You learn fast. Come see me at the Academy for your first magic lesson. Or you can stab a few more dummies first.</string>
+    <string name="targettutwin">You learn fast. Come see me at the school for your first magic lesson. Or you can stab a few more dummies first.</string>
     <string name="targettutlose">You\'re lucky I know the Raise Dead spell. Let\'s try that again.</string>
 
-    <string name="palmtut">The Palm magic gesture is easy, but powerful.</string>
-    <string name="palmtut1">Drag your finger downwards ( &#x2193; ) in the lower part of the screen to make the Palm gesture (P). </string>
+    <string name="palmtut">The <b>Palm</b> magic gesture is easy, but powerful.</string>
+    <string name="palmtut1">Drag your finger downwards ( &#x2193; ) in the lower part of the screen to make the <b>Palm</b> gesture (<b>P</b>). </string>
     <string name="palmtutpass1">Good. In a duel, you could cast Shield now.</string>
     <string name="palmtutpass2">Great! Shield protects you from all physical attacks.</string>
     <string name="palmtutpass3">Take care. Gesturing Palm with both hands means you surrender! You lose at the end of the round, unless your opponent is dead.</string>
@@ -41,7 +41,7 @@
     <string name="SDtut0">Well fought! Let\'s pick up the pace.</string>
     <string name="SDtut">Do a Snap gesture (S) by drawing a diagonally up and away from the center, like a Knife gesture that veers outwards (L: &#x2196; R: &#x2197; ). Make Snap with both hands and end your turn.</string>
     <string name="SDtutpass1">Now, the Digit gesture (D) is the same except you go toward to center (L: &#x2197; R: &#x2196; ). Make Digit with both hands and end the turn.</string>
-    <string name="SDtutpass2">Surprise! S followed by D casts Missile. Unlike Shield, most spells take several turns to cast. I'll see you back at the Academy.</string>
+    <string name="SDtutpass2">Surprise! S followed by D casts Missile. Unlike Shield, most spells take several turns to cast. I'll see you back at the school.</string>
     <string name="SDtutwrong">That\'s not right. Let\'s start again.</string>
 
     <string name="meetforwfp">Missile is useful, but can be blocked by Shield. I\'ll teach you Cause Light Damage, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
@@ -68,4 +68,10 @@
 <string name="surrenderwin">Your opponent surrenders. You win!</string>
 <string name="surrenderlose">You surrender...</string>
 <string name="surrenderdraw">You both surrender.</string>
+
+<string name="menu_spells">Spells</string>
+
+<string name="emptyspellbook"><u><b>Spellbook</b></u>\n
+You don't know any spells yet.</string>
+<string name="button_close">Close</string>
 </resources>

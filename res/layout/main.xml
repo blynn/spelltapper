@@ -43,6 +43,7 @@
       android:background="#ff0000aa"
       android:textColor="#ffffffff"
       android:textSize="18sp"
+      android:paddingLeft="5dip"
       />
   </LinearLayout>
   <LinearLayout
@@ -70,6 +71,7 @@
 	  android:src="#ff5555aa"
 	    />
 	<ImageView
+	 android:id="@+id/img_speaker"
 	  android:layout_width="64px"
 	  android:layout_height="64px"
 	  android:paddingTop="4px"
@@ -97,11 +99,34 @@
 	android:textColor="#ffffffff"
 	android:textSize="18sp"
 	android:layout_marginTop="16dip"
+	android:padding="5dip"
 	/>
   </LinearLayout>
+<TextView
+ android:id="@+id/spellbook"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:textSize="18sp"
+    android:text="@string/emptyspellbook"
+    android:textColor="#ff000000"
+    android:singleLine="false"
+    android:background="#ffffffff"
+    />
 <com.gmail.benlynn.spelltap.InputHog
  android:id="@+id/inputhog"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     />
+<LinearLayout
+   android:id="@+id/buttonhog"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:gravity="right"
+      >
+    <Button android:id="@+id/button_close"
+    android:layout_width="wrap_content" 
+    android:layout_height="wrap_content" 
+    android:text="@string/button_close" />
+</LinearLayout>
 </FrameLayout>
