@@ -2,6 +2,7 @@
 // Title menu, save state, victory/defeat screen with stats.
 // Don't retarget if player taps on already-selected ready spell.
 // Resize event.
+// Bigger gameover messages.
 package com.gmail.benlynn.spelltap;
 
 import android.content.Context;
@@ -88,11 +89,18 @@ public class MainView extends View {
   void set_state_stabatha() {
     tut = new ShieldTutorial();
   }
-  void set_state_practicemode() {
+  void set_state_practicemode(int hp) {
+    dummyhp = hp;
     tut = new PracticeMode();
   }
   void set_state_missilelesson() {
     tut = new SDTutorial();
+  }
+  void set_state_wfplesson() {
+    tut = new WFPTutorial();
+  }
+  void set_state_duel2() {
+    tut = new PKFightTutorial();
   }
 
   static SpellTapMove oppmove;
@@ -235,6 +243,9 @@ public class MainView extends View {
         return;
       case 123:
 	jack_says(R.string.dummytutskip);
+	state = 124;
+	return;
+      case 124:
 	spelltap.next_state();
 	spelltap.goto_town();
         return;
@@ -401,7 +412,7 @@ public class MainView extends View {
     int state;
   }
 
-  // The opponent just stabs every turn, but he also has 5 hitpoints.
+  // Opponent with 5 hit points that stabs every turn.
   class ShieldTutorial extends Tutorial {
     ShieldTutorial() {
       state = 0;
@@ -435,24 +446,7 @@ public class MainView extends View {
 	state = 1;
 	return;
       case 1:
-        // TODO: Should have to return to academy to hear Jack's message.
-	switch(winner) {
-	case 0:
-	  jack_says(R.string.shieldtutwin);
-	  state = 2;
-	  break;
-	case 1:
-	  jack_says(R.string.shieldtutlose);
-	  state = 0;
-	  break;
-	case 2:
-	  jack_says(R.string.shieldtutdraw);
-	  state = 0;
-	  break;
-	}
-        return;
-      case 2:
-        spelltap.next_state();
+	if (winner == 0) spelltap.next_state();
         spelltap.goto_town();
 	return;
       }
@@ -464,12 +458,12 @@ public class MainView extends View {
   // Introduce S D gestures.
   class SDTutorial extends Tutorial {
     SDTutorial() {
-      state = 0;
+      state = -1;
       hand = 0;
     }
     void run() {
       for(;;) switch(state) {
-	case 0:
+	case -1:
 	  put_gest("Snap", -1, -1);
 	  put_gest("Knife", 0, -1);
 	  put_gest("Palm", 0, 1);
@@ -480,6 +474,10 @@ public class MainView extends View {
 	  opphist.reset();
 	  arena.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
+	  jack_says(R.string.SDtut0);
+	  state = 0;
+	  return;
+	case 0:
 	  jack_says(R.string.SDtut);
 	  state = 1;
 	  return;
@@ -496,6 +494,7 @@ public class MainView extends View {
 	    jack_says(R.string.SDtutpass1);
 	    state = 3;
 	  } else {
+	    jack_says(R.string.SDtutwrong);
 	    state = 0;
 	    break;
 	  }
@@ -510,11 +509,20 @@ public class MainView extends View {
 	  if (hist.gest[1][0] == GESTURE_DIGIT &&
 	      hist.gest[1][1] == GESTURE_DIGIT) {
 	    jack_says(R.string.SDtutpass2);
-	    tut = new WFPTutorial();
+	    state = 5;
 	  } else {
+	    jack_says(R.string.SDtutwrong);
 	    state = 0;
 	    break;
 	  }
+	  return;
+	case 5:
+	  set_main_state(STATE_NORMAL);
+	  state = 6;
+	  return;
+	case 6:
+	  spelltap.next_state();
+	  spelltap.goto_town();
 	  return;
       }
     }
@@ -538,8 +546,7 @@ public class MainView extends View {
 	  put_gest("Digit", 1, -1);
 	  put_gest("Palm", 0, 1);
 	  being_list[0].start_life(5);
-	  being_list[1].start_life(5);
-	  being_list[1].get_hurt(2);
+	  being_list[1].start_life(4);
 	  hist.reset();
 	  opphist.reset();
 	  being_list_count = 2;
@@ -598,11 +605,15 @@ public class MainView extends View {
 	  if (hist.gest[2][0] == GESTURE_PALM &&
 	      hist.gest[2][1] == GESTURE_PALM && 0 == winner) {
 	    jack_says(R.string.fingerstutpass4);
-	    tut = new PKFightTutorial();
+	    state = 9;
 	  } else {
 	    jack_says(R.string.fingerstutfail);
 	    state = 0;
 	  }
+	  return;
+	case 9:
+	  spelltap.next_state();
+	  spelltap.goto_town();
 	  return;
       }
     }
@@ -618,15 +629,11 @@ public class MainView extends View {
     return -1;
   }
 
-  // Defeat an opponent gesturing P and K every turn.
+  // An opponent gesturing P and K every turn.
   class PKFightTutorial extends Tutorial {
     PKFightTutorial() {
       state = 0;
       hand = 0;
-      put_gest("Knife", 0, -1);
-      put_gest("Wave", -1, 1);
-      put_gest("Palm", 0, 1);
-      put_gest("Fingers", 1, 1);
     }
     void AI_move(SpellTapMove turn) {
       turn.gest[hand] = GESTURE_KNIFE;
@@ -640,6 +647,12 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
+	put_gest("Snap", -1, -1);
+	put_gest("Knife", 0, -1);
+	put_gest("Digit", 1, -1);
+	put_gest("Wave", -1, 1);
+	put_gest("Palm", 0, 1);
+	put_gest("Fingers", 1, 1);
         // Resurrect and restore HP
 	being_list[0].start_life(5);
 	being_list[1].setup("Sendin", R.drawable.clown, 5);
@@ -647,7 +660,7 @@ public class MainView extends View {
 	hist.reset();
 	opphist.reset();
 
-	jack_says(R.string.PKfighttut);
+	set_main_state(STATE_NORMAL);
 	clear_choices();
 	arena.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
@@ -655,29 +668,9 @@ public class MainView extends View {
 	state = 1;
 	return;
       case 1:
-	jack_says(R.string.PKfighttut2);
-	state = 2;
-	return;
-      case 2:
-	set_main_state(STATE_NORMAL);
-        get_ready();
-	state = 3;
-	return;
-      case 3:
-	switch(winner) {
-	case 0:
-	  jack_says(R.string.PKfighttutwin);
-	  tut = new NoTutorial();
-	  break;
-	case 1:
-	  jack_says(R.string.PKfighttutlose);
-	  state = 0;
-	  break;
-	case 2:
-	  jack_says(R.string.PKfighttutdraw);
-	  state = 0;
-	  break;
-	}
+        if (winner == 0) spelltap.next_state();
+	spelltap.goto_town();
+	state = 0;
 	return;
       }
     }
@@ -805,11 +798,10 @@ public class MainView extends View {
     msg = "";
     bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
     oppmove = new SpellTapMove();
-    gameover = false;
   }
 
   public void get_ready() {
-    print("Tap this line to confirm moves.");
+    print("Draw gestures, and tap here to confirm.");
   }
 
   public void add_spell(Spell sp) {
@@ -946,7 +938,6 @@ public class MainView extends View {
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
 	Log.i("M", "D " + main_state);
-	if (gameover) return true;
 	if (is_animating) return false;
 	x0 = event.getX();
 	y0 = event.getY();
@@ -984,11 +975,6 @@ public class MainView extends View {
 	return true;
       case MotionEvent.ACTION_UP:
 	Log.i("M", "U " + main_state);
-	if (gameover) {
-	  gameover = false;
-	  tut.run();
-	  return true;
-	}
 	if (is_animating) return false;
 	x1 = event.getX();
 	y1 = event.getY();
@@ -1174,9 +1160,9 @@ public class MainView extends View {
     }
   }
 
-  static boolean gameover;
   // End of round. Check for death, shield expiration, etc.
   void end_round() {
+    boolean gameover = false;
     for(int i = being_list_count - 1; i >= 0; i--) {
       Being b = being_list[i];
       if (b.shield > 0) b.shield--;
@@ -1189,19 +1175,20 @@ public class MainView extends View {
 
     is_animating = false;
     arrow_view.setVisibility(View.VISIBLE);
+    int sid = R.string.bug;
     winner = -1;
     if (being_list[1].dead) {
       gameover = true;
       winner = 0;
-      print("You win!");
+      sid = R.string.win;
       if (being_list[0].dead) {
 	winner = 2;
-	print("You both die. It's a draw!");
+	sid = R.string.draw;
       }
     } else if (being_list[0].dead) {
       winner = 1;
       gameover = true;
-      print("You lose...");
+      sid = R.string.lose;
     }
 
     if (!gameover) {
@@ -1209,23 +1196,25 @@ public class MainView extends View {
 	if (opphist.is_doubleP()) {
 	  winner = 2;
 	  gameover = true;
-	  print("You both surrender.");
+	  sid = R.string.surrenderdraw;
 	} else {
 	  winner = 1;
 	  gameover = true;
-	  print("You surrender...");
+	  sid = R.string.surrenderlose;
 	}
       } else if (opphist.is_doubleP()) {
 	winner = 0;
 	gameover = true;
-	print("Your opponent surrenders. You win!");
+	sid = R.string.surrenderwin;
       }
     }
 
     invalidate();
 
     if (gameover) {
-      // Call tut.run() later once the player has tapped through the
+      print("");
+      spelltap.narrate(sid);
+      // tut.run() is called once the player has tapped through the
       // victory screen.
     } else if (STATE_ON_END_ROUND == main_state) {
       tut.run();

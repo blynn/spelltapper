@@ -53,26 +53,30 @@ public class SpellTap extends Activity {
   }
 
   void next_state() {
+    // Fragile code. Take care!
     mainframe.setVisibility(View.GONE);
+    if (state > 0) {
+      unlock_place(SpellTap.PLACE_DOJO);
+    }
+    if (state > 2) {
+      unlock_place(SpellTap.PLACE_PIT);
+    }
     switch(state) {
     case 0:  // N00b. Can only go to Academy to get schooled.
       school.set_state_noob();
       state = 1;
       break;
     case 1:  // Jack waits in the Training Hall for the first lesson.
-      unlock_place(SpellTap.PLACE_DOJO);
       dojo.set_state_firstlesson();
       school.set_state_jackwaits();
       state = 2;
       break;
     case 2:  // Knows Stab. Can train on dummy, or learn Palm in Academy.
-      mainview.dummyhp = 3;
-      dojo.set_state_dummy();
+      dojo.set_state_dummy(3);
       school.set_state_palmlesson();
       state = 3;
       break;
     case 3:  // Knows Palm, Shield. Arena is open.
-      unlock_place(SpellTap.PLACE_PIT);
       pit.set_state_stabatha();
       school.set_state_firstadvice();
       state = 4;
@@ -82,6 +86,27 @@ public class SpellTap extends Activity {
       school.set_state_jackwaits();
       dojo.set_state_missilelesson();
       state = 5;
+      break;
+    case 5:  // See Jack to learn WFP.
+      pit.set_state_closed();
+      school.set_state_wfplesson();
+      dojo.set_state_dummy(4);
+      state = 6;
+      break;
+    case 6:  // Learn WFP.
+      pit.set_state_closed();
+      school.set_state_jackwaits();
+      dojo.set_state_wfplesson();
+      state = 7;
+      break;
+    case 7:  // Second duel.
+      pit.set_state_duel2();
+      school.set_state_duel2advice();
+      dojo.set_state_dummy(5);
+      state = 8;
+      break;
+    case 8:
+      pit.set_state_closed();
       break;
     }
   }
@@ -93,6 +118,7 @@ public class SpellTap extends Activity {
   void goto_town() {
     curmach = townview.stmach;
     curmach.run();
+    mainframe.setVisibility(View.GONE);
     townview.setVisibility(View.VISIBLE);
   }
   void goto_mainframe() {

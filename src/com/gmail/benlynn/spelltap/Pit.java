@@ -8,9 +8,11 @@ class Pit extends SpellTapMachine {
   void set_state_stabatha() {
     machine = new StabathaMachine();
   }
-
   void set_state_closed() {
     machine = new ClosedMachine();
+  }
+  void set_state_duel2() {
+    machine = new Duel2Machine();
   }
 
   class StabathaMachine extends Machine {
@@ -20,12 +22,18 @@ class Pit extends SpellTapMachine {
       spelltap.goto_mainframe();
     }
   }
-
   class ClosedMachine extends Machine {
     ClosedMachine() {}
     void run() {
       spelltap.narrate(R.string.arenashut);
       spelltap.goto_town();
+    }
+  }
+  class Duel2Machine extends Machine {
+    Duel2Machine() {}
+    void run() {
+      spelltap.mainview.set_state_duel2();
+      spelltap.goto_mainframe();
     }
   }
 

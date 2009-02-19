@@ -30,30 +30,42 @@
     <string name="palmtutpass1">Good. In a duel, you could cast Shield now.</string>
     <string name="palmtutpass2">Great! Shield protects you from all physical attacks.</string>
     <string name="palmtutpass3">Take care. Gesturing Palm with both hands means you surrender! You lose at the end of the round, unless your opponent is dead.</string>
-    <string name="palmtutpass4">Now go to the Arena for your first duel. Or pracice more at the Training Hall.</string>
+    <string name="palmtutpass4">Go to the Arena for your first duel. See me afterwards.</string>
 
-    <string name="jackfirstadvice">Sendin is your next opponent. Cast Shield to block his stabs.</string>
-    <string name="shieldtutdraw">A draw is not good enough. With the Shield spell you should be able to win easily.</string>
-    <string name="shieldtutlose">Let\'s try it again, shall we?</string>
-    <string name="shieldtutwin">Well done. Meet me at the Training Hall for your next lesson.</string>
+<string name="duel1advice1">Cast Shield (P) to block stabs.</string>
+<string name="duel1advice2">You can surrender by gesturing P with both hands.</string>
+<string name="duel1advice3">Good luck! See you after the duel!</string>
 
     <string name="arenashut">The Arena is closed.</string>
+
+    <string name="SDtut0">Well fought! Let\'s pick up the pace.</string>
     <string name="SDtut">Do a Snap gesture (S) by drawing a diagonally up and away from the center, like a Knife gesture that veers outwards (L: &#x2196; R: &#x2197; ). Make Snap with both hands and end your turn.</string>
     <string name="SDtutpass1">Now, the Digit gesture (D) is the same except you go toward to center (L: &#x2197; R: &#x2196; ). Make Digit with both hands and end the turn.</string>
-    <string name="SDtutpass2">Surprise! S followed by D casts Missile. Unlike Shield, most spells take several turns to cast.</string>
+    <string name="SDtutpass2">Surprise! S followed by D casts Missile. Unlike Shield, most spells take several turns to cast. I'll see you back at the Academy.</string>
+    <string name="SDtutwrong">That\'s not right. Let\'s start again.</string>
+
+    <string name="meetforwfp">Missile is useful, but can be blocked by Shield. I\'ll teach you Cause Light Damage, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
 
     <string name="wavetut">To make a Wave gesture (W), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ). Wave both hands and end your turn.</string>
     <string name="fingerstut">Now make the Fingers gesture (F) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ). Then end your turn.</string>
-    <string name="fingerstutpass1">Perfect! Now gesture Palm with both hands. Normally this loses, but since WFP is Cause Light Wounds, you can do 4 points of damage to kill your opponent.</string>
-    <string name="fingerstutpass2">If you kill the opponent, you win even if you gesture Palm with both hands.</string>
+    <string name="fingerstutpass1">Perfect! Now gesture Palm with both hands. Normally this loses, but since WFP is Cause Light Wounds, you\'ll do 4 points of damage and kill your opponent.</string>
+    <string name="fingerstutpass2">When you gesture P with both hands, you still win if you kill the opponent.</string>
     <string name="fingerstutpass3">One more thing. A single gesture can only complete one spell, so you must choose Cause Light Wounds over Shield by tapping its icon.</string>
-    <string name="fingerstutpass4">Well done! Cause Light Wounds deals 2 damage even to shielded targets.</string>
+    <string name="fingerstutpass4">Well done! You\'re ready for your next duel.</string>
     <string name="fingerstutfail">Almost. Try again.</string>
 
-    <string name="PKfighttut">Your next opponent always tries to cast Shield on himself. </string>
-    <string name="PKfighttut2"> Cause Light Wounds (WFP) may help. Another handy spell is Confusion (DSF): its target must gesture identically with both hands. Good luck!</string>
+    <string name="duel2advice1">Your next opponent always tries to cast Shield on himself. Cause Light Wounds (WFP) may help.
+    </string>
+    <string name="duel2advice2">Consider also the Confusion spell (DSF): its victim is forced to gesture identically with both hands. Good luck!</string>
     <string name="PKfighttutwin">Impressive!</string>
     <string name="PKfighttutlose">This is a tough fight. Don\'t lose heart!</string>
     <string name="PKfighttutdraw">I\'ll let you pass, but remember you won\'t always have someone around to cast Raise Dead on you.</string>
 
+<string name="bug">Oops! You\'ve uncovered a bug!</string>
+<string name="win">You win!</string>
+<string name="lose">You lose...</string>
+<string name="draw">You both die. It\'s a draw.</string>
+<string name="surrenderwin">Your opponent surrenders. You win!</string>
+<string name="surrenderlose">You surrender...</string>
+<string name="surrenderdraw">You both surrender.</string>
 </resources>

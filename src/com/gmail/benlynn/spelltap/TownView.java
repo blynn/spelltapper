@@ -70,10 +70,13 @@ public class TownView extends View {
 	case 1:
 	  narrate(R.string.town1);
 	  state = 2;
-	  ui_state = STATE_ON_TAP;
-	  count = 0;
 	  return;
 	case 2:
+	  ui_state = STATE_ON_TAP;
+	  count = 0;
+	  state = 3;
+	  return;
+	case 3:
 	  if (choice != 0) {
 	    count++;
 	    if (count == 3) {
@@ -140,7 +143,10 @@ public class TownView extends View {
 	    choice = -1;
 	  }
 	}
-	if (STATE_ON_TAP == ui_state) machine.run();
+	if (STATE_ON_TAP == ui_state) {
+	  Log.i("d", "0");
+	  machine.run();
+	}
 	if (choice != -1) {
 	  if (choice != location) travel();
 	  else  {
