@@ -236,7 +236,7 @@ public class TownView extends View {
   static final int STATE_NORMAL = 0;
   static final int STATE_ON_TAP = 1;
   static int ui_state;
-  static int delay = 32;
+  static int delay = 24;
   static int frame_max = 24;
   static int frame;
   static int location = -1;

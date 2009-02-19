@@ -19,6 +19,23 @@ import android.os.Handler;
 import android.os.Message;
 
 public class MainView extends View {
+  static Gesture[] gesture;
+  class Gesture {
+    Gesture(String i_name, int i_x, int i_y) {
+      name = i_name;
+      abbr = name.charAt(0);
+      statusname = abbr + " (" + name + ")";
+      x = i_x;
+      y = i_y;
+      learned = false;
+    }
+    String name;
+    String statusname;
+    char abbr;
+    boolean learned;
+    int x, y;
+  }
+
   static Paint paint, selpaint;
   static Paint boxpaint;
   static Paint status_paint;
@@ -40,7 +57,6 @@ public class MainView extends View {
   static final int STATE_GESTURE_ONLY = 129;
   static final int STATE_ON_END_ROUND = 130;
 
-  static String gestname[];
   static int choice[];  // Gesture choice.
   static int lastchoice[];
   static History hist, opphist;
@@ -53,6 +69,7 @@ public class MainView extends View {
   static final int GESTURE_WAVE = flattenxy(-1, 1);
   static final int GESTURE_PALM = flattenxy(0, 1);
   static final int GESTURE_FINGERS = flattenxy(1, 1);
+  static final int GESTURE_CLAP = flattenxy(1, 0);
   static final int GESTURE_NONE = flattenxy(0, 0);
   static String spell_text[];
   static int ready_spell_count[];
@@ -136,6 +153,37 @@ public class MainView extends View {
     }
   }
 
+  static final int GK_KNIFE_ONLY = 0;
+  static final int GK_KNIFE_AND_PALM = 1;
+  static final int GK_KPS = 2;
+  static final int GK_DKPS = 3;
+  static final int GK_ALL_BUT_FC = 4;
+  static final int GK_ALL_BUT_C = 5;
+  static final int GK_ALL = 6;
+  void set_gesture_knowledge(int level) {
+    for (int i = 0; i < 9; i++) {
+      Gesture g = gesture[i];
+      if (null != g) g.learned = false;
+    }
+    // Exploit fall-through.
+    switch(level) {
+      case GK_ALL:
+        gesture[GESTURE_CLAP].learned = true;
+      case GK_ALL_BUT_C:
+        gesture[GESTURE_FINGERS].learned = true;
+      case GK_ALL_BUT_FC:
+        gesture[GESTURE_WAVE].learned = true;
+      case GK_DKPS:
+        gesture[GESTURE_DIGIT].learned = true;
+      case GK_KPS:
+        gesture[GESTURE_SNAP].learned = true;
+      case GK_KNIFE_AND_PALM:
+        gesture[GESTURE_PALM].learned = true;
+      case GK_KNIFE_ONLY:
+        gesture[GESTURE_KNIFE].learned = true;
+    }
+  }
+
   // To pass this tutorial, the player merely has to drag their finger up three
   // times, starting from the lower part of the screen.
   class KnifeTutorial extends Tutorial {
@@ -146,7 +194,7 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
 	case 0:
-	  put_gest("Knife", 0, -1);
+	  set_gesture_knowledge(GK_KNIFE_ONLY);
 	  stab_spell.learned = true;
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
@@ -211,7 +259,7 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-	put_gest("Knife", 0, -1);
+	set_gesture_knowledge(GK_KNIFE_ONLY);
 	stab_spell.learned = true;
 	clear_choices();
 	jack_says(R.string.dummytut);
@@ -264,7 +312,7 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-	put_gest("Knife", 0, -1);
+	set_gesture_knowledge(GK_KNIFE_ONLY);
         // Resurrect and restore HP
 	being_list[0].start_life(5);
 	being_list[1].start_life(3);
@@ -326,8 +374,7 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
 	case 0:
-	  put_gest("Knife", 0, -1);
-	  put_gest("Palm", 0, 1);
+	  set_gesture_knowledge(GK_KNIFE_AND_PALM);
 	  stab_spell.learned = true;
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
@@ -428,8 +475,7 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-	put_gest("Knife", 0, -1);
-	put_gest("Palm", 0, 1);
+	set_gesture_knowledge(GK_KNIFE_AND_PALM);
         // Resurrect and restore HP
 	being_list[0].start_life(5);
 	// A new challenger.
@@ -464,9 +510,7 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
 	case -1:
-	  put_gest("Snap", -1, -1);
-	  put_gest("Knife", 0, -1);
-	  put_gest("Palm", 0, 1);
+	  set_gesture_knowledge(GK_KPS);
 	  being_list[0].start_life(5);
 	  being_list[1].setup("The Dummy", R.drawable.dummy, 5);
 	  being_list_count = 2;
@@ -500,7 +544,7 @@ public class MainView extends View {
 	  }
 	  return;
 	case 3:
-	  put_gest("Digit", 1, -1);
+	  set_gesture_knowledge(GK_DKPS);
 	  get_ready();
 	  state = 4;
 	  invalidate();
@@ -540,11 +584,7 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
 	case 0:
-	  put_gest("Wave", -1, 1);
-	  put_gest("Snap", -1, -1);
-	  put_gest("Knife", 0, -1);
-	  put_gest("Digit", 1, -1);
-	  put_gest("Palm", 0, 1);
+	  set_gesture_knowledge(GK_ALL_BUT_FC);
 	  being_list[0].start_life(5);
 	  being_list[1].start_life(4);
 	  hist.reset();
@@ -573,7 +613,7 @@ public class MainView extends View {
 	  }
 	  return;
 	case 3:
-	  put_gest("Fingers", 1, 1);
+	  set_gesture_knowledge(GK_ALL_BUT_C);
 	  get_ready();
 	  state = 4;
 	  invalidate();
@@ -647,12 +687,7 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-	put_gest("Snap", -1, -1);
-	put_gest("Knife", 0, -1);
-	put_gest("Digit", 1, -1);
-	put_gest("Wave", -1, 1);
-	put_gest("Palm", 0, 1);
-	put_gest("Fingers", 1, 1);
+	set_gesture_knowledge(GK_ALL_BUT_C);
         // Resurrect and restore HP
 	being_list[0].start_life(5);
 	being_list[1].setup("Sendin", R.drawable.clown, 5);
@@ -681,6 +716,7 @@ public class MainView extends View {
   class NoTutorial extends Tutorial {
     NoTutorial() {}
     void run() {
+      set_gesture_knowledge(GK_ALL);
       clear_choices();
       being_list[0].start_life(5);
       being_list[1].start_life(5);
@@ -688,13 +724,6 @@ public class MainView extends View {
       set_main_state(STATE_NORMAL);
       arena.setVisibility(View.VISIBLE);
       arrow_view.setVisibility(View.VISIBLE);
-      put_gest("Snap", -1, -1);
-      put_gest("Knife", 0, -1);
-      put_gest("Digit", 1, -1);
-      put_gest("Clap", 1, 0);
-      put_gest("Wave", -1, 1);
-      put_gest("Palm", 0, 1);
-      put_gest("Fingers", 1, 1);
       get_ready();
       invalidate();
     }
@@ -743,6 +772,14 @@ public class MainView extends View {
     int[] start;
   }
 
+  private void put_gest(String s, int x, int y) {
+    int n = flattenxy(x, y);
+    Gesture g = gesture[n] = new Gesture(s, x, y);;
+    g.name = s;
+    g.x = x;
+    g.y = y;
+  }
+
   public MainView(Context context, AttributeSet attrs) {
     super(context, attrs);
     drag_i = -1;
@@ -755,7 +792,6 @@ public class MainView extends View {
     boxpaint.setARGB(255, 63, 0, 63);
     status_paint = new Paint();
     status_paint.setARGB(255, 95, 63, 95);
-    gestname = new String[9];
     choice = new int[2];
     lastchoice = new int[2];
     hist = new History();
@@ -798,6 +834,15 @@ public class MainView extends View {
     msg = "";
     bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
     oppmove = new SpellTapMove();
+
+    gesture = new Gesture[9];
+    put_gest("Snap", -1, -1);
+    put_gest("Knife", 0, -1);
+    put_gest("Digit", 1, -1);
+    put_gest("Clap", 1, 0);
+    put_gest("Wave", -1, 1);
+    put_gest("Palm", 0, 1);
+    put_gest("Fingers", 1, 1);
   }
 
   public void get_ready() {
@@ -816,11 +861,6 @@ public class MainView extends View {
     return (x + 1) + (y + 1) * 3;
   }
 
-  private void put_gest(String s, int x, int y) {
-    int n = flattenxy(x, y);
-    gestname[n] = s;
-  }
-
   @Override
   public void onDraw(Canvas canvas) {
     super.onDraw(canvas);
@@ -833,12 +873,12 @@ public class MainView extends View {
     x = 0;
     String s = "";
     for (int i = opphist.start[0]; i < opphist.cur; i++) {
-      s += " " + gestname[opphist.gest[i][0]].charAt(0);
+      s += " " + gesture[opphist.gest[i][0]].abbr;
     }
     canvas.drawText(s, x, y, paint);
     s = "";
     for (int i = opphist.start[1]; i < opphist.cur; i++) {
-      s += " " + gestname[opphist.gest[i][1]].charAt(0);
+      s += " " + gesture[opphist.gest[i][1]].abbr;
     }
     x = 160 + 32;
     canvas.drawText(s, x, y, paint);
@@ -848,12 +888,12 @@ public class MainView extends View {
     x = 0;
     s = "";
     for (int i = hist.start[0]; i < hist.cur; i++) {
-      s += " " + gestname[hist.gest[i][0]].charAt(0);
+      s += " " + gesture[hist.gest[i][0]].abbr;
     }
     canvas.drawText(s, x, y, paint);
     s = "";
     for (int i = hist.start[1]; i < hist.cur; i++) {
-      s += " " + gestname[hist.gest[i][1]].charAt(0);
+      s += " " + gesture[hist.gest[i][1]].abbr;
     }
     x = 160 + 32;
     canvas.drawText(s, x, y, paint);
@@ -891,13 +931,11 @@ public class MainView extends View {
 
     // Gesture and spell text.
     y = ylower + 16 - 4;
-    s = gestname[choice[0]];
-    if (null == s) s = ""; //"(nothing)";
-    else s += " (" + s.charAt(0) + ")";
+    Gesture g = gesture[choice[0]];
+    s = null == g ? "" : g.statusname;
     canvas.drawText("Left Hand: " + s, 0, y, paint);
-    s = gestname[choice[1]];
-    if (null == s) s = ""; //"(nothing)";
-    else s += " (" + s.charAt(0) + ")";
+    g = gesture[choice[1]];
+    s = null == g ? "" : g.statusname;
     canvas.drawText("Right Hand: " + s, 160, y, paint);
 
     canvas.drawText(spell_text[0], 0, y + 16, paint);
@@ -1039,7 +1077,9 @@ public class MainView extends View {
 	    dirx *= -1;
 	  }
 	  choice[h] = flattenxy(dirx, diry);
-	  if (null == gestname[choice[h]]) choice[h] = GESTURE_NONE;
+	  if (null == gesture[choice[h]] || !gesture[choice[h]].learned) {
+	    choice[h] = GESTURE_NONE;
+	  }
 	  if (choice[h] != lastchoice[h]) {
 	    handle_new_choice(h);
 	  }
@@ -1245,11 +1285,11 @@ public class MainView extends View {
 	  int k = g.length();
 	  if (k > hist.cur - hist.start[h] + 1) continue;
 	  k--;
-	  if (g.charAt(k) != gestname[choice[h]].charAt(0)) continue;
+	  if (g.charAt(k) != gesture[choice[h]].abbr) continue;
 	  k--;
 	  int k2 = hist.cur - 1;
 	  while (k >= 0) {
-	    if (g.charAt(k) != gestname[hist.gest[k2][h]].charAt(0)) {
+	    if (g.charAt(k) != gesture[hist.gest[k2][h]].abbr) {
 	      break;
 	    }
 	    k2--;

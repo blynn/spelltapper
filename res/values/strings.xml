@@ -2,8 +2,8 @@
 <resources>
     <string name="app_name">Spell Tap</string>
 
-<string name="town0">Welcome to Spell Tap! [Tap the screen to continue.]</string>
-<string name="town1">You\'ve travelled for days, but your journey has just begun. At last, you stand before the world\'s top magic academy: The School of Thought. [Tap on a building to enter.]</string>
+<string name="town0">Welcome to Spell Tap!\n[Tap the screen to continue.]</string>
+<string name="town1">You\'ve travelled for days, but your journey has just begun. At last, you stand before the world\'s top magic academy: The School of Thought.\n[Tap on a building to enter.]</string>
     <string name="academynag">Tap on the academy.</string>
 
     <string name="welcome">So you want to be a wizard? And partake in duels of sorcery? Then listen carefully... </string>

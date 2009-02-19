@@ -44,6 +44,7 @@
       android:textColor="#ffffffff"
       android:textSize="18sp"
       android:paddingLeft="5dip"
+      android:singleLine="false"
       />
   </LinearLayout>
   <LinearLayout
@@ -100,6 +101,7 @@
 	android:textSize="18sp"
 	android:layout_marginTop="16dip"
 	android:padding="5dip"
+	android:singleLine="false"
 	/>
   </LinearLayout>
 <TextView
@@ -109,8 +111,9 @@
     android:textSize="18sp"
     android:text="@string/emptyspellbook"
     android:textColor="#ff000000"
-    android:singleLine="false"
     android:background="#ffffffff"
+    android:singleLine="false"
+    android:padding="6dip"
     />
 <com.gmail.benlynn.spelltap.InputHog
  android:id="@+id/inputhog"
