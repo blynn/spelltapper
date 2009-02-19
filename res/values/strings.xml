@@ -30,7 +30,7 @@
     <string name="palmtutpass1">Good. In a duel, you could cast <i><i>Shield</i></i> now.</string>
     <string name="palmtutpass2">Great! <i>Shield</i> protects you from all physical attacks.</string>
     <string name="palmtutpass3">Take care. Gesturing <b>P</b> with both hands means you surrender! You lose at the end of the round, unless your opponent is dead.</string>
-    <string name="palmtutpass4">Go to the Arena for your first duel. See me afterwards.</string>
+    <string name="palmtutpass4">Your first opponent awaits you at the Arena. See me once you\'ve won.</string>
 
 <string name="duel1advice1">Cast <i>Shield</i> (<b>P</b>) to block stabs.</string>
 <string name="duel1advice2">If you end up in trouble, surrender by gesturing <b>P</b> with both hands.</string>
@@ -40,25 +40,23 @@
 
     <string name="SDtut0">Well fought! Let\'s pick up the pace.</string>
     <string name="SDtut">Do a <b>Snap</b> gesture (<b>S</b>) by drawing a diagonally up and away from the center, like a <b>Knife</b> gesture that veers outwards (L: &#x2196; R: &#x2197; ). Make <b>Snap</b> with both hands and end your turn.</string>
-    <string name="SDtutpass1">Now, the Digit gesture (D) is the same except you go toward to center (L: &#x2197; R: &#x2196; ). Make Digit with both hands and end the turn.</string>
-    <string name="SDtutpass2">Surprise! S followed by D casts <i>Missile</i>. Unlike <i>Shield</i>, most spells take several turns to cast. I'll see you back at the school.</string>
+    <string name="SDtutpass1">Now, the <b>Digit</b> gesture (<b>D</b>) is the same except you go toward to center (L: &#x2197; R: &#x2196; ). Make <b>D</b> with both hands and end the turn.</string>
+    <string name="SDtutpass2">Surprise! <b>S</b> then <b>D</b> casts <i>Missile</i>. Unlike <i>Shield</i>, most spells take several turns to cast. When you're done practicing, come see me.</string>
     <string name="SDtutwrong">That\'s not right. Let\'s start again.</string>
 
     <string name="meetforwfp"><i>Missile</i> is useful, but can be blocked by <i>Shield</i>. I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
 
-    <string name="wavetut">To make a Wave gesture (W), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ). Wave both hands and end your turn.</string>
-    <string name="fingerstut">Now make the Fingers gesture (F) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ). Then end your turn.</string>
-    <string name="fingerstutpass1">Perfect! Gesture <b>Palm</b> with both hands. Normally this loses, but since <b>WFP</b> is <i>Cause Light Wounds</i>, you\'ll do 4 points of damage and kill your opponent.</string>
+    <string name="wavetut">To make a <b>Wave</b> gesture (<b>W</b>), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ). <b>Wave</b> both hands and end your turn.</string>
+    <string name="fingerstut">Now make the <b>Fingers</b> gesture (<b>F</b>) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ). Then end your turn.</string>
+    <string name="fingerstutpass1">Perfect! Gesture <b>Palm</b> with both hands. Normally this loses, but since <b>WFP</b> is <i>Cause Light Wounds</i>, you\'ll do 4 points of damage and kill your opponent!</string>
     <string name="fingerstutpass3">One more thing. A single gesture can only complete one spell, so you must choose <i>Cause Light Wounds</i> over <i>Shield</i> by tapping its icon.</string>
     <string name="fingerstutpass4">Well done! You\'re ready for your next duel.</string>
     <string name="fingerstutfail">Almost. Try again.</string>
 
     <string name="duel2advice1">Your next opponent always tries to cast <i>Shield</i> on himself. <i>Cause Light Wounds</i> (<b>WFP</b>) may help.
     </string>
-    <string name="duel2advice2">Consider also the <i>Confusion</i> spell (DSF): its victim is forced to gesture identically with both hands. Good luck!</string>
+    <string name="duel2advice2">Consider also the <i>Confusion</i> spell (<b>DSF</b>): its victim is forced to gesture identically with both hands. Good luck!</string>
     <string name="PKfighttutwin">Impressive!</string>
-    <string name="PKfighttutlose">This is a tough fight. Don\'t lose heart!</string>
-    <string name="PKfighttutdraw">I\'ll let you pass, but remember you won\'t always have someone around to cast Raise Dead on you.</string>
 
 <string name="bug">Oops! You\'ve uncovered a bug!</string>
 <string name="win">You win!</string>

@@ -80,41 +80,6 @@ public class SpellTap extends Activity {
     return false;
   }
 
-  void compute_spellbook() {
-    int count = 0;
-    String s = "";
-    for (int i = 0; i < 9; i++) {
-      MainView.Gesture g = MainView.gesture[i];
-      if (g == null || !g.learned) continue;
-      count++;
-      s += g.statusname + ": " + g.arrow + "\n";
-    }
-    if (0 == count) {
-      spellbook.setText(getText(R.string.emptyspellbook));
-      return;
-    }
-    spellbook.setText(getText(R.string.heading_gestures));
-    spellbook.append(s);
-    if (count > 2) {
-      spellbook.append(getText(R.string.ins_righthand));
-    }
-    spellbook.append("\n");
-    spellbook.append(getText(R.string.heading_spells));
-  }
-
-  class SpellBookCloser implements View.OnClickListener {
-    SpellBookCloser() {}
-    public void onClick(View v) {
-      SpellTap.this.close_spellbook();
-      hog.unblockInput();
-    }
-  }
-
-  void close_spellbook() {
-    spellbook.setVisibility(View.GONE);
-    butv.setVisibility(View.GONE);
-  }
-
   void next_state() {
     // Fragile code. Take care!
     mainframe.setVisibility(View.GONE);
@@ -210,6 +175,41 @@ public class SpellTap extends Activity {
     hog.setVisibility(View.GONE);
     if (null == curmach) mainview.run();
     else curmach.run();
+  }
+
+  void compute_spellbook() {
+    int count = 0;
+    String s = "";
+    for (int i = 0; i < 9; i++) {
+      MainView.Gesture g = MainView.gesture[i];
+      if (g == null || !g.learned) continue;
+      count++;
+      s += g.statusname + ": " + g.arrow + "\n";
+    }
+    if (0 == count) {
+      spellbook.setText(getText(R.string.emptyspellbook));
+      return;
+    }
+    spellbook.setText(getText(R.string.heading_gestures));
+    spellbook.append(s);
+    if (count > 2) {
+      spellbook.append(getText(R.string.ins_righthand));
+    }
+    spellbook.append("\n");
+    spellbook.append(getText(R.string.heading_spells));
+  }
+
+  class SpellBookCloser implements View.OnClickListener {
+    SpellBookCloser() {}
+    public void onClick(View v) {
+      SpellTap.this.close_spellbook();
+      hog.unblockInput();
+    }
+  }
+
+  void close_spellbook() {
+    spellbook.setVisibility(View.GONE);
+    butv.setVisibility(View.GONE);
   }
 
   static MainView mainview;

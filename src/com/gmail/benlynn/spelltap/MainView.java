@@ -517,8 +517,7 @@ public class MainView extends View {
 	set_gesture_knowledge(GK_KNIFE_AND_PALM);
         // Resurrect and restore HP
 	being_list[0].start_life(5);
-	// A new challenger.
-	being_list[1].setup("Sendin", R.drawable.clown, 5);
+	being_list[1].setup("Stabatha", R.drawable.stabatha, 5);
 	being_list_count = 2;
 	hist.reset();
 	opphist.reset();
@@ -561,6 +560,11 @@ public class MainView extends View {
 	  state = 0;
 	  return;
 	case 0:
+	  // Restore life in case player has been messing around.
+	  being_list[0].start_life(5);
+	  being_list[1].start_life(5);
+	  hist.reset();
+	  opphist.reset();
 	  jack_says(R.string.SDtut);
 	  state = 1;
 	  return;
@@ -645,8 +649,8 @@ public class MainView extends View {
 	    jack_says(R.string.fingerstut);
 	    state = 3;
 	  } else {
+	    jack_says(R.string.fingerstutfail);
 	    state = 0;
-	    break;
 	  }
 	  return;
 	case 3:
@@ -661,8 +665,8 @@ public class MainView extends View {
 	    jack_says(R.string.fingerstutpass1);
 	    state = 5;
 	  } else {
+	    jack_says(R.string.fingerstutfail);
 	    state = 0;
-	    break;
 	  }
 	  return;
 	case 5:
