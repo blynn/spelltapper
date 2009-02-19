@@ -77,4 +77,11 @@
 <string name="emptyspellbook">\n\n\nYou don't know any spells yet.</string>
 <string name="button_close">Close</string>
 <string name="ins_righthand"><i>\nFor right hand gestures, draw the mirror image.\n</i></string>
+<string name="stabdesc">(Not a spell.) Attack target for 1 damage.</string>
+<string name="Pdesc">Prevents all physical damage: stabs, monster attacks, and missiles.</string>
+<string name="SDdesc">Fire projectile at target for 1 damage.</string>
+<string name="WFPdesc">Deals 2 damage to target, even if Shield is present.</string>
+<string name="SFWdesc">Summons monster to fight for you. Does 1 damage, can take 1 damage.</string>
+<string name="DFWdesc">Restore up to 1 health.</string>
+<string name="DSFdesc">Target spellcaster must select same gesture for both hands. Target monster attacks its controller.</string>
 </resources>

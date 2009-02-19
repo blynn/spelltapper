@@ -1398,8 +1398,9 @@ public class MainView extends View {
 
   abstract public class Spell {
     public void init(String init_name, String init_gest, int bitmapid,
-        int def_target) {
+        int descid, int def_target) {
       name = init_name;
+      description = descid;
       gesture = init_gest;
       bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
       target = def_target;
@@ -1413,6 +1414,7 @@ public class MainView extends View {
     int index;
     int target;
     int state;
+    int description;
     boolean learned;
     boolean is_finished;  // Set this to true before calling last animation.
                           // Or call finish_spell() [it's slower].
@@ -1447,7 +1449,7 @@ public class MainView extends View {
 
   public class ShieldSpell extends Spell {
     ShieldSpell() {
-      init("Shield", "P", R.drawable.shield, 0);
+      init("Shield", "P", R.drawable.shield, R.string.Pdesc, 0);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -1467,7 +1469,7 @@ public class MainView extends View {
 
   public class StabSpell extends Spell {
     StabSpell() {
-      init("Stab", "K", R.drawable.stab, 1);
+      init("Stab", "K", R.drawable.stab, R.string.stabdesc, 1);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -1499,7 +1501,7 @@ public class MainView extends View {
 
   public class MissileSpell extends Spell {
     MissileSpell() {
-      init("Missile", "SD", R.drawable.missile, 1);
+      init("Missile", "SD", R.drawable.missile, R.string.SDdesc, 1);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -1527,7 +1529,7 @@ public class MainView extends View {
 
   public class CauseLightWoundsSpell extends Spell {
     CauseLightWoundsSpell() {
-      init("Cause Light Wounds", "WFP", R.drawable.wound, 1);
+      init("Cause Light Wounds", "WFP", R.drawable.wound, R.string.WFPdesc, 1);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -1548,7 +1550,7 @@ public class MainView extends View {
 
   public class SummonGoblinSpell extends Spell {
     SummonGoblinSpell() {
-      init("Summon Goblin", "SFW", R.drawable.summon1, 0);
+      init("Summon Goblin", "SFW", R.drawable.summon1, R.string.SFWdesc, 0);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -1573,7 +1575,7 @@ public class MainView extends View {
   public class CureLightWoundsSpell extends Spell {
     CureLightWoundsSpell() {
       // TODO: Draw an icon for this.
-      init("Cure Light Wounds", "DFW", R.drawable.confusion, 0);
+      init("Cure Light Wounds", "DFW", R.drawable.confusion, R.string.DFWdesc, 0);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -1590,7 +1592,7 @@ public class MainView extends View {
 
   public class ConfusionSpell extends Spell {
     ConfusionSpell() {
-      init("Confusion", "DSF", R.drawable.confusion, 1);
+      init("Confusion", "DSF", R.drawable.confusion, R.string.DSFdesc, 1);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -1607,7 +1609,7 @@ public class MainView extends View {
 
   public class MonsterAttack extends Spell {
     MonsterAttack(int n) {
-      init("", "", R.drawable.goblin, 1);
+      init("", "", R.drawable.goblin, R.string.bug, 1);
       level = n;
     }
     public void cast(int source, int target) {

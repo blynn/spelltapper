@@ -55,7 +55,6 @@ public class SpellTap extends Activity {
     curmach = townview.stmach;
     curmach.run();
     state = 0;
-    state = 6;
     next_state();
   }
 
@@ -228,7 +227,9 @@ public class SpellTap extends Activity {
     for (int i = 0; i < MainView.spell_list_count; i++) {
       MainView.Spell sp = MainView.spell_list[i];
       if (sp.learned) {
-	spellbook.append(sp.gesture + " " + sp.name + ":" + "\n");
+	spellbook.append(sp.gesture + " " + sp.name + ": ");
+	spellbook.append(getText(sp.description));
+	spellbook.append("\n");
       }
     }
   }
