@@ -44,18 +44,22 @@
     <string name="SDtutpass2">Surprise! <b>S</b> then <b>D</b> casts <i>Missile</i>. Unlike <i>Shield</i>, most spells take several turns to cast. When you're done practicing, come see me.</string>
     <string name="SDtutwrong">That\'s not right. Let\'s start again.</string>
 
+    <string name="talkaboutmenu">At any time, press [MENU] to access your spellbook. It records what you have learned so far.</string>
     <string name="meetforwfp"><i>Missile</i> is useful, but can be blocked by <i>Shield</i>. I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
 
     <string name="wavetut">To make a <b>Wave</b> gesture (<b>W</b>), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ). <b>Wave</b> both hands and end your turn.</string>
     <string name="fingerstut">Now make the <b>Fingers</b> gesture (<b>F</b>) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ). Then end your turn.</string>
     <string name="fingerstutpass1">Perfect! Gesture <b>Palm</b> with both hands. Normally this loses, but since <b>WFP</b> is <i>Cause Light Wounds</i>, you\'ll do 4 points of damage and kill your opponent!</string>
-    <string name="fingerstutpass3">One more thing. A single gesture can only complete one spell, so you must choose <i>Cause Light Wounds</i> over <i>Shield</i> by tapping its icon.</string>
-    <string name="fingerstutpass4">Well done! You\'re ready for your next duel.</string>
+    <string name="fingerstutpass3">One more thing: a gesture can only complete one spell, so you must choose <i>Cause Light Wounds</i> over <i>Shield</i> by tapping its icon.</string>
+    <string name="fingerstutpass4">Well done! Come visit me when you're done here.</string>
     <string name="fingerstutfail">Almost. Try again.</string>
 
-    <string name="duel2advice1">Your next opponent always tries to cast <i>Shield</i> on himself. <i>Cause Light Wounds</i> (<b>WFP</b>) may help.
-    </string>
-    <string name="duel2advice2">Consider also the <i>Confusion</i> spell (<b>DSF</b>): its victim is forced to gesture identically with both hands. Good luck!</string>
+    <string name="DSFteach1">The sequence <b>DSF</b> casts <i>Confusion</i>. If its victim is a spellcaster, in the next turn both their hands must gesture identically. If cast on a monster, that monster will attack its controller.</string>
+    <string name="DSFteach2">Remember, press [MENU] to review all you have learned. Now head to the Arena, where your next foe awaits.</string>
+
+    <string name="duel2advice1">Recall <i>Shield</i> blocks <i>Stab</i> and <i>Missile</i>.</string>
+    <string name="duel2advice2">To deal with <i>Shield</i>, try <i>Cause Light Wounds</i> (<b>WFP</b>). The <i>Confusion</i> spell (<b>DSF</b>) may also help. Good luck!</string>
+
     <string name="PKfighttutwin">Impressive!</string>
 
 <string name="bug">Oops! You\'ve uncovered a bug!</string>

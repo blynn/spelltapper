@@ -37,6 +37,9 @@ class School extends SpellTapMachine {
     advice_count = 2;
     machine = new AdviceMachine();
   }
+  void set_state_dsflesson() {
+    machine = new DSFMachine();
+  }
 
   class IntroMachine extends Machine {
     IntroMachine() {}
@@ -98,10 +101,37 @@ class School extends SpellTapMachine {
     void run() {
       for(;;) switch(state) {
 	case 0:
-	  spelltap.jack_says(R.string.meetforwfp);
+	  spelltap.jack_says(R.string.talkaboutmenu);
 	  state = 1;
 	  return;
 	case 1:
+	  spelltap.jack_says(R.string.meetforwfp);
+	  state = 2;
+	  return;
+	case 2:
+	  spelltap.next_state();
+	  spelltap.goto_town();
+	  return;
+      }
+    }
+    int state;
+  }
+
+  class DSFMachine extends Machine {
+    DSFMachine() {
+      state = 0;
+    }
+    void run() {
+      for(;;) switch(state) {
+	case 0:
+	  spelltap.jack_says(R.string.DSFteach1);
+	  state = 1;
+	  return;
+	case 1:
+	  spelltap.jack_says(R.string.DSFteach2);
+	  state = 2;
+	  return;
+	case 2:
 	  spelltap.next_state();
 	  spelltap.goto_town();
 	  return;

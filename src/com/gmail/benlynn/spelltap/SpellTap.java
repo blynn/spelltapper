@@ -55,6 +55,7 @@ public class SpellTap extends Activity {
     curmach = townview.stmach;
     curmach.run();
     state = 0;
+    state = 6;
     next_state();
   }
 
@@ -80,6 +81,18 @@ public class SpellTap extends Activity {
     return false;
   }
 
+  static class Wisdom {
+    static public final int STAB = 0;
+    static public final int STABNSHIELD = 1;
+    static public final int UP_TO_MISSILE = 2;
+    static public final int UP_TO_WFP = 3;
+    static public final int UP_TO_DSF = 4;
+  }
+
+  void set_spell_knowledge(int i) {
+    mainview.set_spell_knowledge(i);
+  }
+
   void next_state() {
     // Fragile code. Take care!
     mainframe.setVisibility(View.GONE);
@@ -95,45 +108,59 @@ public class SpellTap extends Activity {
       state = 1;
       break;
     case 1:  // Jack waits in the Training Hall for the first lesson.
+      set_spell_knowledge(Wisdom.STAB);
       dojo.set_state_firstlesson();
       school.set_state_jackwaits();
       state = 2;
       break;
     case 2:  // Knows Stab. Can train on dummy, or learn Palm in Academy.
+      set_spell_knowledge(Wisdom.STAB);
       dojo.set_state_dummy(3);
       school.set_state_palmlesson();
       state = 3;
       break;
     case 3:  // Knows Palm, Shield. Arena is open.
+      set_spell_knowledge(Wisdom.STABNSHIELD);
       pit.set_state_stabatha();
       school.set_state_firstadvice();
       state = 4;
       break;
     case 4:  // One win. Time to learn SD.
+      set_spell_knowledge(Wisdom.STABNSHIELD);
       pit.set_state_closed();
       school.set_state_jackwaits();
       dojo.set_state_missilelesson();
       state = 5;
       break;
     case 5:  // See Jack to learn WFP.
+      set_spell_knowledge(Wisdom.UP_TO_MISSILE);
       pit.set_state_closed();
       school.set_state_wfplesson();
       dojo.set_state_dummy(4);
       state = 6;
       break;
     case 6:  // Learn WFP.
+      set_spell_knowledge(Wisdom.UP_TO_MISSILE);
       pit.set_state_closed();
       school.set_state_jackwaits();
       dojo.set_state_wfplesson();
       state = 7;
       break;
-    case 7:  // Second duel.
-      pit.set_state_duel2();
-      school.set_state_duel2advice();
+    case 7:  // See Jack to learn DSF.
+      set_spell_knowledge(Wisdom.UP_TO_WFP);
+      pit.set_state_closed();
+      school.set_state_dsflesson();
       dojo.set_state_dummy(5);
       state = 8;
       break;
-    case 8:
+    case 8:  // Second duel.
+      set_spell_knowledge(Wisdom.UP_TO_DSF);
+      pit.set_state_duel2();
+      school.set_state_duel2advice();
+      dojo.set_state_dummy(5);
+      state = 9;
+      break;
+    case 9:
       pit.set_state_closed();
       break;
     }
@@ -197,6 +224,13 @@ public class SpellTap extends Activity {
     }
     spellbook.append("\n");
     spellbook.append(getText(R.string.heading_spells));
+
+    for (int i = 0; i < MainView.spell_list_count; i++) {
+      MainView.Spell sp = MainView.spell_list[i];
+      if (sp.learned) {
+	spellbook.append(sp.gesture + " " + sp.name + ":" + "\n");
+      }
+    }
   }
 
   class SpellBookCloser implements View.OnClickListener {

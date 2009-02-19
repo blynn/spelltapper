@@ -18,6 +18,8 @@ import android.widget.TextView;
 import android.os.Handler;
 import android.os.Message;
 
+import com.gmail.benlynn.spelltap.SpellTap.Wisdom;
+
 public class MainView extends View {
   static Gesture[] gesture;
   class Gesture {
@@ -220,6 +222,30 @@ public class MainView extends View {
         gesture[GESTURE_PALM].learned = true;
       case GK_KNIFE_ONLY:
         gesture[GESTURE_KNIFE].learned = true;
+    }
+  }
+
+  void learn(Spell sp) {
+    sp.learned = true;
+  }
+
+  void set_spell_knowledge(int level) {
+    for (int i = 0; i < spell_list_count; i++) {
+      Spell sp = spell_list[i];
+      sp.learned = false;
+    }
+    // Exploits fall-through.
+    switch(level) {
+      case Wisdom.UP_TO_DSF:
+        learn(spellAtGesture("DSF"));
+      case Wisdom.UP_TO_WFP:
+        learn(spellAtGesture("WFP"));
+      case Wisdom.UP_TO_MISSILE:
+        learn(spellAtGesture("SD"));
+      case Wisdom.STABNSHIELD:
+        learn(spellAtGesture("P"));
+      case Wisdom.STAB:
+        learn(stab_spell);
     }
   }
 
@@ -579,6 +605,7 @@ public class MainView extends View {
 	  if (hist.gest[0][0] == GESTURE_SNAP &&
 	      hist.gest[0][1] == GESTURE_SNAP) {
 	    jack_says(R.string.SDtutpass1);
+	    set_spell_knowledge(Wisdom.UP_TO_MISSILE);
 	    state = 3;
 	  } else {
 	    jack_says(R.string.SDtutwrong);
@@ -663,6 +690,7 @@ public class MainView extends View {
 	  if (hist.gest[1][0] == GESTURE_FINGERS &&
 	      hist.gest[1][1] == GESTURE_FINGERS) {
 	    jack_says(R.string.fingerstutpass1);
+	    set_spell_knowledge(Wisdom.UP_TO_WFP);
 	    state = 5;
 	  } else {
 	    jack_says(R.string.fingerstutfail);
@@ -704,6 +732,22 @@ public class MainView extends View {
       if (name == spell_list[i].name) return i;
     }
     return -1;
+  }
+
+  Spell spellAtName(String name) {
+    if (name == "Stab") return stab_spell;
+    for(int i = 0; i < spell_list_count; i++) {
+      if (name == spell_list[i].name) return spell_list[i];
+    }
+    return null;
+  }
+
+  Spell spellAtGesture(String combo) {
+    if (combo == "K") return stab_spell;
+    for(int i = 0; i < spell_list_count; i++) {
+      if (combo == spell_list[i].gesture) return spell_list[i];
+    }
+    return null;
   }
 
   // An opponent gesturing P and K every turn.
