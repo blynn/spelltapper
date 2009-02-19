@@ -34,7 +34,7 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:orientation="vertical"
-      android:layout_gravity="bottom"
+      android:paddingTop="100px"
       >
   <TextView
    android:id="@+id/narratortext"

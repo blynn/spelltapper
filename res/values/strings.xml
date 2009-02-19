@@ -22,7 +22,7 @@
     <string name="dummytutskip">Clearly you know how to target your spells, so we\'ll skip a lesson. Train more on the dummy, If you like. Then see me back at school for your first magic lesson.</string>
 
     <string name="targettut">You must direct your first attacks to the goblins. Make a <b>Knife</b> gesture, then drag your finger from the <i>Stab</i> icon to a goblin. </string>
-    <string name="targettutwin">You learn fast. Come see me at the school for your first magic lesson. Or hang around and smash a few more dummies.</string>
+    <string name="targettutwin">You learn fast. Come see me at the school for your first magic lesson. Or stay awhile and smash a few more dummies.</string>
     <string name="targettutlose">You\'re lucky I know the <i>Raise Dead</i> spell. Let\'s try that again.</string>
 
     <string name="palmtut">The <b>Palm</b> magic gesture is easy, but powerful.</string>
@@ -32,24 +32,23 @@
     <string name="palmtutpass3">Take care. Gesturing <b>P</b> with both hands means you surrender! You lose at the end of the round, unless your opponent is dead.</string>
     <string name="palmtutpass4">Go to the Arena for your first duel. See me afterwards.</string>
 
-<string name="duel1advice1">Cast <i>Shield</i> (P) to block stabs.</string>
-<string name="duel1advice2">You can surrender by gesturing P with both hands.</string>
+<string name="duel1advice1">Cast <i>Shield</i> (<b>P</b>) to block stabs.</string>
+<string name="duel1advice2">If you end up in trouble, surrender by gesturing <b>P</b> with both hands.</string>
 <string name="duel1advice3">Good luck! See you after the duel!</string>
 
     <string name="arenashut">The Arena is closed.</string>
 
     <string name="SDtut0">Well fought! Let\'s pick up the pace.</string>
-    <string name="SDtut">Do a Snap gesture (S) by drawing a diagonally up and away from the center, like a Knife gesture that veers outwards (L: &#x2196; R: &#x2197; ). Make Snap with both hands and end your turn.</string>
+    <string name="SDtut">Do a <b>Snap</b> gesture (<b>S</b>) by drawing a diagonally up and away from the center, like a <b>Knife</b> gesture that veers outwards (L: &#x2196; R: &#x2197; ). Make <b>Snap</b> with both hands and end your turn.</string>
     <string name="SDtutpass1">Now, the Digit gesture (D) is the same except you go toward to center (L: &#x2197; R: &#x2196; ). Make Digit with both hands and end the turn.</string>
-    <string name="SDtutpass2">Surprise! S followed by D casts Missile. Unlike <i>Shield</i>, most spells take several turns to cast. I'll see you back at the school.</string>
+    <string name="SDtutpass2">Surprise! S followed by D casts <i>Missile</i>. Unlike <i>Shield</i>, most spells take several turns to cast. I'll see you back at the school.</string>
     <string name="SDtutwrong">That\'s not right. Let\'s start again.</string>
 
-    <string name="meetforwfp">Missile is useful, but can be blocked by <i>Shield</i>. I\'ll teach you Cause Light Damage, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
+    <string name="meetforwfp"><i>Missile</i> is useful, but can be blocked by <i>Shield</i>. I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
 
     <string name="wavetut">To make a Wave gesture (W), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ). Wave both hands and end your turn.</string>
     <string name="fingerstut">Now make the Fingers gesture (F) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ). Then end your turn.</string>
-    <string name="fingerstutpass1">Perfect! Now gesture Palm with both hands. Normally this loses, but since <b>WFP</b> is <i>Cause Light Wounds</i>, you\'ll do 4 points of damage and kill your opponent.</string>
-    <string name="fingerstutpass2">When you gesture P with both hands, you still win if you kill the opponent.</string>
+    <string name="fingerstutpass1">Perfect! Gesture <b>Palm</b> with both hands. Normally this loses, but since <b>WFP</b> is <i>Cause Light Wounds</i>, you\'ll do 4 points of damage and kill your opponent.</string>
     <string name="fingerstutpass3">One more thing. A single gesture can only complete one spell, so you must choose <i>Cause Light Wounds</i> over <i>Shield</i> by tapping its icon.</string>
     <string name="fingerstutpass4">Well done! You\'re ready for your next duel.</string>
     <string name="fingerstutfail">Almost. Try again.</string>

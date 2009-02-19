@@ -579,7 +579,6 @@ public class MainView extends View {
 	  } else {
 	    jack_says(R.string.SDtutwrong);
 	    state = 0;
-	    break;
 	  }
 	  return;
 	case 3:
@@ -596,7 +595,6 @@ public class MainView extends View {
 	  } else {
 	    jack_says(R.string.SDtutwrong);
 	    state = 0;
-	    break;
 	  }
 	  return;
 	case 5:
@@ -668,10 +666,6 @@ public class MainView extends View {
 	  }
 	  return;
 	case 5:
-	  jack_says(R.string.fingerstutpass2);
-	  state = 6;
-	  return;
-	case 6:
 	  jack_says(R.string.fingerstutpass3);
 	  state = 7;
 	  return;
