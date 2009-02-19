@@ -71,12 +71,35 @@ public class SpellTap extends Activity {
     switch (item.getItemId()) {
       case MENU_SPELLBOOK:
         hog.blockInput();
+	compute_spellbook();
 	spellbook.setVisibility(View.VISIBLE);
 	butv.setVisibility(View.VISIBLE);
 	butclo.setOnClickListener(new SpellBookCloser());
 	return true;
     }
     return false;
+  }
+
+  void compute_spellbook() {
+    int count = 0;
+    String s = "";
+    for (int i = 0; i < 9; i++) {
+      MainView.Gesture g = MainView.gesture[i];
+      if (g == null || !g.learned) continue;
+      count++;
+      s += g.statusname + ": " + g.arrow + "\n";
+    }
+    if (0 == count) {
+      spellbook.setText(getText(R.string.emptyspellbook));
+      return;
+    }
+    spellbook.setText(getText(R.string.heading_gestures));
+    spellbook.append(s);
+    if (count > 2) {
+      spellbook.append(getText(R.string.ins_righthand));
+    }
+    spellbook.append("\n");
+    spellbook.append(getText(R.string.heading_spells));
   }
 
   class SpellBookCloser implements View.OnClickListener {
