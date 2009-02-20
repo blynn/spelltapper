@@ -25,6 +25,8 @@ public class SpellTap extends Activity {
     narratortext = (TextView) findViewById(R.id.narratortext);
     spellbook = (TextView) findViewById(R.id.spellbook);
     spellbook.setVisibility(View.GONE);
+    spellbookv = findViewById(R.id.spellbookscroll);
+    spellbookv.setVisibility(View.GONE);
     mainview = (MainView) findViewById(R.id.mainview);
     mainview.spelltap = this;
     mainview.set_arena((Arena) findViewById(R.id.arena));
@@ -55,6 +57,7 @@ public class SpellTap extends Activity {
     curmach = townview.stmach;
     curmach.run();
     state = 0;
+    state = 7;
     next_state();
   }
 
@@ -70,11 +73,12 @@ public class SpellTap extends Activity {
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
       case MENU_SPELLBOOK:
-        hog.blockInput();
 	compute_spellbook();
 	spellbook.setVisibility(View.VISIBLE);
+	spellbookv.setVisibility(View.VISIBLE);
 	butv.setVisibility(View.VISIBLE);
 	butclo.setOnClickListener(new SpellBookCloser());
+	hog.blockInput();
 	return true;
     }
     return false;
@@ -238,13 +242,14 @@ public class SpellTap extends Activity {
     SpellBookCloser() {}
     public void onClick(View v) {
       SpellTap.this.close_spellbook();
-      hog.unblockInput();
     }
   }
 
   void close_spellbook() {
     spellbook.setVisibility(View.GONE);
     butv.setVisibility(View.GONE);
+    spellbookv.setVisibility(View.GONE);
+    hog.unblockInput();
   }
 
   static MainView mainview;
@@ -266,6 +271,7 @@ public class SpellTap extends Activity {
   static Dojo dojo;
   static School school;
   static TextView spellbook;
+  static View spellbookv;
   static Button butclo;
   static View butv;
 }

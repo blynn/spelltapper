@@ -761,6 +761,13 @@ public class MainView extends View {
       turn.spell[hand] = 64;
       turn.spell_target[hand] = 0;
       hand = 1 - hand;
+      // If confused, gesture knife with other hand even though its useless.
+      // Beats surrendering!
+      if (STATUS_CONFUSED == being_list[1].status) {
+	turn.gest[hand] = GESTURE_KNIFE;
+	turn.spell[hand] = -1;
+	return;
+      }
       turn.gest[hand] = GESTURE_PALM;
       turn.spell[hand] = indexOfSpell("Shield");
       turn.spell_target[hand] = 1;

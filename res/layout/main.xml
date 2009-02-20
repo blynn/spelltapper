@@ -104,22 +104,28 @@
 	android:singleLine="false"
 	/>
   </LinearLayout>
-<TextView
- android:id="@+id/spellbook"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:textSize="18sp"
-    android:text="@string/emptyspellbook"
-    android:textColor="#ff000000"
-    android:background="#ffffffff"
-    android:singleLine="false"
-    android:padding="6dip"
-    />
 <com.gmail.benlynn.spelltap.InputHog
  android:id="@+id/inputhog"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     />
+<ScrollView
+   android:id="@+id/spellbookscroll"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+  <TextView
+   android:id="@+id/spellbook"
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:textSize="18sp"
+      android:text="@string/emptyspellbook"
+      android:textColor="#ff000000"
+      android:background="#ffffffff"
+      android:singleLine="false"
+      android:padding="6dip"
+      />
+</ScrollView>
 <LinearLayout
    android:id="@+id/buttonhog"
       android:layout_width="fill_parent"
