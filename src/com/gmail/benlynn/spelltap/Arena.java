@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Message;
 
 import com.gmail.benlynn.spelltap.MainView.Being;
+import com.gmail.benlynn.spelltap.MainView.Status;
 
 public class Arena extends View {
   public Arena(Context context, AttributeSet attrs) {
@@ -226,6 +227,11 @@ public class Arena extends View {
       canvas.drawText(b.lifeline, mx, my + 16 - 4, paint);
       if (b.shield > 0) {
 	canvas.drawCircle(mx + b.midw, my + b.midh, b.midw + 5, shield_paint[0]);
+      }
+      switch(b.status) {
+	case Status.CONFUSED:
+	  canvas.drawText("?", mx + b.w - 8, my + 16 - 4, paint);
+	  break;
       }
   }
 

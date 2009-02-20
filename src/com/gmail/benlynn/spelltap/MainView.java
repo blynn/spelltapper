@@ -763,7 +763,7 @@ public class MainView extends View {
       hand = 1 - hand;
       // If confused, gesture knife with other hand even though its useless.
       // Beats surrendering!
-      if (STATUS_CONFUSED == being_list[1].status) {
+      if (Status.CONFUSED == being_list[1].status) {
 	turn.gest[hand] = GESTURE_KNIFE;
 	turn.spell[hand] = -1;
 	return;
@@ -1199,6 +1199,12 @@ public class MainView extends View {
     tut.AI_move(oppmove);
     opphist.add(oppmove.gest);
 
+    // Expire status effects.
+    for (int i = 0; i < being_list_count; i++) {
+      Being b = being_list[i];
+      b.status = Status.OK;
+    }
+
     // TODO: Sort spells by priority.
     exec_queue_count = 0;
     for (int h = 0; h < 2; h++) {
@@ -1606,7 +1612,7 @@ public class MainView extends View {
 	case 0:
 	  is_finished = true;
 	  if (-1 != target) {
-	    being_list[target].status = STATUS_CONFUSED;
+	    being_list[target].status = Status.CONFUSED;
 	  }
 	  arena.animate_spell(target, bitmap);
 	  return;
@@ -1647,8 +1653,10 @@ public class MainView extends View {
     int level;
   }
 
-  static final int STATUS_OK = 0;
-  static final int STATUS_CONFUSED = 1;
+  static public class Status {
+    static public final int OK = 0;
+    static public final int CONFUSED = 1;
+  }
 
   static Bitmap bmcorpse;
   public class Being {
@@ -1690,7 +1698,7 @@ public class MainView extends View {
 	being_pos[index].being = this;
 	set_size_48();
       }
-      status = STATUS_OK;
+      status = Status.OK;
       shield = 0;
       dead = false;
       setup(init_name, bitmapid, 0);
