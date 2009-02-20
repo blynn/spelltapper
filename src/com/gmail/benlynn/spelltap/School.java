@@ -3,42 +3,54 @@ package com.gmail.benlynn.spelltap;
 class School extends SpellTapMachine {
   School(SpellTap st) {
     super(st);
-    advice_list = new int[16];
-    advice_count = 0;
+    strlist = new int[16];
+    strcount = 0;
   }
   abstract class Machine { abstract void run(); }
   void run() { machine.run(); }
 
-  static int advice_list[];
-  static int advice_count;
+  static int strlist[];
+  static int strcount;
 
   void set_state_noob() {
     machine = new IntroMachine();
   }
   void set_state_jackwaits() {
-    machine = new JackWaitsMachine();
+    machine = new AdviceMachine(R.string.jackwaitsatdummy);
   }
   void set_state_palmlesson() {
     machine = new PalmMachine();
   }
   void set_state_firstadvice() {
-    advice_list[0] = R.string.duel1advice1;
-    advice_list[1] = R.string.duel1advice2;
-    advice_list[2] = R.string.duel1advice3;
-    advice_count = 3;
-    machine = new AdviceMachine();
+    machine = new AdviceMachine(
+      R.string.duel1advice1,
+      R.string.duel1advice2,
+      R.string.duel1advice3);
   }
   void set_state_wfplesson() {
-    machine = new WFPMachine();
+    machine = new LectureMachine(
+      R.string.talkaboutmenu,
+      R.string.meetforwfp);
   }
   void set_state_duel2advice() {
-    advice_list[0] = R.string.duel2advice1;
-    advice_list[1] = R.string.duel2advice2;
-    advice_count = 2;
-    machine = new AdviceMachine();
+    machine = new AdviceMachine(
+      R.string.duel2advice1,
+      R.string.duel2advice2);
   }
   void set_state_dsflesson() {
-    machine = new DSFMachine();
+    machine = new LectureMachine(
+      R.string.DSFteach1,
+      R.string.DSFteach2);
+  }
+  void set_state_curelesson() {
+    machine = new LectureMachine(
+      R.string.cureteach1,
+      R.string.cureteach2,
+      R.string.cureteach3,
+      R.string.cureteach4);
+  }
+  void set_state_duel3advice() {
+    machine = new AdviceMachine(R.string.duel3advice);
   }
 
   class IntroMachine extends Machine {
@@ -78,64 +90,67 @@ class School extends SpellTapMachine {
     }
   }
 
-  class AdviceMachine extends Machine {
-    AdviceMachine() {
+  class LectureMachine extends Machine {
+    LectureMachine(int m0, int m1) {
+      strlist[0] = m0;
+      strlist[1] = m1;
+      strcount = 2;
+      state = 0;
+    }
+    LectureMachine(int m0, int m1, int m2) {
+      strlist[0] = m0;
+      strlist[1] = m1;
+      strlist[2] = m2;
+      strcount = 3;
+      state = 0;
+    }
+    LectureMachine(int m0, int m1, int m2, int m3) {
+      strlist[0] = m0;
+      strlist[1] = m1;
+      strlist[2] = m2;
+      strlist[3] = m3;
+      strcount = 4;
       state = 0;
     }
     void run() {
-      if (state < advice_count) {
-	spelltap.jack_says(advice_list[state]);
+      if (state < strcount) {
+	spelltap.jack_says(strlist[state]);
+	state++;
+	return;
+      }
+      spelltap.next_state();
+      spelltap.goto_town();
+    }
+    int state;
+  }
+
+  class AdviceMachine extends Machine {
+    AdviceMachine(int m0) {
+      strlist[0] = m0;
+      strcount = 1;
+      state = 0;
+    }
+    AdviceMachine(int m0, int m1) {
+      strlist[0] = m0;
+      strlist[1] = m1;
+      strcount = 2;
+      state = 0;
+    }
+    AdviceMachine(int m0, int m1, int m2) {
+      strlist[0] = m0;
+      strlist[1] = m1;
+      strlist[2] = m2;
+      strcount = 3;
+      state = 0;
+    }
+    void run() {
+      if (state < strcount) {
+	spelltap.jack_says(strlist[state]);
 	state++;
 	return;
       }
       spelltap.goto_town();
       state = 0;
-    }
-    int state;
-  }
-
-  class WFPMachine extends Machine {
-    WFPMachine() {
-      state = 0;
-    }
-    void run() {
-      for(;;) switch(state) {
-	case 0:
-	  spelltap.jack_says(R.string.talkaboutmenu);
-	  state = 1;
-	  return;
-	case 1:
-	  spelltap.jack_says(R.string.meetforwfp);
-	  state = 2;
-	  return;
-	case 2:
-	  spelltap.next_state();
-	  spelltap.goto_town();
-	  return;
-      }
-    }
-    int state;
-  }
-
-  class DSFMachine extends Machine {
-    DSFMachine() {
-      state = 0;
-    }
-    void run() {
-      for(;;) switch(state) {
-	case 0:
-	  spelltap.jack_says(R.string.DSFteach1);
-	  state = 1;
-	  return;
-	case 1:
-	  spelltap.jack_says(R.string.DSFteach2);
-	  state = 2;
-	  return;
-	case 2:
-	  spelltap.next_state();
-	  spelltap.goto_town();
-	  return;
-      }
     }
     int state;
   }

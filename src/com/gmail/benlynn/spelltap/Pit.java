@@ -14,6 +14,9 @@ class Pit extends SpellTapMachine {
   void set_state_duel2() {
     machine = new Duel2Machine();
   }
+  void set_state_duel3() {
+    machine = new Duel3Machine();
+  }
 
   class StabathaMachine extends Machine {
     StabathaMachine() {}
@@ -33,6 +36,13 @@ class Pit extends SpellTapMachine {
     Duel2Machine() {}
     void run() {
       spelltap.mainview.set_state_duel2();
+      spelltap.goto_mainframe();
+    }
+  }
+  class Duel3Machine extends Machine {
+    Duel3Machine() {}
+    void run() {
+      spelltap.mainview.set_state_duel3();
       spelltap.goto_mainframe();
     }
   }

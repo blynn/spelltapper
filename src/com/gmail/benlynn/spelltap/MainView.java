@@ -158,7 +158,10 @@ public class MainView extends View {
     tut = new WFPTutorial();
   }
   void set_state_duel2() {
-    tut = new PKFightTutorial();
+    tut = new PKFighter();
+  }
+  void set_state_duel3() {
+    tut = new WFPFighter();
   }
 
   static SpellTapMove oppmove;
@@ -194,6 +197,7 @@ public class MainView extends View {
     }
   }
 
+  static final int GK_NONE = -1;
   static final int GK_KNIFE_ONLY = 0;
   static final int GK_KNIFE_AND_PALM = 1;
   static final int GK_KPS = 2;
@@ -222,6 +226,7 @@ public class MainView extends View {
         gesture[GESTURE_PALM].learned = true;
       case GK_KNIFE_ONLY:
         gesture[GESTURE_KNIFE].learned = true;
+      case GK_NONE:
     }
   }
 
@@ -236,6 +241,9 @@ public class MainView extends View {
     }
     // Exploits fall-through.
     switch(level) {
+      case Wisdom.UP_TO_DFW:
+        learn(spellAtGesture("DFW"));
+        learn(spellAtGesture("SFW"));
       case Wisdom.UP_TO_DSF:
         learn(spellAtGesture("DSF"));
       case Wisdom.UP_TO_WFP:
@@ -324,7 +332,6 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-	set_gesture_knowledge(GK_KNIFE_ONLY);
 	stab_spell.learned = true;
 	clear_choices();
 	jack_says(R.string.dummytut);
@@ -377,7 +384,6 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-	set_gesture_knowledge(GK_KNIFE_ONLY);
         // Resurrect and restore HP
 	being_list[0].start_life(5);
 	being_list[1].start_life(3);
@@ -540,7 +546,6 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-	set_gesture_knowledge(GK_KNIFE_AND_PALM);
         // Resurrect and restore HP
 	being_list[0].start_life(5);
 	being_list[1].setup("Stabatha", R.drawable.stabatha, 5);
@@ -751,8 +756,8 @@ public class MainView extends View {
   }
 
   // An opponent gesturing P and K every turn.
-  class PKFightTutorial extends Tutorial {
-    PKFightTutorial() {
+  class PKFighter extends Tutorial {
+    PKFighter() {
       state = 0;
       hand = 0;
     }
@@ -775,7 +780,57 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-	set_gesture_knowledge(GK_ALL_BUT_C);
+        // Resurrect and restore HP
+	being_list[0].start_life(5);
+	being_list[1].setup("Sendin", R.drawable.clown, 5);
+	being_list_count = 2;
+	hist.reset();
+	opphist.reset();
+
+	set_main_state(STATE_NORMAL);
+	clear_choices();
+	arena.setVisibility(View.VISIBLE);
+	arrow_view.setVisibility(View.VISIBLE);
+	invalidate();
+	state = 1;
+	return;
+      case 1:
+        if (winner == 0) spelltap.next_state();
+	spelltap.goto_town();
+	state = 0;
+	return;
+      }
+    }
+    int hand;
+    int state;
+  }
+
+  // An opponent who likes WFP.
+  class WFPFighter extends Tutorial {
+    WFPFighter() {
+      state = 0;
+      hand = 0;
+    }
+    void AI_move(SpellTapMove turn) {
+      // TODO: Implement WFP fighter.
+      turn.gest[hand] = GESTURE_KNIFE;
+      turn.spell[hand] = 64;
+      turn.spell_target[hand] = 0;
+      hand = 1 - hand;
+      // If confused, gesture knife with other hand even though its useless.
+      // Beats surrendering!
+      if (Status.CONFUSED == being_list[1].status) {
+	turn.gest[hand] = GESTURE_KNIFE;
+	turn.spell[hand] = -1;
+	return;
+      }
+      turn.gest[hand] = GESTURE_PALM;
+      turn.spell[hand] = indexOfSpell("Shield");
+      turn.spell_target[hand] = 1;
+    }
+    void run() {
+      for(;;) switch(state) {
+      case 0:
         // Resurrect and restore HP
 	being_list[0].start_life(5);
 	being_list[1].setup("Sendin", R.drawable.clown, 5);
@@ -804,7 +859,6 @@ public class MainView extends View {
   class NoTutorial extends Tutorial {
     NoTutorial() {}
     void run() {
-      set_gesture_knowledge(GK_ALL);
       clear_choices();
       being_list[0].start_life(5);
       being_list[1].start_life(5);

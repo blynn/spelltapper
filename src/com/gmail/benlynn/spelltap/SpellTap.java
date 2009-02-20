@@ -57,7 +57,7 @@ public class SpellTap extends Activity {
     curmach = townview.stmach;
     curmach.run();
     state = 0;
-    state = 7;
+    init_gesture_state_knowledge();
     next_state();
   }
 
@@ -90,10 +90,41 @@ public class SpellTap extends Activity {
     static public final int UP_TO_MISSILE = 2;
     static public final int UP_TO_WFP = 3;
     static public final int UP_TO_DSF = 4;
+    static public final int UP_TO_DFW = 5;
   }
 
   void set_spell_knowledge(int i) {
     mainview.set_spell_knowledge(i);
+  }
+  void set_gesture_knowledge(int i) {
+    mainview.set_gesture_knowledge(i);
+  }
+
+  // TODO: There must be a way to do literal arrays in Java?
+  static int gesture_state[] = new int[8];
+  static int gesture_knowledge[] = new int[8];
+  static int gsk_count;
+  static void add_gsk(int s, int k) {
+    gesture_state[gsk_count] = s;
+    gesture_knowledge[gsk_count] = k;
+    gsk_count++;
+  }
+  // TODO: Argh! Copy and past was fastest way.
+  static final int GK_NONE = -1;
+  static final int GK_KNIFE_ONLY = 0;
+  static final int GK_KNIFE_AND_PALM = 1;
+  static final int GK_KPS = 2;
+  static final int GK_DKPS = 3;
+  static final int GK_ALL_BUT_FC = 4;
+  static final int GK_ALL_BUT_C = 5;
+  static final int GK_ALL = 6;
+  static void init_gesture_state_knowledge() {
+    gsk_count = 0;
+    add_gsk(0, GK_NONE);
+    add_gsk(1, GK_KNIFE_ONLY);
+    add_gsk(3, GK_KNIFE_AND_PALM);
+    add_gsk(5, GK_DKPS);
+    add_gsk(7, GK_ALL_BUT_C);
   }
 
   void next_state() {
@@ -105,6 +136,10 @@ public class SpellTap extends Activity {
     if (state > 2) {
       unlock_place(SpellTap.PLACE_PIT);
     }
+    int i;
+    for (i = gsk_count - 1; gesture_state[i] > state; i--);
+    set_gesture_knowledge(gesture_knowledge[i]);
+
     switch(state) {
     case 0:  // N00b. Can only go to Academy to get schooled.
       school.set_state_noob();
@@ -163,8 +198,17 @@ public class SpellTap extends Activity {
       dojo.set_state_dummy(5);
       state = 9;
       break;
-    case 9:
+    case 9:  // Learn Cure Light Wounds.
+      set_spell_knowledge(Wisdom.UP_TO_DSF);
       pit.set_state_closed();
+      school.set_state_curelesson();
+      state = 10;
+      break;
+    case 10:  // Duel 3.
+      set_spell_knowledge(Wisdom.UP_TO_DFW);
+      pit.set_state_duel3();
+      school.set_state_duel3advice();
+      state = 11;
       break;
     }
   }
