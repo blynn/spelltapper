@@ -9,7 +9,7 @@ MUCK=com/gmail/benlynn/spelltap/
 
 target: bin/out.apk
 
-src/$(MUCK)/R.java : res/*/*
+src/$(MUCK)/R.java : res/*/* AndroidManifest.xml
 	$(AAPT) p -m -J src -M AndroidManifest.xml -S res -I $(SDKDIR)/android.jar
 
 binclasses : src/$(MUCK)/*.java src/$(MUCK)/R.java
@@ -20,7 +20,7 @@ binclasses : src/$(MUCK)/*.java src/$(MUCK)/R.java
 bin/classes.dex : binclasses
 	$(DX) --dex --output=bin/classes.dex bin/classes
 
-bin/resources.ap_ : src/$(MUCK)/R.java
+bin/resources.ap_ : src/$(MUCK)/R.java AndroidManifest.xml
 	$(AAPT) p -f -M AndroidManifest.xml -S res -I $(SDKDIR)/android.jar -F bin/resources.ap_
 
 bin/out.apk : bin/resources.ap_ bin/classes.dex

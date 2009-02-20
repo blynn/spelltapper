@@ -71,8 +71,8 @@ public class Arena extends View {
   static final int ANIM_DAMAGE = 5;
   static final int ANIM_SPELL = 6;
   static final int ANIM_SHIELD = 7;
-  static int delay = 32;
-  static int frame_max = 24;
+  static int delay = 24;
+  static int frame_max = 16;
   static Paint fade_paint, white_paint, big_white_paint, black_stroke_paint;
   static Paint[] shield_paint;
   static int alphadelta;

@@ -1,6 +1,5 @@
-// TODO: Perhaps I'm better off separating the graphics from the state machines.
-// i.e. hide all Views first, and each state machine chooses which ones to
-// display. Like I'm already doing with MainView.
+// TODO: Options: animation speed. Highlight current gesture.
+// Restart.
 package com.gmail.benlynn.spelltap;
 
 import android.app.Activity;
@@ -22,6 +21,7 @@ public class SpellTap extends Activity {
     setContentView(R.layout.main);
 
     narrator = findViewById(R.id.narrator);
+    narrator.setVisibility(View.GONE);
     narratortext = (TextView) findViewById(R.id.narratortext);
     spellbook = (TextView) findViewById(R.id.spellbook);
     spellbook.setVisibility(View.GONE);
@@ -45,20 +45,25 @@ public class SpellTap extends Activity {
     mach[PLACE_SCHOOL] = school = new School(this);
     mach[PLACE_DOJO] = dojo = new Dojo(this);
     mach[PLACE_PIT] = pit = new Pit(this);
+    mach[PLACE_NET] = tubes = new Tubes(this);
     for (int i = 0; i < PLACE_COUNT; i++) {
       if (null == mach[i]) Log.e("SpellTap", "null mach remains");
     }
     hog = (InputHog) findViewById(R.id.inputhog);
+    hog.setVisibility(View.GONE);
     hog.spelltap = this;
     butv = findViewById(R.id.buttonhog);
     butclo = (Button) findViewById(R.id.button_close);
     butv.setVisibility(View.GONE);
 
+    init_gesture_state_knowledge();
+
+    state = 0;
+    state = 13;
+    next_state();
+    // Start in town.
     curmach = townview.stmach;
     curmach.run();
-    state = 0;
-    init_gesture_state_knowledge();
-    next_state();
   }
 
   static final int MENU_SPELLBOOK = 1;
@@ -132,9 +137,13 @@ public class SpellTap extends Activity {
     mainframe.setVisibility(View.GONE);
     if (state > 0) {
       unlock_place(SpellTap.PLACE_DOJO);
+      townview.set_state_normal();
     }
     if (state > 2) {
       unlock_place(SpellTap.PLACE_PIT);
+    }
+    if (state > 12) {
+      unlock_place(SpellTap.PLACE_NET);
     }
     int i;
     for (i = gsk_count - 1; gesture_state[i] > state; i--);
@@ -202,13 +211,18 @@ public class SpellTap extends Activity {
       set_spell_knowledge(Wisdom.UP_TO_DSF);
       pit.set_state_closed();
       school.set_state_curelesson();
+      dojo.set_state_dummy(5);
       state = 10;
       break;
     case 10:  // Duel 3.
       set_spell_knowledge(Wisdom.UP_TO_DFW);
       pit.set_state_duel3();
       school.set_state_duel3advice();
-      state = 11;
+      dojo.set_state_dummy(5);
+      state = 13;
+      break;
+    case 11:
+    case 13:  // Net play.
       break;
     }
   }
@@ -303,7 +317,8 @@ public class SpellTap extends Activity {
   static final int PLACE_SCHOOL = 0;
   static final int PLACE_DOJO = 1;
   static final int PLACE_PIT = 2;
-  static final int PLACE_COUNT = 3;
+  static final int PLACE_NET = 3;
+  static final int PLACE_COUNT = 4;
   static TownView townview;
   static InputHog hog;
   static int state;
@@ -318,4 +333,5 @@ public class SpellTap extends Activity {
   static View spellbookv;
   static Button butclo;
   static View butv;
+  static Tubes tubes;
 }

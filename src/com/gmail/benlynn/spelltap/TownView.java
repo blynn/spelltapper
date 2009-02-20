@@ -24,6 +24,8 @@ public class TownView extends View {
     bmplayer = BitmapFactory.decodeResource(getResources(), R.drawable.wiz);
     xplayer = 160 - 32;
     yplayer = 240 - 32;
+    location = -1;
+    ui_state = STATE_NORMAL;
     machine = new FirstMachine();
     is_animating = false;
 
@@ -32,6 +34,8 @@ public class TownView extends View {
     put_place(SpellTap.PLACE_DOJO, "Training Hall",
 	320 - 128, 0, R.drawable.training);
     put_place(SpellTap.PLACE_PIT, "Arena", 0, 96 + 64, R.drawable.arena);
+    put_place(SpellTap.PLACE_NET, "Tavern",
+	320 - 128, 96 + 64, R.drawable.tavern);
     unlock(SpellTap.PLACE_SCHOOL);
     for (int i = 0; i < SpellTap.PLACE_COUNT; i++) {
       if (null == place_list[i]) {
@@ -85,7 +89,6 @@ public class TownView extends View {
 	    }
 	  } else {
 	    ui_state = STATE_NORMAL;
-	    machine = new NormalMachine();
 	  }
 	  return;
       }
@@ -97,6 +100,7 @@ public class TownView extends View {
   class NormalMachine extends Machine {
     void run() {}
   }
+  void set_state_normal() { machine = new NormalMachine(); }
 
   @Override
   public void onDraw(Canvas canvas) {
@@ -239,6 +243,6 @@ public class TownView extends View {
   static int delay = 24;
   static int frame_max = 24;
   static int frame;
-  static int location = -1;
+  static int location;
   static SpellTap spelltap;
 }
