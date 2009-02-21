@@ -1,5 +1,6 @@
 // TODO: Options: animation speed. Highlight current gesture.
 // Restart.
+// Disable back button, or warn on it.
 package com.gmail.benlynn.spelltap;
 
 import android.app.Activity;

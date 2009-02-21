@@ -16,7 +16,7 @@ class School extends SpellTapMachine {
     machine = new IntroMachine();
   }
   void set_state_jackwaits() {
-    machine = new AdviceMachine(R.string.jackwaitsatdummy);
+    machine = new JackWaitsMachine();
   }
   void set_state_palmlesson() {
     machine = new PalmMachine();

@@ -2,7 +2,8 @@
 // Title menu, save state, victory/defeat screen with stats.
 // Don't retarget if player taps on already-selected ready spell.
 // Resize event.
-// Bigger gameover messages.
+// Monster confusion.
+// Clean up get_ready() nonsense.
 package com.gmail.benlynn.spelltap;
 
 import android.content.Context;
@@ -490,6 +491,10 @@ public class MainView extends View {
 	  state = 4;
 	  return;
 	case 4:
+	  jack_says(R.string.palmtutpass5);
+	  state = 5;
+	  return;
+	case 5:
 	  set_main_state(STATE_NORMAL);
 	  spelltap.next_state();
 	  spelltap.goto_town();
@@ -540,7 +545,7 @@ public class MainView extends View {
     void AI_move(SpellTapMove turn) {
       super.AI_move(turn);
       turn.gest[hand] = GESTURE_KNIFE;
-      turn.spell[hand] = 64;
+      turn.spell[hand] = indexOfSpell("Stab");
       turn.spell_target[hand] = 0;
       hand = 1 - hand;
     }
@@ -635,10 +640,15 @@ public class MainView extends View {
 	  }
 	  return;
 	case 5:
-	  set_main_state(STATE_NORMAL);
+	  jack_says(R.string.SDtutpass3);
 	  state = 6;
 	  return;
 	case 6:
+	  set_main_state(STATE_NORMAL);
+	  get_ready();
+	  state = 7;
+	  return;
+	case 7:
 	  spelltap.next_state();
 	  spelltap.goto_town();
 	  return;
@@ -704,6 +714,10 @@ public class MainView extends View {
 	  }
 	  return;
 	case 5:
+	  jack_says(R.string.fingerstutpass2);
+	  state = 6;
+	  return;
+	case 6:
 	  jack_says(R.string.fingerstutpass3);
 	  state = 7;
 	  return;
@@ -733,7 +747,6 @@ public class MainView extends View {
   }
 
   int indexOfSpell(String name) {
-    if (name == "Stab") return 64;
     for(int i = 0; i < spell_list_count; i++) {
       if (name == spell_list[i].name) return i;
     }
@@ -741,7 +754,6 @@ public class MainView extends View {
   }
 
   Spell spellAtName(String name) {
-    if (name == "Stab") return stab_spell;
     for(int i = 0; i < spell_list_count; i++) {
       if (name == spell_list[i].name) return spell_list[i];
     }
@@ -749,7 +761,6 @@ public class MainView extends View {
   }
 
   Spell spellAtGesture(String combo) {
-    if (combo == "K") return stab_spell;
     for(int i = 0; i < spell_list_count; i++) {
       if (combo == spell_list[i].gesture) return spell_list[i];
     }
@@ -764,7 +775,7 @@ public class MainView extends View {
     }
     void AI_move(SpellTapMove turn) {
       turn.gest[hand] = GESTURE_KNIFE;
-      turn.spell[hand] = 64;
+      turn.spell[hand] = indexOfSpell("Stab");
       turn.spell_target[hand] = 0;
       hand = 1 - hand;
       // If confused, gesture knife with other hand even though its useless.
@@ -815,7 +826,7 @@ public class MainView extends View {
     void AI_move(SpellTapMove turn) {
       // TODO: Implement WFP fighter.
       turn.gest[hand] = GESTURE_KNIFE;
-      turn.spell[hand] = 64;
+      turn.spell[hand] = indexOfSpell("Stab");
       turn.spell_target[hand] = 0;
       hand = 1 - hand;
       // If confused, gesture knife with other hand even though its useless.
@@ -861,21 +872,24 @@ public class MainView extends View {
     String s = "";
     s += (char) (choice[0] + '0');
     s += (char) (choice[1] + '0');
+    s += (char) (ready_spell[spell_choice[0]][0].index + 'A');
+    s += (char) (ready_spell[spell_choice[1]][1].index + 'B');
 
     String r = Tubes.sendMove(s);
-    if (null == r) {
+    if (null == r || r.length() < 4) {
       opp_error = true;
       opp_ready = false;
       return;
     }
+    // TODO: Check message is valid first!
     if ('-' == r.charAt(0)) {
       opp_ready = false;
       return;
     }
     turn.gest[0] = r.charAt(0) - '0';
     turn.gest[1] = r.charAt(1) - '0';
-    turn.spell[0] = -1;
-    turn.spell[1] = -1;
+    turn.spell[0] = r.charAt(2) - 'A';
+    turn.spell[1] = r.charAt(3) - 'A';
   }
 
   class NetDuel extends Tutorial {
@@ -984,15 +998,15 @@ public class MainView extends View {
     spell_choice[0] = spell_choice[1] = 0;
     spell_text = new String[2];
     clear_choices();
-    stab_spell = new StabSpell();
-    stab_spell.index = 64;
     spell_list = new Spell[64];
     spell_list_count = 0;
+    stab_spell = new StabSpell();
     add_spell(new ShieldSpell(), 8);
     add_spell(new SummonGoblinSpell(), 17);
     add_spell(new ConfusionSpell(), 28);
     add_spell(new CauseLightWoundsSpell(), 63);
     add_spell(new MissileSpell(), 64);
+    add_spell(stab_spell, 65);
     add_spell(new CureLightWoundsSpell(), 128);
 
     being_list = new Being[16];
@@ -1171,10 +1185,8 @@ public class MainView extends View {
 	  if (y0 >= yicon && y0 < yicon + 48) {
 	    if (x0 < 48) {
 	      drag_i = 0;
-	      return true;
 	    } else if (x0 >= 320 - 48) {
 	      drag_i = 1;
-	      return true;
 	    }
 	  } else {
 	    // Check for monster retargeting drag.
@@ -1186,9 +1198,15 @@ public class MainView extends View {
 	      if (b.contains(x0, y0)) {
 		Log.i("Drag", "" + i);
 		drag_i = i;
-		return true;
+		break;
 	      }
 	    }
+	  }
+	  if (-1 != drag_i) {
+	    print("Drag to target.");
+	    // TODO: Only invalidate status bar.
+	    invalidate();
+	    return true;
 	  }
 	  return false;
 	}
@@ -1200,6 +1218,7 @@ public class MainView extends View {
 	x1 = event.getX();
 	y1 = event.getY();
 	if (drag_i != -1) {
+	  get_ready();
 	  int target;
 	  for(target = being_list_count - 1; target >= 0; target--) {
 	    Being b = being_list[target];
@@ -1325,6 +1344,19 @@ public class MainView extends View {
     }
   }
 
+  // Insert spells by priority.
+  private void insert_spell(SpellCast sc) {
+    int i;
+    for (i = 0; i < exec_queue_count; i++) {
+      if (exec_queue[i].spell.priority > sc.spell.priority) break;
+    }
+    for (int j = exec_queue_count; j > i; j--) {
+      exec_queue[j] = exec_queue[j - 1];
+    }
+    exec_queue[i] = sc;
+    exec_queue_count++;
+  }
+
   private void resolve() {
     opphist.add(oppmove.gest);
 
@@ -1334,30 +1366,26 @@ public class MainView extends View {
       b.status = Status.OK;
     }
 
-    // TODO: Sort spells by priority.
     exec_queue_count = 0;
     for (int h = 0; h < 2; h++) {
       if (0 == ready_spell_count[h]) continue;
       if (-1 == spell_choice[h]) continue;
       SpellCast sc = new SpellCast(
 	  ready_spell[spell_choice[h]][h], 0, spell_target[h]);
-      exec_queue[exec_queue_count] = sc;
-      exec_queue_count++;
+      insert_spell(sc);
     }
     for (int h = 0; h < 2; h++) {
       if (-1 == oppmove.spell[h]) continue;
-      Spell sp = oppmove.spell[h] == 64 ? stab_spell : spell_list[oppmove.spell[h]];
+      Spell sp = spell_list[oppmove.spell[h]];
       SpellCast sc = new SpellCast(sp, 1, oppmove.spell_target[h]);
-      exec_queue[exec_queue_count] = sc;
-      exec_queue_count++;
+      insert_spell(sc);
     }
     for (int i = 2; i < being_list_count; i++) {
       Being b = being_list[i];
       if (b.dead) continue;
       //if (-1 != b.target) {
 	SpellCast sc = new SpellCast(monatt[b.life_max], i, b.target);
-	exec_queue[exec_queue_count] = sc;
-	exec_queue_count++;
+	insert_spell(sc);
       //}
     }
 
@@ -1871,7 +1899,8 @@ public class MainView extends View {
     boolean contains(float xf, float yf) {
       int x0 = (int) xf;
       int y0 = (int) yf;
-      return x0 >= x && x0 < x + w && y0 >= y && y0 < y + h;
+      return x0 + SLOP >= x && x0 < x + w + SLOP &&
+	  y0 + SLOP >= y && y0 < y + h + SLOP;
     }
 
     Bitmap bitmap;
@@ -1888,6 +1917,7 @@ public class MainView extends View {
     int midw, midh;
     short controller;
     boolean dead;
+    static final int SLOP = 4;
   }
 
   class BeingPosition {

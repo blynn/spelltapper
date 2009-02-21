@@ -6,12 +6,12 @@
 <string name="town1">You\'ve travelled for days, but your journey has just begun. At last, you stand before the world\'s top magic academy: The School of Thought.\n[Tap on a building to enter.]</string>
     <string name="academynag">Tap on the academy.</string>
 
-    <string name="welcome">So you want to be a wizard? And partake in duels of sorcery? Then listen carefully... </string>
-    <string name="howtoknife">Before any spells, you must learn to wield your <b>Knife</b>. Physical violence may be the last resort, but many a wizard owes their life to combat training. I will first teach you to <i>Stab</i>.</string>
-    <string name="howtoknife2">Starting from the lower part of the screen, slide your finger up ( &#x2191; ). </string>
-    <string name="howtoknifepass1">That\'s certainly a <b>Knife</b>! Do it again.</string>
-    <string name="howtoknifepass2">Gesturing on the left half of the screen gives a left-handed <i>Stab</i>, and the right half gives a right-handed <i>Stab</i>.</string>
-    <string name="howtoknifepass3">You show promise. Meet me at the training hall.</string>
+    <string name="welcome">So you want to be a wizard? And partake in duels of sorcery? Then listen carefully...\n[Tap the screen to continue.]</string>
+    <string name="howtoknife">Before any spells, you must learn to wield your <b>Knife</b>. Physical violence may be the last resort, but many a wizard owes their life to combat training. I will first teach you to <i>Stab</i>.\n[Tap the screen to continue.]</string>
+    <string name="howtoknife2">Starting from the lower part of the screen, slide your finger up ( &#x2191; ).\n[Tap the screen to continue.]</string>
+    <string name="howtoknifepass1">That\'s certainly a <b>Knife</b>! Do it again.\n[Tap the screen to continue.]</string>
+    <string name="howtoknifepass2">Gesturing on the left half of the screen gives a left-handed <i>Stab</i>, and the right half gives a right-handed <i>Stab</i>.\n[Tap to continue.]</string>
+    <string name="howtoknifepass3">You show promise. Meet me at the training hall.\n[Tap to continue.]</string>
 
 <string name="jackwaitsatdummy">Jack awaits you at the training hall.</string>
 
@@ -21,16 +21,17 @@
     <string name="dummytutlose">Very funny. You\'re lucky I know the Raise Dead spell. We\'ll move on, even though you lost to a wooden dummy.</string>
     <string name="dummytutskip">Clearly you know how to target your spells, so we\'ll skip a lesson. Train more on the dummy, If you like. Then see me back at school for your first magic lesson.</string>
 
-    <string name="targettut">You must direct your first attacks to the goblins. Make a <b>Knife</b> gesture, then drag your finger from the <i>Stab</i> icon to a goblin. </string>
+    <string name="targettut">You must direct your first attacks to the goblins. Make a <b>Knife</b> gesture, then drag your finger from the <i>Stab</i> icon to a goblin. It might take some practice.</string>
     <string name="targettutwin">You learn fast. Come see me at the school for your first magic lesson. Or stay awhile and smash a few more dummies.</string>
     <string name="targettutlose">You\'re lucky I know the <i>Raise Dead</i> spell. Let\'s try that again.</string>
 
     <string name="palmtut"><b>Palm</b> is a simple but powerful magical gesture.</string>
     <string name="palmtut1">Drag your finger downwards ( &#x2193; ) in the lower part of the screen to make the <b>Palm</b> gesture (<b>P</b>). </string>
     <string name="palmtutpass1">Good. In a duel, you could cast <i><i>Shield</i></i> now.</string>
-    <string name="palmtutpass2">Great! <i>Shield</i> protects you from all physical attacks.</string>
-    <string name="palmtutpass3">Take care. Gesturing <b>P</b> with both hands means you surrender! You lose at the end of the round, unless your opponent is dead.</string>
-    <string name="palmtutpass4">Your first opponent awaits you at the Arena. See me once you\'ve won.</string>
+    <string name="palmtutpass2">Great! <i>Shield</i> protects you from all physical attacks. Try <b>P</b> again.</string>
+    <string name="palmtutpass3">Excellent! But beware! Gesturing <b>P</b> with both hands means you surrender!</string>
+    <string name="palmtutpass4">Double <b>P</b> loses the duel, unless your opponent is dies.</string>
+    <string name="palmtutpass5">Your first opponent awaits you at the Arena. See me once you\'ve won.</string>
 
 <string name="duel1advice1">Cast <i>Shield</i> (<b>P</b>) to block stabs.</string>
 <string name="duel1advice2">If you end up in trouble, surrender by gesturing <b>P</b> with both hands.</string>
@@ -41,7 +42,8 @@
     <string name="SDtut0">Well fought! Let\'s pick up the pace.</string>
     <string name="SDtut">Do a <b>Snap</b> gesture (<b>S</b>) by drawing a diagonally up and away from the center, like a <b>Knife</b> gesture that veers outwards (L: &#x2196; R: &#x2197; ). Make <b>Snap</b> with both hands and end your turn.</string>
     <string name="SDtutpass1">Now, the <b>Digit</b> gesture (<b>D</b>) is the same except you go toward to center (L: &#x2197; R: &#x2196; ). Make <b>D</b> with both hands and end the turn.</string>
-    <string name="SDtutpass2">Surprise! <b>S</b> then <b>D</b> casts <i>Missile</i>. Unlike <i>Shield</i>, most spells take several turns to cast. When you\'re done practicing, come see me.</string>
+    <string name="SDtutpass2">Surprise! <b>S</b> then <b>D</b> casts <i>Missile</i>. Unlike <i>Shield</i>, most spells take several turns to cast.</string>
+    <string name="SDtutpass3">Have fun! Come find me later. Remember: <b>SD</b> casts <i>Missile</i>.</string>
     <string name="SDtutwrong">That\'s not right. Let\'s start again.</string>
 
     <string name="talkaboutmenu">At any time, press [MENU] to access your spellbook. It records what you have learned so far.</string>
@@ -50,8 +52,9 @@
     <string name="wavetut">To make a <b>Wave</b> gesture (<b>W</b>), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ). <b>Wave</b> both hands and end your turn.</string>
     <string name="fingerstut">Now make the <b>Fingers</b> gesture (<b>F</b>) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ). Then end your turn.</string>
     <string name="fingerstutpass1">Perfect! Gesture <b>Palm</b> with both hands. Normally this loses, but since <b>WFP</b> is <i>Cause Light Wounds</i>, you\'ll do 4 points of damage and kill your opponent!</string>
-    <string name="fingerstutpass3">One more thing: a gesture can only complete one spell, so you must choose <i>Cause Light Wounds</i> over <i>Shield</i> by tapping its icon.</string>
-    <string name="fingerstutpass4">Well done! Come visit me when you\'re done here.</string>
+    <string name="fingerstutpass2">One more thing...</string>
+    <string name="fingerstutpass3">A gesture can only complete 1 spell. Choose <i>Cause Light Wounds</i> over <i>Shield</i> by tapping its icon.</string>
+    <string name="fingerstutpass4">Well done! Practice on a few more dummies if you like, and visit me afterwards.</string>
     <string name="fingerstutfail">Almost. Try again.</string>
 
     <string name="DSFteach1"><b>DSF</b> casts <i>Confusion</i>. If its victim is a spellcaster, they must gesture identically with both hands next turn. If cast on a monster, that monster will attack its controller.</string>
