@@ -148,7 +148,6 @@ public class TownView extends View {
 	  }
 	}
 	if (STATE_ON_TAP == ui_state) {
-	  Log.i("d", "0");
 	  machine.run();
 	}
 	if (choice != -1) {

@@ -961,6 +961,8 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  if (0 != Tubes.newgame()) {
+	    arena.setVisibility(View.GONE);
+	    arrow_view.setVisibility(View.GONE);
 	    spelltap.narrate(R.string.servererror);
 	    state = 1;
 	    return;
@@ -993,6 +995,9 @@ public class MainView extends View {
     ready_spell_count[0] = ready_spell_count[1] = 0;
     spell_choice[0] = spell_choice[1] = -1;
     spell_text[0] = spell_text[1] = "";
+    if (null != arrow_view) {
+      arrow_view.bmspell[0] = arrow_view.bmspell[1] = null;
+    }
   }
 
   class History {
@@ -1104,6 +1109,8 @@ public class MainView extends View {
     put_gest("Wave", -1, 1);
     put_gest("Palm", 0, 1);
     put_gest("Fingers", 1, 1);
+
+    arrow_view = null;
   }
 
   public void get_ready() {
@@ -1159,30 +1166,6 @@ public class MainView extends View {
     }
     x = 160 + 32;
     canvas.drawText(s, x, y, paint);
-
-    // Spell icons.
-    x = 0;
-    y = yicon;
-    arrow_view.clear_arrows();
-    for (int h = 0; h < 2; h++) {
-      if (-1 != spell_choice[h]) {
-	Spell sp = ready_spell[spell_choice[h]][h];
-	canvas.drawBitmap(sp.bitmap, x, y, paint);
-	spell_text[h] = sp.name;
-	if (spell_target[h] >= 0) {
-	  Being b = being_list[spell_target[h]];
-	  arrow_view.add_arrow(x + 24, y + 24, b.x + b.midw, b.y + b.midh);
-	}
-      }
-      x = 320 - 48 - 1;
-    }
-    for (int i = 2; i < being_list_count; i++) {
-      Being b = being_list[i];
-      if (!b.dead && 0 == b.controller && -1 != b.target) {
-	Being b2 = being_list[b.target];
-	arrow_view.add_arrow(b.x + b.midw, b.y + b.midh, b2.x + b2.midw, b2.y + b2.midh);
-      }
-    }
 
     // Gesture area.
     y = ylower;
@@ -1655,6 +1638,14 @@ public class MainView extends View {
     }
     lastchoice[0] = choice[0];
     lastchoice[1] = choice[1];
+
+    if (-1 != spell_choice[h]) {
+      Spell sp = ready_spell[spell_choice[h]][h];
+      arrow_view.bmspell[h] = sp.bitmap;
+      spell_text[h] = sp.name;
+    } else {
+      arrow_view.bmspell[h] = null;
+    }
     invalidate();
   }
 
