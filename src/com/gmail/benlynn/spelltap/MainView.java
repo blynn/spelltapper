@@ -175,15 +175,15 @@ public class MainView extends View {
       gest = new int[2];
       spell = new int[2];
       spell_target = new int[2];
-      monster_id = new int[16];
-      monster_target = new int[16];
+      attack_source = new int[16];
+      attack_target = new int[16];
     }
     int gest[];
     int spell[];
     int spell_target[];
-    int monster_count;
-    int monster_id[];
-    int monster_target[];
+    int attack_count;
+    int attack_source[];
+    int attack_target[];
   }
 
   void jack_says(int string_constant) {
@@ -872,6 +872,27 @@ public class MainView extends View {
     int state;
   }
 
+  private char encode_target(int target) {
+    if (target <= 1) {  // Player, opponent or thin air.
+      return (char) ('A' + target);
+    } else {
+      return (char) ('A' + 2 + being_list[target].id);
+    }
+  }
+
+  private int decode_target(char c) {
+    int raw = c - 'A';
+    if (-1 == raw) return -1;
+    if (0 == raw || 1 == raw) return 1 - raw;
+    raw -= 2;
+    if (0 == (raw & 1)) raw++;
+    else raw--;
+    for (int i = 2; i < being_list_count; i++) {
+      if (raw == being_list[i].id) return i;
+    }
+    return -1;
+  }
+
   void net_move(SpellTapMove turn) {
     String s = "";
     // Encode gestures.
@@ -881,21 +902,31 @@ public class MainView extends View {
     for (int h = 0; h < 2; h++) {
       if (-1 != spell_choice[h]) {
 	s += (char) (ready_spell[spell_choice[h]][h].index + 'A');
-	int i = spell_target[h];
-	if (i <= 1) {
-	  s += (char) ('A' + i);
-	} else {
-	  Being b = being_list[i];
-	  s += (char) ('A' + b.id0 + 2 * b.id1);
-	}
+	s += encode_target(spell_target[h]);
       } else {
 	s += (char) ('A' - 1);
 	s += (char) ('A' - 1);
       }
     }
+    // Encode monster attacks.
+    String s2 = "";
+    int count = 0;
+    for (int i = 2; i < being_list_count; i++) {
+      Being b = being_list[i];
+      if (0 == b.controller) {
+	s2 += encode_target(i);
+	s2 += encode_target(b.target);
+	count++;
+      }
+    }
+    s += (char) ('0' + count);
+    s += s2;
 
-    String r = Tubes.sendMove(s);
-    if (null == r || r.length() < 6) {
+    decode_move(turn, Tubes.send_move(s));
+  }
+
+  void decode_move(SpellTapMove turn, String r) {
+    if (null == r || r.length() < 7) {
       opp_error = true;
       opp_ready = false;
       return;
@@ -905,24 +936,17 @@ public class MainView extends View {
       opp_ready = false;
       return;
     }
+    // Decode gestures, spells and spell targets.
     for (int h = 0; h < 2; h++) {
       turn.gest[h] = r.charAt(h) - '0';
       turn.spell[h] = r.charAt(2 + 2 * h) - 'A';
-      int raw = r.charAt(3 + 2 * h) - 'A';
-      if (-1 == raw) {
-	turn.spell_target[h] = -1;
-      } else if (0 == raw || 1 == raw) {
-	turn.spell_target[h] = 1 - raw;
-      } else {
-	int id1 = raw / 2;
-	int id0 = raw - id1 * 2;
-	for (int i = 0; i < being_list_count; i++) {
-	  Being b = being_list[i];
-	  if (b.id0 == id0 && b.id1 == id1) {
-	    turn.spell_target[h] = i;
-	  }
-	}
-      }
+      turn.spell_target[h] = decode_target(r.charAt(3 + 2 * h));
+    }
+    // Decode monster attacks.
+    turn.attack_count = r.charAt(6) - '0';
+    for (int n = 0; n < turn.attack_count; n++) {
+      turn.attack_source[n] = decode_target(r.charAt(7 + 2 * n));
+      turn.attack_target[n] = decode_target(r.charAt(7 + 2 * n + 1));
     }
   }
 
@@ -938,7 +962,7 @@ public class MainView extends View {
 	case 0:
 	  if (0 != Tubes.newgame()) {
 	    spelltap.narrate(R.string.servererror);
-	    spelltap.goto_town();
+	    state = 1;
 	    return;
 	  }
 	  clear_choices();
@@ -1390,7 +1414,7 @@ public class MainView extends View {
       Log.i("Cmon", "retrying");
       opp_ready = true;
       opp_error = false;
-      tut.AI_move(oppmove);
+      decode_move(oppmove, Tubes.send_retry());
       if (opp_ready) {
 	resolve();
 	return;
@@ -1422,25 +1446,33 @@ public class MainView extends View {
     }
 
     exec_queue_count = 0;
+    // Insert player spells and targets into execution queue.
     for (int h = 0; h < 2; h++) {
       if (-1 == spell_choice[h]) continue;
       SpellCast sc = new SpellCast(
 	  ready_spell[spell_choice[h]][h], 0, spell_target[h]);
       insert_spell(sc);
     }
+    // Insert opponent spells and targets.
     for (int h = 0; h < 2; h++) {
       if (-1 == oppmove.spell[h]) continue;
       Spell sp = spell_list[oppmove.spell[h]];
       SpellCast sc = new SpellCast(sp, 1, oppmove.spell_target[h]);
       insert_spell(sc);
     }
+    // Retarget monsters controlled by oppponent.
+    for (int i = 0; i < oppmove.attack_count; i++) {
+      Being b = being_list[oppmove.attack_source[i]];
+      b.target = oppmove.attack_target[i];
+    }
+    // Insert monster attacks.
     for (int i = 2; i < being_list_count; i++) {
       Being b = being_list[i];
       if (b.dead) continue;
-      //if (-1 != b.target) {
+      if (-1 != b.target) {
 	SpellCast sc = new SpellCast(monatt[b.life_max], i, b.target);
 	insert_spell(sc);
-      //}
+      }
     }
 
     clear_choices();
@@ -1921,8 +1953,7 @@ public class MainView extends View {
 	y = being_pos[index].y;
 	being_pos[index].being = this;
 	set_size_48();
-	id0 = controller;
-	id1 = summon_count[controller];
+	id = controller + 2 * summon_count[controller];
 	summon_count[controller]++;
       }
       status = Status.OK;
@@ -1987,9 +2018,8 @@ public class MainView extends View {
     short controller;
     boolean dead;
     static final int SLOP = 4;
-    // ID tuple that is consistent amongst all players in a net game.
-    int id0;  // Player who originally summoned this monster.
-    int id1;  // The nth monster summoned by this player. 
+    // ID of monster consistent amongst all players in a net game.
+    int id;
   }
 
   class BeingPosition {

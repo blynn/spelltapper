@@ -35,12 +35,20 @@ void handle(char *s) {
     case 'b':
       {
       int j = s[0] - 'a';
-      if (!gotmove[j]) {
+      if ('-' == s[1]) {  // Retry.
+      } else if (!gotmove[j]) {  // Move check-in.
 	gotmove[j] = 1;
-	strncpy(move[j], s + 1, 6);
+	strncpy(move[j], s + 1, 7);
+	int n = move[j][6] - '0';
+	if (n > 16) n = 16;
+	strncpy(move[j] + 7, s + 1 + 7, n * 2);
       }
+      // Respond:
       if (gotmove[1 - j]) {
-	add_nchar(move[1 - j], 6);
+	add_nchar(move[1 - j], 7);
+	int n = move[1 - j][6] - '0';
+	if (n > 16) n = 16;
+	add_nchar(move[1 - j] + 7, n * 2);
 	sent[j] = 1;
       } else {
 	add_char('-');
@@ -88,8 +96,9 @@ int main(int argc, char **argv) {
       } else if (SDLNet_SocketReady(csd)) {
 	int res;
 	char buffer[128];
-	if (res = SDLNet_TCP_Recv(csd, buffer, 128) > 0) {
-	  printf("recv '%s'\n", buffer);
+	if ((res = SDLNet_TCP_Recv(csd, buffer, 128 - 1)) > 0) {
+	  buffer[res] = '\0';
+	  printf("%d recv '%s'\n", res, buffer);
 	  handle(buffer);
 	  printf("sending '%s'\n", reply);
 	  SDLNet_TCP_Send(csd, reply, strlen(reply));
