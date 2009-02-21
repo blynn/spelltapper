@@ -11,7 +11,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -79,8 +78,6 @@ public class MainView extends View {
     int x, y;
   }
 
-  static Paint paint, selpaint;
-  static Paint status_paint;
   static String msg;
   static float x0, y0, x1, y1;
   static Tutorial tut;
@@ -1041,10 +1038,6 @@ public class MainView extends View {
     super(context, attrs);
     drag_i = -1;
     is_animating = false;
-    selpaint = new Paint();
-    selpaint.setARGB(255, 127, 255, 127);
-    status_paint = new Paint();
-    status_paint.setARGB(255, 95, 63, 95);
     choice = new int[2];
     lastchoice = new int[2];
     hist = new History();
@@ -1128,40 +1121,36 @@ public class MainView extends View {
 
     // Opponent history.
     y = 16 - 4;
-    x = 0;
     String s = "";
     for (int i = opphist.start[0]; i < opphist.cur; i++) {
       s += " " + gesture[opphist.gest[i][0]].abbr;
     }
-    canvas.drawText(s, x, y, Easel.grey_text);
+    canvas.drawText(s, 0, y, Easel.grey_text);
     s = "";
     for (int i = opphist.start[1]; i < opphist.cur; i++) {
       s += " " + gesture[opphist.gest[i][1]].abbr;
     }
-    x = 160 + 32;
-    canvas.drawText(s, x, y, Easel.grey_text);
+    canvas.drawText(s, 320, y, Easel.grey_rtext);
 
     // Player history.
     y = ylower - 4;
-    x = 0;
     s = "";
     for (int i = hist.start[0]; i < hist.cur; i++) {
       s += " " + gesture[hist.gest[i][0]].abbr;
     }
-    canvas.drawText(s, x, y, Easel.grey_text);
+    canvas.drawText(s, 0, y, Easel.grey_text);
     s = "";
     for (int i = hist.start[1]; i < hist.cur; i++) {
       s += " " + gesture[hist.gest[i][1]].abbr;
     }
-    x = 160 + 32;
-    canvas.drawText(s, x, y, Easel.grey_text);
+    canvas.drawText(s, 320, y, Easel.grey_rtext);
 
     // Gesture area.
     y = ylower;
     canvas.drawRect(0, y, 320, 480, Easel.octarine);
 
     // Status line highlight.
-    canvas.drawRect(0, ystatus, 320, 480, status_paint);
+    canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
 
     // Gesture and spell text.
     y = ylower + 16 - 4;
@@ -1187,7 +1176,7 @@ public class MainView extends View {
     for (int h = 0; h < 2; h++) {
       for (int i = 0; i < ready_spell_count[h]; i++) {
 	if (i == spell_choice[h]) {
-	  canvas.drawRect(x, y, x + 50, y + 50, selpaint);
+	  canvas.drawRect(x, y, x + 50, y + 50, Easel.sel_paint);
 	}
 	canvas.drawBitmap(ready_spell[i][h].bitmap, x + 1, y + 1, Easel.paint);
 	if (h == 0) x += 50;
@@ -1209,6 +1198,15 @@ public class MainView extends View {
     // Assumes i is a valid choice for hand h.
     spell_choice[h] = i;
     spell_target[h] = ready_spell[i][h].target;
+
+    if (-1 != spell_choice[h]) {
+      Spell sp = ready_spell[spell_choice[h]][h];
+      arrow_view.bmspell[h] = sp.bitmap;
+      spell_text[h] = sp.name;
+    } else {
+      arrow_view.bmspell[h] = null;
+    }
+    invalidate();
   }
 
   @Override
@@ -1311,7 +1309,6 @@ public class MainView extends View {
 	      }
 	      if (i >= 0 && i < ready_spell_count[h]) {
 		choose_spell(h, i);
-		invalidate();
 		return true;
 	      }
 	    }
@@ -1592,6 +1589,8 @@ public class MainView extends View {
     if (choice[h] == GESTURE_KNIFE) {
       if (choice[1 - h] == GESTURE_KNIFE) {
 	spell_text[h] = "(only one knife)";
+	invalidate();
+	return;
       } else {
 	add_ready_spell(h, stab_spell);
 	spell_text[h] = "";
@@ -1631,15 +1630,6 @@ public class MainView extends View {
     }
     lastchoice[0] = choice[0];
     lastchoice[1] = choice[1];
-
-    if (-1 != spell_choice[h]) {
-      Spell sp = ready_spell[spell_choice[h]][h];
-      arrow_view.bmspell[h] = sp.bitmap;
-      spell_text[h] = sp.name;
-    } else {
-      arrow_view.bmspell[h] = null;
-    }
-    invalidate();
   }
 
   public void add_ready_spell(int h, Spell sp) {
