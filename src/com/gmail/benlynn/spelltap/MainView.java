@@ -2,7 +2,6 @@
 // Title menu, save state, victory/defeat screen with stats.
 // Don't retarget if player taps on already-selected ready spell.
 // Resize event.
-// Monster confusion.
 // Clean up get_ready() nonsense.
 // Stop handlers on init.
 package com.gmail.benlynn.spelltap;
@@ -652,7 +651,7 @@ public class MainView extends View {
     int hand;
     int state;
   }
- 
+
   // Introduces W F P: this spells requires multiple turns, and also
   // conflicts with another spell.
   class WFPTutorial extends Tutorial {
@@ -1047,6 +1046,7 @@ public class MainView extends View {
     spell_choice = new int[2];
     spell_choice[0] = spell_choice[1] = 0;
     spell_text = new String[2];
+    spell_text[0] = spell_text[1] = "";
     spell_list = new Spell[64];
     spell_list_count = 0;
     stab_spell = new StabSpell();
@@ -1280,7 +1280,9 @@ public class MainView extends View {
 	    }
 	  } else {
 	    Being b = being_list[drag_i];
-	    b.target = target;
+	    if (Status.OK == b.status) {
+	      b.target = target;
+	    }
 	  }
 	  drag_i = -1;
 	  invalidate();
@@ -1569,8 +1571,20 @@ public class MainView extends View {
     } else if (STATE_ON_END_ROUND == main_state) {
       run();
     } else {
-      get_ready();
+      new_round();
     }
+  }
+
+  // Start new round.
+  void new_round() {
+    // Handle confusion.
+    for (int i = 2; i < being_list_count; i++) {
+      Being b = being_list[i];
+      if (Status.CONFUSED == b.status) {
+	b.target = b.controller;
+      }
+    }
+    get_ready();
   }
 
   private void handle_new_choice(int h) {
@@ -1581,6 +1595,7 @@ public class MainView extends View {
 	spell_search(1 - h);
       }
     }
+    invalidate();
   }
 
   private void spell_search(int h) {
@@ -1589,7 +1604,6 @@ public class MainView extends View {
     if (choice[h] == GESTURE_KNIFE) {
       if (choice[1 - h] == GESTURE_KNIFE) {
 	spell_text[h] = "(only one knife)";
-	invalidate();
 	return;
       } else {
 	add_ready_spell(h, stab_spell);
@@ -1804,7 +1818,7 @@ public class MainView extends View {
 	    being_list_count++;
 	    b.start_life(1);
 	    b.target = 1 - k;
-	    // TODO: Fade in goblin.
+	    Log.i("TODO", "fade in goblin");
 	    arena.animate_spell(target, bitmap);
 	  } else {
 	    arena.animate_delay();

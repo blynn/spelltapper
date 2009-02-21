@@ -11,6 +11,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.util.Log;
 import com.gmail.benlynn.spelltap.MainView.Being;
+import com.gmail.benlynn.spelltap.MainView.Status;
 
 public class ArrowView extends View {
   public ArrowView(Context context, AttributeSet attrs) {
@@ -56,8 +57,13 @@ public class ArrowView extends View {
       Being b = MainView.being_list[i];
       if (!b.dead && 0 == b.controller && -1 != b.target) {
 	Being b2 = MainView.being_list[b.target];
-	canvas.drawLine(b.x + b.midw, b.y + b.midh,
-	    b2.x + b2.midw, b2.y + b2.midh, Easel.arrow_paint);
+	if (Status.OK == b2.status) {
+	  canvas.drawLine(b.x + b.midw, b.y + b.midh,
+	      b2.x + b2.midw, b2.y + b2.midh, Easel.arrow_paint);
+	} else {
+	  canvas.drawLine(b.x + b.midw, b.y + b.midh,
+	      b2.x + b2.midw, b2.y + b2.midh, Easel.weird_arrow_paint);
+	}
       }
     }
   }

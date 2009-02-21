@@ -339,7 +339,7 @@ Log.i("MV", "Pause");
   static final int PLACE_COUNT = 4;
   static TownView townview;
   static InputHog hog;
-  static int state = 0;
+  static int state = 13;
   static View speech_layout;
   static TextView speech_box;
   static SpellTapMachine[] mach;
