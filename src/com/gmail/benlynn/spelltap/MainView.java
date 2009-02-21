@@ -163,6 +163,9 @@ public class MainView extends View {
   void set_state_duel3() {
     tut = new WFPFighter();
   }
+  void set_state_netduel() {
+    tut = new NetDuel();
+  }
 
   static SpellTapMove oppmove;
   class SpellTapMove {
@@ -856,19 +859,58 @@ public class MainView extends View {
     int state;
   }
 
-  class NoTutorial extends Tutorial {
-    NoTutorial() {}
-    void run() {
-      clear_choices();
-      being_list[0].start_life(5);
-      being_list[1].start_life(5);
-      being_list_count = 2;
-      set_main_state(STATE_NORMAL);
-      arena.setVisibility(View.VISIBLE);
-      arrow_view.setVisibility(View.VISIBLE);
-      get_ready();
-      invalidate();
+  void net_move(SpellTapMove turn) {
+    String s = "";
+    s += (char) (choice[0] + '0');
+    s += (char) (choice[1] + '0');
+
+    String r = Tubes.sendMove(s);
+    if (null == r) {
+      opp_error = true;
+      opp_ready = false;
+      return;
     }
+    if ('-' == r.charAt(0)) {
+      opp_ready = false;
+      return;
+    }
+    turn.gest[0] = r.charAt(0) - '0';
+    turn.gest[1] = r.charAt(1) - '0';
+    turn.spell[0] = -1;
+    turn.spell[1] = -1;
+  }
+
+  class NetDuel extends Tutorial {
+    NetDuel() {
+      state = 0;
+    }
+    void AI_move(SpellTapMove turn) {
+      net_move(turn);
+    }
+    void run() {
+      for(;;) switch(state) {
+	case 0:
+	  clear_choices();
+	  hist.reset();
+	  opphist.reset();
+	  being_list[0].start_life(5);
+	  being_list[1].start_life(5);
+	  being_list_count = 2;
+	  set_main_state(STATE_NORMAL);
+	  arena.setVisibility(View.VISIBLE);
+	  arrow_view.setVisibility(View.VISIBLE);
+	  Tubes.newgame();
+          state = 1;
+	  get_ready();
+	  invalidate();
+	  return;
+	case 1:
+	  spelltap.goto_town();
+          state = 0;
+	  return;
+      }
+    }
+    int state;
   }
 
   void clear_choices() {
@@ -1123,7 +1165,7 @@ public class MainView extends View {
 	y0 = event.getY();
 	if (y0 < ylower) {
 	  if (STATE_GESTURE_ONLY == main_state) {
-	    tut.run();
+	    run();
 	    return false;
 	  }
 	  // Check for spell retargeting drag.
@@ -1178,7 +1220,7 @@ public class MainView extends View {
 	float dy = y1 - y0;
 	if (dx * dx + dy * dy < 32 * 32) {
 	  if (STATE_GESTURE_ONLY == main_state) {
-	    tut.run();
+	    run();
 	    return true;
 	  }
 	  if (okstate && y1 > ystatus) {
@@ -1225,7 +1267,7 @@ public class MainView extends View {
 	  if (choice[h] != lastchoice[h]) {
 	    handle_new_choice(h);
 	  }
-	  if (STATE_GESTURE_ONLY == main_state) tut.run();
+	  if (STATE_GESTURE_ONLY == main_state) run();
 	  return true;
 	}
     }
@@ -1245,12 +1287,46 @@ public class MainView extends View {
   static int exec_queue_count;
   static SpellCast[] exec_queue;
 
+  static boolean opp_error;
+  static boolean opp_ready;
+
   private void end_turn() {
     is_animating = true;
     arrow_view.setVisibility(View.GONE);
     hist.add(choice);
 
+    opp_error = false;
+    opp_ready = true;
+    print("Waiting for opponent...");
     tut.AI_move(oppmove);
+    if (opp_error) {
+      Log.i("MV", "Error getting opponent moves");
+    }
+    if (opp_ready) {
+      resolve();
+      return;
+    }
+    invalidate();
+    cmon_handler.sendEmptyMessageDelayed(0, 3000);
+  }
+
+  private CmonHandler cmon_handler = new CmonHandler();
+  class CmonHandler extends Handler {
+    @Override
+    public void handleMessage(Message msg) {
+      Log.i("Cmon", "retrying");
+      opp_ready = true;
+      opp_error = false;
+      tut.AI_move(oppmove);
+      if (opp_ready) {
+	resolve();
+	return;
+      }
+      sendEmptyMessageDelayed(0, 3000);
+    }
+  }
+
+  private void resolve() {
     opphist.add(oppmove.gest);
 
     // Expire status effects.
@@ -1402,10 +1478,10 @@ public class MainView extends View {
     if (gameover) {
       print("");
       spelltap.narrate(sid);
-      // tut.run() is called once the player has tapped through the
+      // run() is called once the player has tapped through the
       // victory screen.
     } else if (STATE_ON_END_ROUND == main_state) {
-      tut.run();
+      run();
     } else {
       get_ready();
     }

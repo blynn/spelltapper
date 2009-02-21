@@ -59,7 +59,6 @@ public class SpellTap extends Activity {
     init_gesture_state_knowledge();
 
     state = 0;
-    state = 13;
     next_state();
     // Start in town.
     curmach = townview.stmach;

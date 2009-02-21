@@ -33,3 +33,6 @@ red : bin/out.apk
 ree : bin/out.apk
 	$(ADB) -e uninstall com.gmail.benlynn.spelltap
 	$(ADB) -e install bin/out.apk
+
+server : server.c
+	 gcc -Wall `sdl-config --cflags` $^ -o $@ `sdl-config --libs` -lSDL_net
