@@ -6,7 +6,6 @@ package com.gmail.benlynn.spelltap;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Bitmap;
 import android.util.AttributeSet;
 import android.view.View;
@@ -25,16 +24,10 @@ public class ArrowView extends View {
   }
 
   private void init() {
-    paint = new Paint();
-    paint.setARGB(191, 127, 255, 127);
-    paint.setStrokeWidth(4);
-    paint.setStrokeCap(Paint.Cap.ROUND);
-    iconpaint = new Paint();
     bmspell = new Bitmap[2];
     bmspell[0] = bmspell[1] = null;
   }
 
-  static Paint paint, iconpaint;
   static Bitmap bmspell[];
 
   @Override
@@ -47,11 +40,12 @@ public class ArrowView extends View {
 
     for (int h = 0; h < 2; h++) {
       if (null != bmspell[h]) {
-	canvas.drawBitmap(bmspell[h], x, y, iconpaint);
+	canvas.drawBitmap(bmspell[h], x, y, Easel.paint);
 	int i = MainView.spell_target[h];
 	if (-1 != i) {
 	  Being b = MainView.being_list[i];
-	  canvas.drawLine(x + 24, y + 24, b.x + b.midw, b.y + b.midh, paint);
+	  canvas.drawLine(x + 24, y + 24,
+	      b.x + b.midw, b.y + b.midh, Easel.arrow_paint);
 	}
       }
       x = 320 - 48 - 1;
@@ -63,7 +57,7 @@ public class ArrowView extends View {
       if (!b.dead && 0 == b.controller && -1 != b.target) {
 	Being b2 = MainView.being_list[b.target];
 	canvas.drawLine(b.x + b.midw, b.y + b.midh,
-	    b2.x + b2.midw, b2.y + b2.midh, paint);
+	    b2.x + b2.midw, b2.y + b2.midh, Easel.arrow_paint);
       }
     }
   }

@@ -205,14 +205,6 @@ public class MainView extends View {
     }
   }
 
-  static final int GK_NONE = -1;
-  static final int GK_KNIFE_ONLY = 0;
-  static final int GK_KNIFE_AND_PALM = 1;
-  static final int GK_KPS = 2;
-  static final int GK_DKPS = 3;
-  static final int GK_ALL_BUT_FC = 4;
-  static final int GK_ALL_BUT_C = 5;
-  static final int GK_ALL = 6;
   void set_gesture_knowledge(int level) {
     for (int i = 0; i < 9; i++) {
       Gesture g = gesture[i];
@@ -220,21 +212,21 @@ public class MainView extends View {
     }
     // Exploit fall-through.
     switch(level) {
-      case GK_ALL:
+      case Wisdom.ALL_GESTURES:
         gesture[GESTURE_CLAP].learned = true;
-      case GK_ALL_BUT_C:
+      case Wisdom.ALL_BUT_C:
         gesture[GESTURE_FINGERS].learned = true;
-      case GK_ALL_BUT_FC:
+      case Wisdom.ALL_BUT_FC:
         gesture[GESTURE_WAVE].learned = true;
-      case GK_DKPS:
+      case Wisdom.DKPS:
         gesture[GESTURE_DIGIT].learned = true;
-      case GK_KPS:
+      case Wisdom.KPS:
         gesture[GESTURE_SNAP].learned = true;
-      case GK_KNIFE_AND_PALM:
+      case Wisdom.KNIFE_AND_PALM:
         gesture[GESTURE_PALM].learned = true;
-      case GK_KNIFE_ONLY:
+      case Wisdom.KNIFE_ONLY:
         gesture[GESTURE_KNIFE].learned = true;
-      case GK_NONE:
+      case Wisdom.NONE:
     }
   }
 
@@ -276,7 +268,7 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  clear_choices();
-	  set_gesture_knowledge(GK_KNIFE_ONLY);
+	  set_gesture_knowledge(Wisdom.KNIFE_ONLY);
 	  set_spell_knowledge(Wisdom.STAB);
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
@@ -453,7 +445,7 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
 	case 0:
-	  set_gesture_knowledge(GK_KNIFE_AND_PALM);
+	  set_gesture_knowledge(Wisdom.KNIFE_AND_PALM);
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
 	  jack_says(R.string.palmtut);
@@ -590,7 +582,7 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
 	case -1:
-	  set_gesture_knowledge(GK_KPS);
+	  set_gesture_knowledge(Wisdom.KPS);
 	  being_list[0].start_life(5);
 	  being_list[1].setup("The Dummy", R.drawable.dummy, 5);
 	  being_list_count = 2;
@@ -629,7 +621,7 @@ public class MainView extends View {
 	  }
 	  return;
 	case 3:
-	  set_gesture_knowledge(GK_DKPS);
+	  set_gesture_knowledge(Wisdom.DKPS);
 	  get_ready();
 	  state = 4;
 	  invalidate();
@@ -673,7 +665,7 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
 	case 0:
-	  set_gesture_knowledge(GK_ALL_BUT_FC);
+	  set_gesture_knowledge(Wisdom.ALL_BUT_FC);
 	  being_list[0].start_life(5);
 	  being_list[1].start_life(4);
 	  hist.reset();
@@ -702,7 +694,7 @@ public class MainView extends View {
 	  }
 	  return;
 	case 3:
-	  set_gesture_knowledge(GK_ALL_BUT_C);
+	  set_gesture_knowledge(Wisdom.ALL_BUT_C);
 	  get_ready();
 	  state = 4;
 	  invalidate();
@@ -996,9 +988,7 @@ public class MainView extends View {
     ready_spell_count[0] = ready_spell_count[1] = 0;
     spell_choice[0] = spell_choice[1] = -1;
     spell_text[0] = spell_text[1] = "";
-    //if (null != arrow_view) {
-      arrow_view.bmspell[0] = arrow_view.bmspell[1] = null;
-    //}
+    arrow_view.bmspell[0] = arrow_view.bmspell[1] = null;
   }
 
   class History {

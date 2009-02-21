@@ -19,8 +19,9 @@ public class SpellTap extends Activity {
     super.onCreate(bun);
     // No title bar.
     requestWindowFeature(Window.FEATURE_NO_TITLE);
-    setContentView(R.layout.main);
 
+    Easel.init();
+    setContentView(R.layout.main);
     narrator = findViewById(R.id.narrator);
     narrator.setVisibility(View.GONE);
     narratortext = (TextView) findViewById(R.id.narratortext);
@@ -112,6 +113,15 @@ Log.i("MV", "Pause");
     static public final int UP_TO_WFP = 3;
     static public final int UP_TO_DSF = 4;
     static public final int UP_TO_DFW = 5;
+
+    static final int NONE = -1;
+    static final int KNIFE_ONLY = 0;
+    static final int KNIFE_AND_PALM = 1;
+    static final int KPS = 2;
+    static final int DKPS = 3;
+    static final int ALL_BUT_FC = 4;
+    static final int ALL_BUT_C = 5;
+    static final int ALL_GESTURES = 6;
   }
 
   void set_spell_knowledge(int i) {
@@ -121,7 +131,6 @@ Log.i("MV", "Pause");
     mainview.set_gesture_knowledge(i);
   }
 
-  // TODO: There must be a way to do literal arrays in Java?
   static int gesture_state[] = new int[8];
   static int gesture_knowledge[] = new int[8];
   static int gsk_count;
@@ -130,22 +139,13 @@ Log.i("MV", "Pause");
     gesture_knowledge[gsk_count] = k;
     gsk_count++;
   }
-  // TODO: Argh! Copy and past was fastest way.
-  static final int GK_NONE = -1;
-  static final int GK_KNIFE_ONLY = 0;
-  static final int GK_KNIFE_AND_PALM = 1;
-  static final int GK_KPS = 2;
-  static final int GK_DKPS = 3;
-  static final int GK_ALL_BUT_FC = 4;
-  static final int GK_ALL_BUT_C = 5;
-  static final int GK_ALL = 6;
   static void init_gesture_state_knowledge() {
     gsk_count = 0;
-    add_gsk(0, GK_NONE);
-    add_gsk(1, GK_KNIFE_ONLY);
-    add_gsk(3, GK_KNIFE_AND_PALM);
-    add_gsk(5, GK_DKPS);
-    add_gsk(7, GK_ALL_BUT_C);
+    add_gsk(0, Wisdom.NONE);
+    add_gsk(1, Wisdom.KNIFE_ONLY);
+    add_gsk(3, Wisdom.KNIFE_AND_PALM);
+    add_gsk(5, Wisdom.DKPS);
+    add_gsk(7, Wisdom.ALL_BUT_C);
   }
 
   void next_state() {
