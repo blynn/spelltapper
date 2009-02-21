@@ -271,7 +271,7 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  set_gesture_knowledge(GK_KNIFE_ONLY);
-	  stab_spell.learned = true;
+	  set_spell_knowledge(Wisdom.STAB);
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
 	  jack_says(R.string.welcome);
@@ -335,7 +335,6 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-	stab_spell.learned = true;
 	clear_choices();
 	jack_says(R.string.dummytut);
 	arena.setVisibility(View.VISIBLE);
@@ -449,7 +448,6 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  set_gesture_knowledge(GK_KNIFE_AND_PALM);
-	  stab_spell.learned = true;
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
 	  jack_says(R.string.palmtut);
@@ -990,12 +988,12 @@ public class MainView extends View {
     stab_spell.index = 64;
     spell_list = new Spell[64];
     spell_list_count = 0;
-    add_spell(new ShieldSpell());
-    add_spell(new MissileSpell());
-    add_spell(new CauseLightWoundsSpell());
-    add_spell(new ConfusionSpell());
-    add_spell(new SummonGoblinSpell());
-    add_spell(new CureLightWoundsSpell());
+    add_spell(new ShieldSpell(), 8);
+    add_spell(new SummonGoblinSpell(), 17);
+    add_spell(new ConfusionSpell(), 28);
+    add_spell(new CauseLightWoundsSpell(), 63);
+    add_spell(new MissileSpell(), 64);
+    add_spell(new CureLightWoundsSpell(), 128);
 
     being_list = new Being[16];
 
@@ -1033,9 +1031,10 @@ public class MainView extends View {
     print("Draw gestures, and tap here to confirm.");
   }
 
-  public void add_spell(Spell sp) {
+  public void add_spell(Spell sp, int priority) {
     spell_list[spell_list_count] = sp;
     sp.index = spell_list_count;
+    sp.priority = priority;
     spell_list_count++;
   }
 
@@ -1588,6 +1587,7 @@ public class MainView extends View {
 	}
       }
     }
+    int priority;
   }
 
   public class ShieldSpell extends Spell {
