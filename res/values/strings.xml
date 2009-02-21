@@ -21,7 +21,7 @@
     <string name="dummytutlose">Very funny. You\'re lucky I know the Raise Dead spell. We\'ll move on, even though you lost to a wooden dummy.</string>
     <string name="dummytutskip">Clearly you know how to target your spells, so we\'ll skip a lesson. Train more on the dummy, If you like. Then see me back at school for your first magic lesson.</string>
 
-    <string name="targettut">You must direct your first attacks to the goblins. Make a <b>Knife</b> gesture, then drag your finger from the <i>Stab</i> icon to a goblin. It might take some practice.</string>
+    <string name="targettut">You must direct your first attacks to the goblins. Make a <b>Knife</b> gesture, then drag your finger from the <i>Stab</i> icon to a goblin. You must be precise.</string>
     <string name="targettutwin">You learn fast. Come see me at the school for your first magic lesson. Or stay awhile and smash a few more dummies.</string>
     <string name="targettutlose">You\'re lucky I know the <i>Raise Dead</i> spell. Let\'s try that again.</string>
 
@@ -79,6 +79,9 @@
 <string name="surrenderdraw">You both surrender.</string>
 
 <string name="menu_spells">Spells</string>
+
+<string name="empty_left_hand">[Left Hand]</string>
+<string name="empty_right_hand">[Right Hand]</string>
 
 <string name="heading_spells"><u><b>Spells</b></u>\n</string>
 <string name="heading_gestures"><u><b>Gestures (Left Hand)</b></u>\n</string>

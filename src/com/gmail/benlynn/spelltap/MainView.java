@@ -80,7 +80,6 @@ public class MainView extends View {
   }
 
   static Paint paint, selpaint;
-  static Paint boxpaint;
   static Paint status_paint;
   static String msg;
   static float x0, y0, x1, y1;
@@ -446,6 +445,8 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  set_gesture_knowledge(Wisdom.KNIFE_AND_PALM);
+	  hist.reset();
+	  opphist.reset();
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
 	  jack_says(R.string.palmtut);
@@ -1040,12 +1041,8 @@ public class MainView extends View {
     super(context, attrs);
     drag_i = -1;
     is_animating = false;
-    paint = new Paint();
-    paint.setARGB(255, 255, 255, 255);
     selpaint = new Paint();
     selpaint.setARGB(255, 127, 255, 127);
-    boxpaint = new Paint();
-    boxpaint.setARGB(255, 63, 0, 63);
     status_paint = new Paint();
     status_paint.setARGB(255, 95, 63, 95);
     choice = new int[2];
@@ -1102,6 +1099,8 @@ public class MainView extends View {
 
     arrow_view = null;
   }
+  static String emptyleftmsg;
+  static String emptyrightmsg;
 
   public void get_ready() {
     print("Draw gestures, and tap here to confirm.");
@@ -1134,13 +1133,13 @@ public class MainView extends View {
     for (int i = opphist.start[0]; i < opphist.cur; i++) {
       s += " " + gesture[opphist.gest[i][0]].abbr;
     }
-    canvas.drawText(s, x, y, paint);
+    canvas.drawText(s, x, y, Easel.grey_text);
     s = "";
     for (int i = opphist.start[1]; i < opphist.cur; i++) {
       s += " " + gesture[opphist.gest[i][1]].abbr;
     }
     x = 160 + 32;
-    canvas.drawText(s, x, y, paint);
+    canvas.drawText(s, x, y, Easel.grey_text);
 
     // Player history.
     y = ylower - 4;
@@ -1149,17 +1148,17 @@ public class MainView extends View {
     for (int i = hist.start[0]; i < hist.cur; i++) {
       s += " " + gesture[hist.gest[i][0]].abbr;
     }
-    canvas.drawText(s, x, y, paint);
+    canvas.drawText(s, x, y, Easel.grey_text);
     s = "";
     for (int i = hist.start[1]; i < hist.cur; i++) {
       s += " " + gesture[hist.gest[i][1]].abbr;
     }
     x = 160 + 32;
-    canvas.drawText(s, x, y, paint);
+    canvas.drawText(s, x, y, Easel.grey_text);
 
     // Gesture area.
     y = ylower;
-    canvas.drawRect(0, y, 320, 480, boxpaint);
+    canvas.drawRect(0, y, 320, 480, Easel.octarine);
 
     // Status line highlight.
     canvas.drawRect(0, ystatus, 320, 480, status_paint);
@@ -1167,14 +1166,20 @@ public class MainView extends View {
     // Gesture and spell text.
     y = ylower + 16 - 4;
     Gesture g = gesture[choice[0]];
-    s = null == g ? "" : g.statusname;
-    canvas.drawText("Left Hand: " + s, 0, y, paint);
+    if (null == g) {
+      canvas.drawText(emptyleftmsg, 0, y, Easel.grey_text);
+    } else {
+      canvas.drawText(g.statusname, 0, y, Easel.white_text);
+    }
     g = gesture[choice[1]];
-    s = null == g ? "" : g.statusname;
-    canvas.drawText("Right Hand: " + s, 160, y, paint);
+    if (null == g) {
+      canvas.drawText(emptyrightmsg, 320, y, Easel.grey_rtext);
+    } else {
+      canvas.drawText(g.statusname, 320, y, Easel.white_rtext);
+    }
 
-    canvas.drawText(spell_text[0], 0, y + 16, paint);
-    canvas.drawText(spell_text[1], 160, y + 16, paint);
+    canvas.drawText(spell_text[0], 0, y + 16, Easel.white_text);
+    canvas.drawText(spell_text[1], 320, y + 16, Easel.white_rtext);
 
     // Spell choice row 1
     x = 0;
@@ -1184,7 +1189,7 @@ public class MainView extends View {
 	if (i == spell_choice[h]) {
 	  canvas.drawRect(x, y, x + 50, y + 50, selpaint);
 	}
-	canvas.drawBitmap(ready_spell[i][h].bitmap, x + 1, y + 1, paint);
+	canvas.drawBitmap(ready_spell[i][h].bitmap, x + 1, y + 1, Easel.paint);
 	if (h == 0) x += 50;
 	else x -= 50;
       }
@@ -1194,7 +1199,7 @@ public class MainView extends View {
     // Spell choice row 2
     /*
     y += 50;
-    canvas.drawRect(0, y, 50 - 1, y + 50 - 1, paint);
+    canvas.drawRect(0, y, 50 - 1, y + 50 - 1, Easel.paint);
     */
   }
 

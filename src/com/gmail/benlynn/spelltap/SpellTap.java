@@ -33,6 +33,8 @@ public class SpellTap extends Activity {
     mainview.spelltap = this;
     mainview.set_arena((Arena) findViewById(R.id.arena));
     mainview.set_arrow_view((ArrowView) findViewById(R.id.arrow_view));
+    mainview.emptyleftmsg = getText(R.string.empty_left_hand).toString();
+    mainview.emptyrightmsg = getText(R.string.empty_right_hand).toString();
     speech_layout = findViewById(R.id.speech_layout);
     speech_layout.setVisibility(View.GONE);
     speech_box = (TextView) findViewById(R.id.speech_box);
