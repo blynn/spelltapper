@@ -92,4 +92,6 @@
 <string name="SFWdesc">Target controls the summoned goblin, which can do 1 damage, and has 1 hit point.</string>
 <string name="DFWdesc">Restore up to 1 health.</string>
 <string name="DSFdesc">Target spellcaster must select same gesture for both hands. Target monster attacks its controller.</string>
+
+<string name="servererror">Cannot connect to server :(</string>
 </resources>

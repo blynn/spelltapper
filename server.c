@@ -5,14 +5,19 @@
 #include "SDL_net.h"
 
 static char reply[128];
+static char move[2][128];
 void handle(char *s) {
   static int id = 0;
-  static int gotmove[2], move[2][2];
+  static int gotmove[2];
   static int sent[2];
   int i = 0;
   void add_char(char c) {
     reply[i] = c;
     i++;
+  }
+  void add_nchar(char *cp, int n) {
+    strncpy(reply + i, cp, n);
+    i += n;
   }
   void fin() {
     reply[i] = '\n';
@@ -32,12 +37,10 @@ void handle(char *s) {
       int j = s[0] - 'a';
       if (!gotmove[j]) {
 	gotmove[j] = 1;
-	move[j][0] = s[1];
-	move[j][1] = s[2];
+	strncpy(move[j], s + 1, 6);
       }
       if (gotmove[1 - j]) {
-	add_char(move[1 - j][0]);
-	add_char(move[1 - j][1]);
+	add_nchar(move[1 - j], 6);
 	sent[j] = 1;
       } else {
 	add_char('-');
