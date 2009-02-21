@@ -1,4 +1,7 @@
 // TODO: Arrowheads.
+// Draws spell icons and arrows pointing to their targets, and arrows from
+// monsters to their targets (but not the monsters or targets themselves;
+// MainView handles this).
 package com.gmail.benlynn.spelltap;
 
 import android.content.Context;

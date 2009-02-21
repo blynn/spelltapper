@@ -275,6 +275,7 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
 	case 0:
+	  clear_choices();
 	  set_gesture_knowledge(GK_KNIFE_ONLY);
 	  set_spell_knowledge(Wisdom.STAB);
 	  arena.setVisibility(View.GONE);
@@ -995,9 +996,9 @@ public class MainView extends View {
     ready_spell_count[0] = ready_spell_count[1] = 0;
     spell_choice[0] = spell_choice[1] = -1;
     spell_text[0] = spell_text[1] = "";
-    if (null != arrow_view) {
+    //if (null != arrow_view) {
       arrow_view.bmspell[0] = arrow_view.bmspell[1] = null;
-    }
+    //}
   }
 
   class History {
@@ -1066,7 +1067,6 @@ public class MainView extends View {
     spell_choice = new int[2];
     spell_choice[0] = spell_choice[1] = 0;
     spell_text = new String[2];
-    clear_choices();
     spell_list = new Spell[64];
     spell_list_count = 0;
     stab_spell = new StabSpell();
@@ -1220,7 +1220,6 @@ public class MainView extends View {
   public boolean onTouchEvent(MotionEvent event) {
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
-	Log.i("M", "D " + main_state);
 	if (is_animating) return false;
 	x0 = event.getX();
 	y0 = event.getY();
@@ -1244,7 +1243,6 @@ public class MainView extends View {
 	      // attack, but it doesn't seem useful.
 	      if (b.dead || 0 != b.controller) continue;
 	      if (b.contains(x0, y0)) {
-		Log.i("Drag", "" + i);
 		drag_i = i;
 		break;
 	      }
@@ -1261,7 +1259,6 @@ public class MainView extends View {
 	okstate = y0 > ystatus;
 	return true;
       case MotionEvent.ACTION_UP:
-	Log.i("M", "U " + main_state);
 	if (is_animating) return false;
 	x1 = event.getX();
 	y1 = event.getY();
@@ -1387,8 +1384,11 @@ public class MainView extends View {
       return;
     }
     invalidate();
+    is_retrying = true;
     cmon_handler.sendEmptyMessageDelayed(0, 3000);
   }
+
+  static boolean is_retrying;
 
   private CmonHandler cmon_handler = new CmonHandler();
   class CmonHandler extends Handler {
@@ -1402,7 +1402,7 @@ public class MainView extends View {
 	resolve();
 	return;
       }
-      sendEmptyMessageDelayed(0, 3000);
+      if (is_retrying) sendEmptyMessageDelayed(0, 3000);
     }
   }
 
@@ -1474,10 +1474,8 @@ public class MainView extends View {
 
   static int exec_cursor;
   public void next_spell() {
-    Log.i("Spell", "" + exec_cursor + "/" + exec_queue_count);
     if (exec_cursor < exec_queue_count) {
       SpellCast sc = exec_queue[exec_cursor];
-    Log.i("Spell", sc.spell.name + " " + sc.source);
       String s = "";
       String srcname = being_list[sc.source].name;
       String tgtname = null;

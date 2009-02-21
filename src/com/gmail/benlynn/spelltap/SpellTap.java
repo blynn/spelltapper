@@ -15,8 +15,8 @@ import android.widget.Button;
 import android.util.Log;
 public class SpellTap extends Activity {
   @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
+  public void onCreate(Bundle bun) {
+    super.onCreate(bun);
     // No title bar.
     requestWindowFeature(Window.FEATURE_NO_TITLE);
     setContentView(R.layout.main);
@@ -59,11 +59,27 @@ public class SpellTap extends Activity {
 
     init_gesture_state_knowledge();
 
-    state = 10;
+    if (null != bun) {
+      state = bun.getInt(ICE_STATE);
+    }
     next_state();
     // Start in town.
     curmach = townview.stmach;
     curmach.run();
+  }
+  static final String ICE_STATE = "game-state";
+
+  @Override
+  public void onSaveInstanceState(Bundle bun) {
+    bun.putInt(ICE_STATE, state);
+Log.i("MV", "Saving " + state);
+  }
+
+  @Override
+  public void onPause() {
+Log.i("MV", "Pause");
+    super.onPause();
+    MainView.is_retrying = false;
   }
 
   static final int MENU_SPELLBOOK = 1;
@@ -321,7 +337,7 @@ public class SpellTap extends Activity {
   static final int PLACE_COUNT = 4;
   static TownView townview;
   static InputHog hog;
-  static int state;
+  static int state = 0;
   static View speech_layout;
   static TextView speech_box;
   static SpellTapMachine[] mach;
