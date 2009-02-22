@@ -1091,6 +1091,7 @@ public class MainView extends View {
     put_gest("Fingers", 1, 1);
 
     arrow_view = null;
+    tilt_state = 0;
   }
   static String emptyleftmsg;
   static String emptyrightmsg;
@@ -1249,7 +1250,7 @@ public class MainView extends View {
 	  }
 	  return false;
 	}
-	okstate = y0 > ystatus;
+	okstate = y0 >= ystatus;
 	return true;
       case MotionEvent.ACTION_UP:
 	if (is_animating) return false;
@@ -1295,7 +1296,7 @@ public class MainView extends View {
 	    run();
 	    return true;
 	  }
-	  if (okstate && y1 > ystatus) {
+	  if (okstate && y1 >= ystatus) {
 	    end_turn();
 	    return true;
 	  }
@@ -1343,6 +1344,30 @@ public class MainView extends View {
 	}
     }
     return false;
+  }
+
+  static int tilt_state;
+  void tilt_up() {
+    if (tilt_state != 0) {
+      return;
+    }
+    if (choice[0] != GESTURE_NONE && choice[1] != GESTURE_NONE) {
+      tilt_state = 1;
+      arena.set_notify_me(tilt_done_handler);
+      arena.animate_tilt();
+    }
+  }
+  void tilt_down() {
+    if (1 != tilt_state) return;
+    tilt_state = 0;  // Fragile: requires gestures are cleared by end_turn().
+    end_turn();
+  }
+  private TiltDoneHandler tilt_done_handler = new TiltDoneHandler();
+  class TiltDoneHandler extends Handler {
+    @Override
+    public void handleMessage(Message msg) {
+      tilt_state = 0;
+    }
   }
 
   class SpellCast {

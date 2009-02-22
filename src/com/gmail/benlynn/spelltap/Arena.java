@@ -57,6 +57,7 @@ public class Arena extends View {
   static int xdelta, ydelta;
   static int frame;
   static int anim;
+  static final int ANIM_TILT = -2;
   static final int ANIM_DELAY = -1;
   static final int ANIM_NONE = 0;
   static final int ANIM_MOVE = 1;
@@ -91,32 +92,49 @@ public class Arena extends View {
       case ANIM_MOVE_DAMAGE:
       case ANIM_DAMAGE:
       case ANIM_SPELL:
+      case ANIM_TILT:
 	fade_paint.setAlpha(fade_paint.getAlpha() - alphadelta);
 	break;
       case ANIM_SHIELD:
         shieldr += rdelta;
 	break;
     }
-    if (frame < frame_max) {
+    // Tilt helper animation has special needs.
+    if (ANIM_TILT == anim) {
+      // User has one second to execute down tilt to cast spell.
+      if (frame < 20) {
+	frame++;
+	anim_handler.sleep(50);
+	return;
+      }
+    } else if (frame < frame_max) {
       frame++;
       anim_handler.sleep(delay);
+      return;
+    }
+
+    frame = 0;
+    x = x1;
+    y = y1;
+    if (anim == ANIM_SPELL && alphadelta < 0) {
+      // Fade out the spell.
+      alphadelta = -alphadelta;
+      anim_handler.sleep(delay);
     } else {
-      frame = 0;
-      x = x1;
-      y = y1;
-      if (anim == ANIM_SPELL && alphadelta < 0) {
-	// Fade out the spell.
-	alphadelta = -alphadelta;
-	anim_handler.sleep(delay);
-      } else {
-	anim = ANIM_NONE;
-	notify_me.sendEmptyMessage(0);
-      }
+      anim = ANIM_NONE;
+      if (null != notify_me) notify_me.sendEmptyMessage(0);
     }
   }
 
   public void animate_delay() {
     anim = ANIM_DELAY;
+    anim_handler.sleep(delay);
+  }
+
+  public void animate_tilt() {
+    anim = ANIM_TILT;
+    fade_paint.setARGB(255, 255, 255, 255);
+    alphadelta = 255 / 20;
     anim_handler.sleep(delay);
   }
 
@@ -281,6 +299,9 @@ public class Arena extends View {
       case ANIM_BULLET:
         canvas.drawCircle(x, y, 10, big_white_text);
         canvas.drawCircle(x, y, 11, black_stroke_paint);
+	break;
+      case ANIM_TILT:
+        canvas.drawRect(0, MainView.ystatus, 320, 480, fade_paint);
 	break;
     }
   }

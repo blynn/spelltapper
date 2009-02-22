@@ -69,7 +69,7 @@ public class SpellTap extends Activity {
     if (null != bun) {
       state = bun.getInt(ICE_STATE);
     }
-    next_state();
+    run();
     // Start in town.
     curmach = townview.stmach;
     curmach.run();
@@ -107,10 +107,10 @@ public class SpellTap extends Activity {
 	     j = 0 == j ? 8 - 1 : j - 1) {
 	  float delta = values[1] - hist[j];
 	  if (delta < -32) {
-	    Log.i("Tilt", "Up");
+	    tilt_up();
 	    break;
 	  } else if (delta > 32) {
-	    Log.i("Tilt", "Down");
+	    tilt_down();
 	    break;
 	  }
 	}
@@ -123,6 +123,16 @@ public class SpellTap extends Activity {
     long last_t;
     int i;
     boolean first;
+  }
+
+  void tilt_up() {
+    Log.i("Tilt", "Up");
+    if (null == curmach) mainview.tilt_up();
+  }
+
+  void tilt_down() {
+    Log.i("Tilt", "Down");
+    if (null == curmach) mainview.tilt_down();
   }
 
   @Override
@@ -226,6 +236,11 @@ Log.i("MV", "Pause");
   }
 
   void next_state() {
+    state++;
+    run();
+  }
+
+  void run() {
     // Fragile code. Take care!
     mainframe.setVisibility(View.GONE);
     if (state > 0) {
@@ -245,74 +260,63 @@ Log.i("MV", "Pause");
     switch(state) {
     case 0:  // N00b. Can only go to Academy to get schooled.
       school.set_state_noob();
-      state = 1;
       break;
     case 1:  // Jack waits in the Training Hall for the first lesson.
       set_spell_knowledge(Wisdom.STAB);
       dojo.set_state_firstlesson();
       school.set_state_jackwaits();
-      state = 2;
       break;
     case 2:  // Knows Stab. Can train on dummy, or learn Palm in Academy.
       set_spell_knowledge(Wisdom.STAB);
       dojo.set_state_dummy(3);
       school.set_state_palmlesson();
-      state = 3;
       break;
     case 3:  // Knows Palm, Shield. Arena is open.
       set_spell_knowledge(Wisdom.STABNSHIELD);
       pit.set_state_stabatha();
       school.set_state_firstadvice();
-      state = 4;
       break;
     case 4:  // One win. Time to learn SD.
       set_spell_knowledge(Wisdom.STABNSHIELD);
       pit.set_state_closed();
       school.set_state_jackwaits();
       dojo.set_state_missilelesson();
-      state = 5;
       break;
     case 5:  // See Jack to learn WFP.
       set_spell_knowledge(Wisdom.UP_TO_MISSILE);
       pit.set_state_closed();
       school.set_state_wfplesson();
       dojo.set_state_dummy(4);
-      state = 6;
       break;
     case 6:  // Learn WFP.
       set_spell_knowledge(Wisdom.UP_TO_MISSILE);
       pit.set_state_closed();
       school.set_state_jackwaits();
       dojo.set_state_wfplesson();
-      state = 7;
       break;
     case 7:  // See Jack to learn DSF.
       set_spell_knowledge(Wisdom.UP_TO_WFP);
       pit.set_state_closed();
       school.set_state_dsflesson();
       dojo.set_state_dummy(5);
-      state = 8;
       break;
     case 8:  // Second duel.
       set_spell_knowledge(Wisdom.UP_TO_DSF);
       pit.set_state_duel2();
       school.set_state_duel2advice();
       dojo.set_state_dummy(5);
-      state = 9;
       break;
     case 9:  // Learn Cure Light Wounds.
       set_spell_knowledge(Wisdom.UP_TO_DSF);
       pit.set_state_closed();
       school.set_state_curelesson();
       dojo.set_state_dummy(5);
-      state = 10;
       break;
     case 10:  // Duel 3.
       set_spell_knowledge(Wisdom.UP_TO_DFW);
       pit.set_state_duel3();
       school.set_state_duel3advice();
       dojo.set_state_dummy(5);
-      state = 13;
       break;
     case 11:
     case 13:  // Net play.
@@ -414,7 +418,6 @@ Log.i("MV", "Pause");
   static final int PLACE_COUNT = 4;
   static TownView townview;
   static InputHog hog;
-  static int state = 13;
   static View speech_layout;
   static TextView speech_box;
   static SpellTapMachine[] mach;
@@ -427,4 +430,5 @@ Log.i("MV", "Pause");
   static Button butclo;
   static View butv;
   static Tubes tubes;
+  static int state = 3;
 }
