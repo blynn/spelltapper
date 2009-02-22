@@ -17,8 +17,6 @@ class Easel {
     grey_text.setARGB(255, 143, 143, 143);
     grey_rtext = new Paint(grey_text);
     grey_rtext.setTextAlign(Paint.Align.RIGHT);
-    grey_ctext = new Paint(grey_text);
-    grey_ctext.setTextAlign(Paint.Align.CENTER);
 
     white_text = new Paint();
     white_text.setARGB(255, 255, 255, 255);
@@ -37,9 +35,10 @@ class Easel {
 
   static Paint paint;
   static Paint arrow_paint, weird_arrow_paint;
-  static Paint grey_text, grey_rtext, grey_ctext;
+  static Paint grey_text, grey_rtext;
   static Paint white_text, white_rtext;
   static Paint octarine;
   static Paint status_paint;
   static Paint sel_paint;
+  static Paint charm_text, charm_rtext;
 }

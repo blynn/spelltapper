@@ -140,6 +140,12 @@ public class MainView extends View {
 	turn.spell_target[h] = -1;
       }
     }
+    int AI_get_charm_hand() {
+      return 0;
+    }
+    int AI_get_charm_gesture() {
+      return Gesture.PALM;
+    }
   }
 
   void set_gesture_knowledge(int level) {
@@ -727,7 +733,7 @@ public class MainView extends View {
       turn.spell[hand] = indexOfSpell("Stab");
       turn.spell_target[hand] = 0;
       hand = 1 - hand;
-      // If confused, gesture knife with other hand even though its useless.
+      // If confused, gesture knife with other hand even though it's useless.
       // Beats surrendering!
       if (Status.CONFUSED == being_list[1].status) {
 	turn.gest[hand] = Gesture.KNIFE;
@@ -766,7 +772,7 @@ public class MainView extends View {
     int state;
   }
 
-  // An opponent who likes WFP.
+  // An opponent who bets the game on WFP.
   class WFPFighter extends Tutorial {
     WFPFighter() {
       state = 0;
@@ -784,8 +790,8 @@ public class MainView extends View {
 	  break;
 	case 1:
 	  turn.gest[0] = Gesture.PALM;
-	  turn.spell[0] = indexOfSpellGesture("P");
-	  turn.spell_target[0] = 1;
+	  turn.spell[0] = indexOfSpellGesture("PSDF");
+	  turn.spell_target[0] = 0;
 	  turn.gest[1] = Gesture.FINGERS;
 	  turn.spell[1] = -1;
 	  turn.spell_target[1] = -1;
@@ -1053,6 +1059,7 @@ public class MainView extends View {
     add_spell(new CureLightWoundsSpell(), 128);
     add_spell(new SummonGoblinSpell(), 17);
     add_spell(new ProtectionSpell(), 7);
+    add_spell(new CharmPersonSpell(), 31);
 
     being_list = new Being[16];
     summon_count = new int[2];
@@ -1088,6 +1095,8 @@ public class MainView extends View {
 
     arrow_view = null;
     tilt_state = 0;
+    charmed_hand = -1;
+    freeze_gesture = false;
   }
   static String emptyleftmsg;
   static String emptyrightmsg;
@@ -1147,17 +1156,25 @@ public class MainView extends View {
 
     // Gesture and spell text.
     y = ylower + 16 - 4;
-    Gesture g = gesture[choice[0]];
-    if (null == g) {
-      canvas.drawText(emptyleftmsg, 0, y, Easel.grey_text);
+    if (0 == charmed_hand) {
+      canvas.drawText("[Charmed!]", 0, y, Easel.white_text);
     } else {
-      canvas.drawText(g.statusname, 0, y, Easel.white_text);
+      Gesture g = gesture[choice[0]];
+      if (null == g) {
+	canvas.drawText(emptyleftmsg, 0, y, Easel.grey_text);
+      } else {
+	canvas.drawText(g.statusname, 0, y, Easel.white_text);
+      }
     }
-    g = gesture[choice[1]];
-    if (null == g) {
-      canvas.drawText(emptyrightmsg, 320, y, Easel.grey_rtext);
+    if (1 == charmed_hand) {
+      canvas.drawText("[Charmed!]", 320, y, Easel.white_rtext);
     } else {
-      canvas.drawText(g.statusname, 320, y, Easel.white_rtext);
+      Gesture g = gesture[choice[1]];
+      if (null == g) {
+	canvas.drawText(emptyrightmsg, 320, y, Easel.grey_rtext);
+      } else {
+	canvas.drawText(g.statusname, 320, y, Easel.white_rtext);
+      }
     }
 
     canvas.drawText(spell_text[0], 0, y + 16, Easel.white_text);
@@ -1290,7 +1307,7 @@ public class MainView extends View {
 	    return true;
 	  }
 	  if (okstate && y1 >= ystatus) {
-	    end_turn();
+	    confirm_move();
 	    return true;
 	  }
 	  if (y1 >= ylower + 32 && y1 < ylower + 32 + 50) {
@@ -1325,6 +1342,9 @@ public class MainView extends View {
 	    h = 1;
 	    dirx *= -1;
 	  }
+	  if (h == charmed_hand || freeze_gesture) {
+	    return true;
+	  }
 	  choice[h] = Gesture.flattenxy(dirx, diry);
 	  if (null == gesture[choice[h]] || !gesture[choice[h]].learned) {
 	    choice[h] = Gesture.NONE;
@@ -1344,7 +1364,8 @@ public class MainView extends View {
     if (tilt_state != 0) {
       return;
     }
-    if (choice[0] != Gesture.NONE && choice[1] != Gesture.NONE) {
+    if ((choice[0] != Gesture.NONE && choice[1] != Gesture.NONE) ||
+        (-1 != charmed_hand && choice[1 - charmed_hand] != Gesture.NONE)) {
       tilt_state = 1;
       arena.set_notify_me(tilt_done_handler);
       arena.animate_tilt();
@@ -1352,8 +1373,9 @@ public class MainView extends View {
   }
   void tilt_down() {
     if (1 != tilt_state) return;
-    tilt_state = 0;  // Fragile: requires gestures are cleared by end_turn().
-    end_turn();
+    // Fragile: requires gestures are cleared by confirm_move().
+    tilt_state = 0;
+    confirm_move();
   }
   private TiltDoneHandler tilt_done_handler = new TiltDoneHandler();
   class TiltDoneHandler extends Handler {
@@ -1379,7 +1401,22 @@ public class MainView extends View {
   static boolean opp_error;
   static boolean opp_ready;
 
-  private void end_turn() {
+  private int get_opp_charm_choice() {
+    return tut.AI_get_charm_gesture();
+  }
+
+  private void confirm_move() {
+    if (-1 != charmed_hand && !freeze_gesture) {
+      choice[charmed_hand] = get_opp_charm_choice();
+      handle_new_choice(charmed_hand);
+      freeze_gesture = true;
+      print("Confirm spells.");
+      return;
+    }
+    get_opp_move();
+  }
+
+  private void get_opp_move() {
     is_animating = true;
     arrow_view.setVisibility(View.GONE);
     hist.add(choice);
@@ -1595,8 +1632,20 @@ public class MainView extends View {
     }
   }
 
+  boolean player_charmed() {
+    return Status.CHARMED == being_list[0].status;
+  }
+
   // Start new round.
   void new_round() {
+    // Handle Charm Person.
+    if (player_charmed()) {
+      // Get charmed hand from opponent.
+      charmed_hand = tut.AI_get_charm_hand();
+    } else {
+      charmed_hand = -1;
+    }
+
     // Handle confusion.
     for (int i = 2; i < being_list_count; i++) {
       Being b = being_list[i];
@@ -1891,6 +1940,26 @@ public class MainView extends View {
     }
   }
 
+  public class CharmPersonSpell extends Spell {
+    CharmPersonSpell() {
+      init("Charm Person", "PSDF", R.drawable.confusion, R.string.PSDFdesc, 1);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  if (-1 != target) {
+	    // Only works on opponent.
+	    if (1 - source == target) {
+	      being_list[target].status = Status.CHARMED;
+	    }
+	  }
+	  arena.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
   public class ProtectionSpell extends Spell {
     ProtectionSpell() {
       init("Protection From Evil", "WWP", R.drawable.shield, R.string.WWPdesc, 0);
@@ -1947,6 +2016,7 @@ public class MainView extends View {
   static public class Status {
     static public final int OK = 0;
     static public final int CONFUSED = 1;
+    static public final int CHARMED = 2;
   }
 
   static int[] summon_count;
@@ -2051,6 +2121,10 @@ public class MainView extends View {
     int shield;
     int w, h;
     int midw, midh;
+    // For monsters, the player that controls it.
+    // In future, if ever we support more than two players, for players it
+    // could represent the source of a Charm Person spell. For now we know
+    // it must be the other player.
     short controller;
     boolean dead;
     static final int SLOP = 4;
@@ -2092,4 +2166,6 @@ public class MainView extends View {
   }
 
   static SpellTap spelltap;
+  static int charmed_hand;
+  static boolean freeze_gesture;
 }
