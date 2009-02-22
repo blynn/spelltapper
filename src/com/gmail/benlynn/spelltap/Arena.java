@@ -33,9 +33,9 @@ public class Arena extends View {
     fade_paint = new Paint();
     white_paint = new Paint();
     white_paint.setARGB(255, 255, 255, 255);
-    big_white_paint = new Paint();
-    big_white_paint.setARGB(255, 255, 255, 255);
-    big_white_paint.setTextSize(32);
+    big_white_text = new Paint();
+    big_white_text.setARGB(255, 255, 255, 255);
+    big_white_text.setTextSize(32);
     black_stroke_paint = new Paint();
     black_stroke_paint.setStyle(Paint.Style.STROKE);
     black_stroke_paint.setStrokeWidth(2);
@@ -73,7 +73,7 @@ public class Arena extends View {
   static final int ANIM_SHIELD = 7;
   static int delay = 24; // 32
   static int frame_max = 16;
-  static Paint fade_paint, white_paint, big_white_paint, black_stroke_paint;
+  static Paint fade_paint, white_paint, big_white_text, black_stroke_paint;
   static Paint[] shield_paint;
   static int alphadelta;
   static String damage;
@@ -266,7 +266,7 @@ public class Arena extends View {
 	  Being b = MainView.being_list[target];
 	  canvas.drawRect(b.x, b.y, b.x + b.w, b.y + b.h, fade_paint);
 	  canvas.drawText(damage, b.x + b.midw - damagex,
-	      b.y + b.midh + damagey, big_white_paint);
+	      b.y + b.midh + damagey, big_white_text);
 	}
 	break;
       case ANIM_SPELL:
@@ -279,7 +279,7 @@ public class Arena extends View {
         canvas.drawCircle(x, y, shieldr, shield_paint[0]);
 	break;
       case ANIM_BULLET:
-        canvas.drawCircle(x, y, 10, big_white_paint);
+        canvas.drawCircle(x, y, 10, big_white_text);
         canvas.drawCircle(x, y, 11, black_stroke_paint);
 	break;
     }

@@ -11,8 +11,12 @@ import android.view.MenuItem;
 import android.view.Menu;
 import android.widget.TextView;
 import android.widget.Button;
+import android.hardware.SensorListener;
+import android.hardware.SensorManager;
+import android.os.SystemClock;
 
 import android.util.Log;
+
 public class SpellTap extends Activity {
   @Override
   public void onCreate(Bundle bun) {
@@ -69,7 +73,78 @@ public class SpellTap extends Activity {
     // Start in town.
     curmach = townview.stmach;
     curmach.run();
+    senseman = (SensorManager) getSystemService(SENSOR_SERVICE);
+    tilt_listener = new TiltListener();
   }
+
+  SensorManager senseman;
+  TiltListener tilt_listener;
+
+  class TiltListener implements SensorListener {
+    TiltListener() {
+      hist = new float[8];
+      first = true;
+    }
+    public void onAccuracyChanged(int sensor, int accuracy) {
+      Log.i("TiltListener", "Accuracy change: " + Float.toString(accuracy));
+    }
+
+    public void onSensorChanged(int sensor, float[] values) {
+      if (first) {
+        last_t =  SystemClock.uptimeMillis();
+	for (i = 0; i < 8; i++) hist[i] = values[1];
+	i = 0;
+	first = false;
+      } else {
+	// Log.i("Tilt", Float.toString(values[1]));
+	long t = SystemClock.uptimeMillis();
+	// Log.i("Tilt", Long.toString(t));
+	if (t < 128) return;
+	last_t = t;
+
+	for (int j = 0 == i ? 8 - 1 : i - 1;
+	     j != i;
+	     j = 0 == j ? 8 - 1 : j - 1) {
+	  float delta = values[1] - hist[j];
+	  if (delta < -32) {
+	    Log.i("Tilt", "Up");
+	    break;
+	  } else if (delta > 32) {
+	    Log.i("Tilt", "Down");
+	    break;
+	  }
+	}
+	hist[i] = values[1];
+	if (8 - 1 == i) i = 0;
+	else i++;
+      }
+    }
+    float hist[];
+    long last_t;
+    int i;
+    boolean first;
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+    senseman.registerListener(tilt_listener,
+	SensorManager.SENSOR_ORIENTATION |
+	SensorManager.SENSOR_DELAY_GAME);
+    /*
+      SensorManager.SENSOR_ORIENTATION
+      SensorManager.SENSOR_ACCELEROMETER
+      SensorManager.SENSOR_MAGNETIC_FIELD
+      SensorManager.SENSOR_DELAY_FASTEST
+    */
+  }
+
+  @Override
+  protected void onStop() {
+    senseman.unregisterListener(tilt_listener);
+    super.onStop();
+  }
+
   static final String ICE_STATE = "game-state";
 
   @Override
