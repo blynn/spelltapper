@@ -638,11 +638,15 @@ public class MainView extends View {
 	  state = 6;
 	  return;
 	case 6:
-	  set_main_state(STATE_NORMAL);
-	  get_ready();
+	  jack_says(R.string.SDtutpass4);
 	  state = 7;
 	  return;
 	case 7:
+	  set_main_state(STATE_NORMAL);
+	  get_ready();
+	  state = 8;
+	  return;
+	case 8:
 	  spelltap.next_state();
 	  spelltap.goto_town();
 	  return;
@@ -1391,6 +1395,8 @@ public class MainView extends View {
     arrow_view.setVisibility(View.GONE);
     hist.add(choice);
 
+    arena.animation_reset();  // Stop tilt animation if it's still going.
+
     opp_error = false;
     opp_ready = true;
     print("Waiting for opponent...");
@@ -1666,6 +1672,8 @@ public class MainView extends View {
     }
     if (ready_spell_count[h] > 0) {
       choose_spell(h, 0);
+    } else {
+      arrow_view.bmspell[h] = null;
     }
     lastchoice[0] = choice[0];
     lastchoice[1] = choice[1];

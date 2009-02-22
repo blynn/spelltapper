@@ -27,8 +27,7 @@ public class Arena extends View {
   }
 
   void init_arena() {
-    anim = ANIM_NONE;
-    frame = 0;
+    animation_reset();
     paint = new Paint();
     fade_paint = new Paint();
     white_paint = new Paint();
@@ -318,5 +317,10 @@ public class Arena extends View {
       this.removeMessages(0);
       sendEmptyMessageDelayed(0, delayMillis);
     }
+  }
+
+  void animation_reset() {
+    frame = 0;
+    anim = ANIM_NONE;
   }
 }

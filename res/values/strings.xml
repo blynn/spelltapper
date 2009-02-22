@@ -43,11 +43,14 @@
     <string name="SDtut">Do a <b>Snap</b> gesture (<b>S</b>) by drawing a diagonally up and away from the center, like a <b>Knife</b> gesture that veers outwards (L: &#x2196; R: &#x2197; ). Make <b>Snap</b> with both hands and end your turn.</string>
     <string name="SDtutpass1">Now, the <b>Digit</b> gesture (<b>D</b>) is the same except you go toward to center (L: &#x2197; R: &#x2196; ). Make <b>D</b> with both hands and end the turn.</string>
     <string name="SDtutpass2">Surprise! <b>S</b> then <b>D</b> casts <i>Missile</i>. Unlike <i>Shield</i>, most spells take several turns to cast.</string>
-    <string name="SDtutpass3">Have fun! Come find me later. Remember: <b>SD</b> casts <i>Missile</i>.</string>
+    <string name="SDtutpass3">At any time, press [MENU] to access your spellbook and review all you have learned so far.</string>
+    <string name="SDtutpass4">Have fun! Come find me later.</string>
     <string name="SDtutwrong">That\'s not right. Let\'s start again.</string>
 
-    <string name="talkaboutmenu">At any time, press [MENU] to access your spellbook. It records what you have learned so far.</string>
-    <string name="meetforwfp"><i>Missile</i> is useful, but can be blocked by <i>Shield</i>. I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
+    <string name="talkabouttilt1">There\'s a showier way to cast spells than tapping the bottom of the screen.</string>
+    <string name="talkabouttilt2">Once you have selected gestures for your hands, tilt the screen up vertically. When the bottom line flashes, return the screen to its original position to end your move.</string>
+    <string name="talkabouttilt3">Remember, you must have a gesture in each hand for this to work.</string>
+    <string name="meetforwfp">Now, <i>Missile</i> is useful, but can be blocked by <i>Shield</i>. I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
 
     <string name="wavetut">To make a <b>Wave</b> gesture (<b>W</b>), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ). <b>Wave</b> both hands and end your turn.</string>
     <string name="fingerstut">Now make the <b>Fingers</b> gesture (<b>F</b>) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ). Then end your turn.</string>
@@ -91,7 +94,7 @@
 <string name="stabdesc">(Not a spell.) Attack target for 1 damage.</string>
 <string name="Pdesc">Prevents all physical damage: stabs, monster attacks, and missiles.</string>
 <string name="SDdesc">Fire projectile at target for 1 damage.</string>
-<string name="WFPdesc">Deals 2 damage to target, even if Shield is present.</string>
+<string name="WFPdesc">2 magical damage to target. Ignores Shield.</string>
 <string name="SFWdesc">Target controls the summoned goblin, which can do 1 damage, and has 1 hit point.</string>
 <string name="DFWdesc">Restore up to 1 health.</string>
 <string name="DSFdesc">Target spellcaster must select same gesture for both hands. Target monster attacks its controller.</string>
