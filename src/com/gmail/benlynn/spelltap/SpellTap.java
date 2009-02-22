@@ -128,12 +128,12 @@ public class SpellTap extends Activity {
   }
 
   void tilt_up() {
-    Log.i("Tilt", "Up");
+    // Log.i("Tilt", "Up");
     if (null == curmach) mainview.tilt_up();
   }
 
   void tilt_down() {
-    Log.i("Tilt", "Down");
+    // Log.i("Tilt", "Down");
     if (null == curmach) mainview.tilt_down();
   }
 
@@ -192,7 +192,6 @@ Log.i("MV", "Pause");
 
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
-    Log.i("Key", "" + keyCode);
     if (keyCode == KeyEvent.KEYCODE_BACK) {
       if (spellbook_is_open) {
 	close_spellbook();
@@ -393,7 +392,7 @@ Log.i("MV", "Pause");
     int count = 0;
     String s = "";
     for (int i = 0; i < 9; i++) {
-      MainView.Gesture g = MainView.gesture[i];
+      Gesture g = MainView.gesture[i];
       if (g == null || !g.learned) continue;
       count++;
       s += g.statusname + ": " + g.arrow + "\n";

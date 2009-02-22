@@ -22,60 +22,6 @@ import com.gmail.benlynn.spelltap.SpellTap.Wisdom;
 
 public class MainView extends View {
   static Gesture[] gesture;
-  class Gesture {
-    Gesture(String i_name, int i_x, int i_y) {
-      name = i_name;
-      abbr = name.charAt(0);
-      statusname = abbr + " (" + name + ")";
-      x = i_x;
-      y = i_y;
-      // Assign unicode arrows.
-      switch(x) {
-	case -1:
-	  switch(y) {
-	    case 0:  // Left.
-	      arrow = "\u2190";
-	    case -1:  // Up and left.
-	      arrow = "\u2196";
-	      break;
-	    case 1:  // Down and left.
-	      arrow = "\u2199";
-	      break;
-	  }
-	  break;
-	case 0:
-	  switch(y) {
-	    case -1:  // Up.
-	      arrow = "\u2191";
-	      break;
-	    case 1:  // Down.
-	      arrow = "\u2193";
-	      break;
-	  }
-	  break;
-	case 1:
-	  switch(y) {
-	    case 0:  // Right.
-	      arrow = "\u2192";
-	      break;
-	    case -1:  // Up and right.
-	      arrow = "\u2197";
-	      break;
-	    case 1:  // Down and right.
-	      arrow = "\u2198";
-	      break;
-	  }
-	  break;
-      }
-      learned = false;
-    }
-    String name;
-    String arrow;
-    String statusname;
-    char abbr;
-    boolean learned;
-    int x, y;
-  }
 
   static String msg;
   static float x0, y0, x1, y1;
@@ -101,14 +47,6 @@ public class MainView extends View {
   static final int ylower = 128 + 144 + 4 * 4;
   static final int ystatus = ylower + 32 + 2 * 50 + 16 - 4;
   static final int yicon = 64 + 48 + 2 * 4;
-  static final int GESTURE_SNAP = flattenxy(-1, -1);
-  static final int GESTURE_KNIFE = flattenxy(0, -1);
-  static final int GESTURE_DIGIT = flattenxy(1, -1);
-  static final int GESTURE_WAVE = flattenxy(-1, 1);
-  static final int GESTURE_PALM = flattenxy(0, 1);
-  static final int GESTURE_FINGERS = flattenxy(1, 1);
-  static final int GESTURE_CLAP = flattenxy(1, 0);
-  static final int GESTURE_NONE = flattenxy(0, 0);
   static String spell_text[];
   static int ready_spell_count[];
   static Spell[][] ready_spell;
@@ -193,7 +131,7 @@ public class MainView extends View {
     abstract void run();
     void AI_move(SpellTapMove turn) {
       for(int h = 0; h < 2; h++) {
-	turn.gest[h] = GESTURE_NONE;
+	turn.gest[h] = Gesture.NONE;
 	turn.spell[h] = -1;
 	turn.spell_target[h] = -1;
       }
@@ -208,19 +146,19 @@ public class MainView extends View {
     // Exploit fall-through.
     switch(level) {
       case Wisdom.ALL_GESTURES:
-        gesture[GESTURE_CLAP].learned = true;
+        gesture[Gesture.CLAP].learned = true;
       case Wisdom.ALL_BUT_C:
-        gesture[GESTURE_FINGERS].learned = true;
+        gesture[Gesture.FINGERS].learned = true;
       case Wisdom.ALL_BUT_FC:
-        gesture[GESTURE_WAVE].learned = true;
+        gesture[Gesture.WAVE].learned = true;
       case Wisdom.DKPS:
-        gesture[GESTURE_DIGIT].learned = true;
+        gesture[Gesture.DIGIT].learned = true;
       case Wisdom.KPS:
-        gesture[GESTURE_SNAP].learned = true;
+        gesture[Gesture.SNAP].learned = true;
       case Wisdom.KNIFE_AND_PALM:
-        gesture[GESTURE_PALM].learned = true;
+        gesture[Gesture.PALM].learned = true;
       case Wisdom.KNIFE_ONLY:
-        gesture[GESTURE_KNIFE].learned = true;
+        gesture[Gesture.KNIFE].learned = true;
       case Wisdom.NONE:
     }
   }
@@ -287,7 +225,7 @@ public class MainView extends View {
 	  state = 3;
 	  return;
 	case 3:
-	  if (choice[0] == GESTURE_KNIFE || choice[1] == GESTURE_KNIFE) {
+	  if (choice[0] == Gesture.KNIFE || choice[1] == Gesture.KNIFE) {
 	    count++;
 	    switch(count) {
 	    case 3:
@@ -461,7 +399,7 @@ public class MainView extends View {
 	  state = 2;
 	  return;
 	case 2:
-	  if (choice[0] == GESTURE_PALM || choice[1] == GESTURE_PALM) {
+	  if (choice[0] == Gesture.PALM || choice[1] == Gesture.PALM) {
 	    count++;
 	    switch(count) {
 	    case 3:
@@ -540,7 +478,7 @@ public class MainView extends View {
     }
     void AI_move(SpellTapMove turn) {
       super.AI_move(turn);
-      turn.gest[hand] = GESTURE_KNIFE;
+      turn.gest[hand] = Gesture.KNIFE;
       turn.spell[hand] = indexOfSpell("Stab");
       turn.spell_target[hand] = 0;
       hand = 1 - hand;
@@ -609,8 +547,8 @@ public class MainView extends View {
 	  invalidate();
 	  return;
 	case 2:
-	  if (hist.gest[0][0] == GESTURE_SNAP &&
-	      hist.gest[0][1] == GESTURE_SNAP) {
+	  if (hist.gest[0][0] == Gesture.SNAP &&
+	      hist.gest[0][1] == Gesture.SNAP) {
 	    jack_says(R.string.SDtutpass1);
 	    set_spell_knowledge(Wisdom.UP_TO_MISSILE);
 	    state = 3;
@@ -626,8 +564,8 @@ public class MainView extends View {
 	  invalidate();
 	  return;
 	case 4:
-	  if (hist.gest[1][0] == GESTURE_DIGIT &&
-	      hist.gest[1][1] == GESTURE_DIGIT) {
+	  if (hist.gest[1][0] == Gesture.DIGIT &&
+	      hist.gest[1][1] == Gesture.DIGIT) {
 	    jack_says(R.string.SDtutpass2);
 	    state = 5;
 	  } else {
@@ -687,8 +625,8 @@ public class MainView extends View {
 	  invalidate();
 	  return;
 	case 2:
-	  if (hist.gest[0][0] == GESTURE_WAVE &&
-	      hist.gest[0][1] == GESTURE_WAVE) {
+	  if (hist.gest[0][0] == Gesture.WAVE &&
+	      hist.gest[0][1] == Gesture.WAVE) {
 	    jack_says(R.string.fingerstut);
 	    state = 3;
 	  } else {
@@ -703,8 +641,8 @@ public class MainView extends View {
 	  invalidate();
 	  return;
 	case 4:
-	  if (hist.gest[1][0] == GESTURE_FINGERS &&
-	      hist.gest[1][1] == GESTURE_FINGERS) {
+	  if (hist.gest[1][0] == Gesture.FINGERS &&
+	      hist.gest[1][1] == Gesture.FINGERS) {
 	    jack_says(R.string.fingerstutpass1);
 	    set_spell_knowledge(Wisdom.UP_TO_WFP);
 	    state = 5;
@@ -727,8 +665,8 @@ public class MainView extends View {
 	  state = 8;
 	  return;
 	case 8:
-	  if (hist.gest[2][0] == GESTURE_PALM &&
-	      hist.gest[2][1] == GESTURE_PALM && 0 == winner) {
+	  if (hist.gest[2][0] == Gesture.PALM &&
+	      hist.gest[2][1] == Gesture.PALM && 0 == winner) {
 	    jack_says(R.string.fingerstutpass4);
 	    state = 9;
 	  } else {
@@ -781,18 +719,18 @@ public class MainView extends View {
       hand = 0;
     }
     void AI_move(SpellTapMove turn) {
-      turn.gest[hand] = GESTURE_KNIFE;
+      turn.gest[hand] = Gesture.KNIFE;
       turn.spell[hand] = indexOfSpell("Stab");
       turn.spell_target[hand] = 0;
       hand = 1 - hand;
       // If confused, gesture knife with other hand even though its useless.
       // Beats surrendering!
       if (Status.CONFUSED == being_list[1].status) {
-	turn.gest[hand] = GESTURE_KNIFE;
+	turn.gest[hand] = Gesture.KNIFE;
 	turn.spell[hand] = -1;
 	return;
       }
-      turn.gest[hand] = GESTURE_PALM;
+      turn.gest[hand] = Gesture.PALM;
       turn.spell[hand] = indexOfSpell("Shield");
       turn.spell_target[hand] = 1;
     }
@@ -833,50 +771,50 @@ public class MainView extends View {
     void AI_move(SpellTapMove turn) {
       switch(count) {
 	case 0:
-	  turn.gest[0] = GESTURE_PALM;
+	  turn.gest[0] = Gesture.PALM;
 	  turn.spell[0] = indexOfSpellGesture("P");
 	  turn.spell_target[0] = 1;
-	  turn.gest[1] = GESTURE_WAVE;
+	  turn.gest[1] = Gesture.WAVE;
 	  turn.spell[1] = -1;
 	  turn.spell_target[1] = -1;
 	  break;
 	case 1:
-	  turn.gest[0] = GESTURE_PALM;
+	  turn.gest[0] = Gesture.PALM;
 	  turn.spell[0] = indexOfSpellGesture("P");
 	  turn.spell_target[0] = 1;
-	  turn.gest[1] = GESTURE_FINGERS;
+	  turn.gest[1] = Gesture.FINGERS;
 	  turn.spell[1] = -1;
 	  turn.spell_target[1] = -1;
 	  break;
 	case 2:
-	  turn.gest[0] = GESTURE_KNIFE;
+	  turn.gest[0] = Gesture.KNIFE;
 	  turn.spell[0] = indexOfSpellGesture("K");
 	  turn.spell_target[0] = 0;
-	  turn.gest[1] = GESTURE_PALM;
+	  turn.gest[1] = Gesture.PALM;
 	  turn.spell[1] = indexOfSpellGesture("WFP");
 	  turn.spell_target[1] = 0;
 	  break;
 	case 3:
-	  turn.gest[0] = GESTURE_WAVE;
+	  turn.gest[0] = Gesture.WAVE;
 	  turn.spell[0] = -1;
 	  turn.spell_target[0] = -1;
-	  turn.gest[1] = GESTURE_WAVE;
+	  turn.gest[1] = Gesture.WAVE;
 	  turn.spell[1] = -1;
 	  turn.spell_target[1] = -1;
 	  break;
 	case 4:
-	  turn.gest[0] = GESTURE_FINGERS;
+	  turn.gest[0] = Gesture.FINGERS;
 	  turn.spell[0] = -1;
 	  turn.spell_target[0] = -1;
-	  turn.gest[1] = GESTURE_FINGERS;
+	  turn.gest[1] = Gesture.FINGERS;
 	  turn.spell[1] = -1;
 	  turn.spell_target[1] = -1;
 	  break;
 	case 5:
-	  turn.gest[0] = GESTURE_PALM;
+	  turn.gest[0] = Gesture.PALM;
 	  turn.spell[0] = indexOfSpellGesture("WFP");
 	  turn.spell_target[0] = 0;
-	  turn.gest[1] = GESTURE_PALM;
+	  turn.gest[1] = Gesture.PALM;
 	  turn.spell[1] = indexOfSpellGesture("WFP");
 	  turn.spell_target[1] = 0;
 	  break;
@@ -1032,7 +970,7 @@ public class MainView extends View {
   }
 
   void clear_choices() {
-    choice[1] = choice[0] = GESTURE_NONE;
+    choice[1] = choice[0] = Gesture.NONE;
     lastchoice[0] = lastchoice[1] = choice[0];
     ready_spell_count[0] = ready_spell_count[1] = 0;
     spell_choice[0] = spell_choice[1] = -1;
@@ -1052,21 +990,21 @@ public class MainView extends View {
     }
     boolean is_doubleP() {
       if (cur == 0) Log.e("History", "is_doubleP called with no history");
-      return gest[cur - 1][0] == GESTURE_PALM && gest[cur - 1][1] == GESTURE_PALM;
+      return gest[cur - 1][0] == Gesture.PALM && gest[cur - 1][1] == Gesture.PALM;
     }
     void add(int g[]) {
       gest[cur][0] = g[0];
       gest[cur][1] = g[1];
       // Stabs and null gestures break combos.
       if (cur > 0) {
-	if (gest[cur - 1][0] == GESTURE_KNIFE) start[0] = cur;
-	if (gest[cur - 1][1] == GESTURE_KNIFE) start[1] = cur;
+	if (gest[cur - 1][0] == Gesture.KNIFE) start[0] = cur;
+	if (gest[cur - 1][1] == Gesture.KNIFE) start[1] = cur;
       }
-      if (g[0] == GESTURE_KNIFE) start[0] = cur;
-      if (g[1] == GESTURE_KNIFE) start[1] = cur;
+      if (g[0] == Gesture.KNIFE) start[0] = cur;
+      if (g[1] == Gesture.KNIFE) start[1] = cur;
       cur++;
-      if (g[0] == GESTURE_NONE) start[0] = cur;
-      if (g[1] == GESTURE_NONE) start[1] = cur;
+      if (g[0] == Gesture.NONE) start[0] = cur;
+      if (g[1] == Gesture.NONE) start[1] = cur;
       // No spell needs more than 7 turns.
       if (cur > start[0] + 6) start[0]++;
       if (cur > start[1] + 6) start[1]++;
@@ -1077,7 +1015,7 @@ public class MainView extends View {
   }
 
   private void put_gest(String s, int x, int y) {
-    int n = flattenxy(x, y);
+    int n = Gesture.flattenxy(x, y);
     Gesture g = gesture[n] = new Gesture(s, x, y);;
     g.name = s;
     g.x = x;
@@ -1161,10 +1099,6 @@ public class MainView extends View {
   }
 
   static StabSpell stab_spell;
-
-  private static int flattenxy(int x, int y) {
-    return (x + 1) + (y + 1) * 3;
-  }
 
   @Override
   public void onDraw(Canvas canvas) {
@@ -1385,9 +1319,9 @@ public class MainView extends View {
 	    h = 1;
 	    dirx *= -1;
 	  }
-	  choice[h] = flattenxy(dirx, diry);
+	  choice[h] = Gesture.flattenxy(dirx, diry);
 	  if (null == gesture[choice[h]] || !gesture[choice[h]].learned) {
-	    choice[h] = GESTURE_NONE;
+	    choice[h] = Gesture.NONE;
 	  }
 	  if (choice[h] != lastchoice[h]) {
 	    handle_new_choice(h);
@@ -1404,7 +1338,7 @@ public class MainView extends View {
     if (tilt_state != 0) {
       return;
     }
-    if (choice[0] != GESTURE_NONE && choice[1] != GESTURE_NONE) {
+    if (choice[0] != Gesture.NONE && choice[1] != Gesture.NONE) {
       tilt_state = 1;
       arena.set_notify_me(tilt_done_handler);
       arena.animate_tilt();
@@ -1681,8 +1615,8 @@ public class MainView extends View {
   private void spell_search(int h) {
     ready_spell_count[h] = 0;
     spell_choice[h] = -1;
-    if (choice[h] == GESTURE_KNIFE) {
-      if (choice[1 - h] == GESTURE_KNIFE) {
+    if (choice[h] == Gesture.KNIFE) {
+      if (choice[1 - h] == Gesture.KNIFE) {
 	spell_text[h] = "(only one knife)";
 	return;
       } else {
@@ -1690,13 +1624,13 @@ public class MainView extends View {
 	spell_text[h] = "";
       }
     } else {
-      if (lastchoice[h] == GESTURE_KNIFE && choice[1 - h] == GESTURE_KNIFE) {
+      if (lastchoice[h] == Gesture.KNIFE && choice[1 - h] == Gesture.KNIFE) {
 	ready_spell_count[1 - h] = 0;
 	add_ready_spell(1 - h, stab_spell);
 	choose_spell(1 - h, 0);
       }
       spell_text[h] = "";
-      if (choice[h] != GESTURE_NONE) {
+      if (choice[h] != Gesture.NONE) {
 	for (int i = 0; i < spell_list_count; i++) {
 	  String g = spell_list[i].gesture;
 	  int k = g.length();
