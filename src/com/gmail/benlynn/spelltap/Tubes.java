@@ -42,7 +42,7 @@ class Tubes extends SpellTapMachine {
       sock.bind(null);
       sock.connect(new InetSocketAddress("192.168.1.101", 3333), 2000);
       out = new PrintWriter(sock.getOutputStream(), true);
-      // TODO(blynn): Lose the BufferedReader.
+      // TODO(blynn): Lose the BufferedReader and PrintWriter.
       in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
       out.println(msg);
       String response = in.readLine();

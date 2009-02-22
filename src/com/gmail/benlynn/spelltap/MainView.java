@@ -1,6 +1,6 @@
-// TODO: Log, spellbook, character sheet.
-// Title menu, save state, victory/defeat screen with stats.
-// Don't retarget if player taps on already-selected ready spell.
+// TODO: Log, character sheet.
+// Victory/defeat screen with stats.
+// Psych spell conflict.
 // Resize event.
 // Clean up get_ready() nonsense.
 // Stop handlers on init.
@@ -18,11 +18,15 @@ import android.widget.TextView;
 import android.os.Handler;
 import android.os.Message;
 
+import android.graphics.Typeface;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.StyleSpan;
+
 import com.gmail.benlynn.spelltap.SpellTap.Wisdom;
 
 public class MainView extends View {
   static Gesture[] gesture;
-
   static String msg;
   static float x0, y0, x1, y1;
   static Tutorial tut;
@@ -1025,6 +1029,7 @@ public class MainView extends View {
   // Constructor.
   public MainView(Context context, AttributeSet attrs) {
     super(context, attrs);
+    con = context;
     drag_i = -1;
     is_animating = false;
     choice = new int[2];
@@ -1184,6 +1189,7 @@ public class MainView extends View {
 
   private void choose_spell(int h, int i) {
     // Assumes i is a valid choice for hand h.
+    if (i == spell_choice[h]) return;
     spell_choice[h] = i;
     spell_target[h] = ready_spell[i][h].target;
 
@@ -1667,12 +1673,17 @@ public class MainView extends View {
     ready_spell_count[h]++;
   }
 
+  static Context con;  // Need this for styling strings.
   abstract public class Spell {
     public void init(String init_name, String init_gest, int bitmapid,
         int descid, int def_target) {
       name = init_name;
       description = descid;
       gesture = init_gest;
+      purty = new SpannableString(gesture + " " + name + ": " + con.getText(description) + "\n");
+      int n = gesture.length();
+      purty.setSpan(new StyleSpan(Typeface.BOLD), 0, n, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+      purty.setSpan(new StyleSpan(Typeface.ITALIC), n + 1, n + name.length() + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
       bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
       target = def_target;
       learned = false;
@@ -1686,6 +1697,7 @@ public class MainView extends View {
     int target;
     int state;
     int description;
+    SpannableString purty;
     boolean learned;
     boolean is_finished;  // Set this to true before calling last animation.
                           // Or call finish_spell() [it's slower].

@@ -412,9 +412,12 @@ Log.i("MV", "Pause");
     for (int i = 0; i < MainView.spell_list_count; i++) {
       MainView.Spell sp = MainView.spell_list[i];
       if (sp.learned) {
+	spellbook.append(sp.purty);
+	/*
 	spellbook.append(sp.gesture + " " + sp.name + ": ");
 	spellbook.append(getText(sp.description));
 	spellbook.append("\n");
+	*/
       }
     }
   }

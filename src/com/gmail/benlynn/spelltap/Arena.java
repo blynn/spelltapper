@@ -134,7 +134,7 @@ public class Arena extends View {
 
   public void animate_tilt() {
     anim = ANIM_TILT;
-    fade_paint.setARGB(255, 255, 255, 255);
+    fade_paint.setARGB(255, 127, 255, 127);
     alphadelta = -255 / 20;
     anim_handler.sleep(delay);
   }
