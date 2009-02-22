@@ -236,6 +236,8 @@ public class MainView extends View {
     }
     // Exploits fall-through.
     switch(level) {
+      case Wisdom.ALL_LEVEL_1:
+        learn(spellAtGesture("WWP"));
       case Wisdom.UP_TO_DFW:
         learn(spellAtGesture("DFW"));
         learn(spellAtGesture("SFW"));
@@ -751,6 +753,13 @@ public class MainView extends View {
     return -1;
   }
 
+  int indexOfSpellGesture(String gesture) {
+    for(int i = 0; i < spell_list_count; i++) {
+      if (gesture == spell_list[i].gesture) return i;
+    }
+    return -1;
+  }
+
   Spell spellAtName(String name) {
     for(int i = 0; i < spell_list_count; i++) {
       if (name == spell_list[i].name) return spell_list[i];
@@ -822,21 +831,58 @@ public class MainView extends View {
       hand = 0;
     }
     void AI_move(SpellTapMove turn) {
-      // TODO: Implement WFP fighter.
-      turn.gest[hand] = GESTURE_KNIFE;
-      turn.spell[hand] = indexOfSpell("Stab");
-      turn.spell_target[hand] = 0;
-      hand = 1 - hand;
-      // If confused, gesture knife with other hand even though its useless.
-      // Beats surrendering!
-      if (Status.CONFUSED == being_list[1].status) {
-	turn.gest[hand] = GESTURE_KNIFE;
-	turn.spell[hand] = -1;
-	return;
+      switch(count) {
+	case 0:
+	  turn.gest[0] = GESTURE_PALM;
+	  turn.spell[0] = indexOfSpellGesture("P");
+	  turn.spell_target[0] = 1;
+	  turn.gest[1] = GESTURE_WAVE;
+	  turn.spell[1] = -1;
+	  turn.spell_target[1] = -1;
+	  break;
+	case 1:
+	  turn.gest[0] = GESTURE_PALM;
+	  turn.spell[0] = indexOfSpellGesture("P");
+	  turn.spell_target[0] = 1;
+	  turn.gest[1] = GESTURE_FINGERS;
+	  turn.spell[1] = -1;
+	  turn.spell_target[1] = -1;
+	  break;
+	case 2:
+	  turn.gest[0] = GESTURE_KNIFE;
+	  turn.spell[0] = indexOfSpellGesture("K");
+	  turn.spell_target[0] = 0;
+	  turn.gest[1] = GESTURE_PALM;
+	  turn.spell[1] = indexOfSpellGesture("WFP");
+	  turn.spell_target[1] = 0;
+	  break;
+	case 3:
+	  turn.gest[0] = GESTURE_WAVE;
+	  turn.spell[0] = -1;
+	  turn.spell_target[0] = -1;
+	  turn.gest[1] = GESTURE_WAVE;
+	  turn.spell[1] = -1;
+	  turn.spell_target[1] = -1;
+	  break;
+	case 4:
+	  turn.gest[0] = GESTURE_FINGERS;
+	  turn.spell[0] = -1;
+	  turn.spell_target[0] = -1;
+	  turn.gest[1] = GESTURE_FINGERS;
+	  turn.spell[1] = -1;
+	  turn.spell_target[1] = -1;
+	  break;
+	case 5:
+	  turn.gest[0] = GESTURE_PALM;
+	  turn.spell[0] = indexOfSpellGesture("WFP");
+	  turn.spell_target[0] = 0;
+	  turn.gest[1] = GESTURE_PALM;
+	  turn.spell[1] = indexOfSpellGesture("WFP");
+	  turn.spell_target[1] = 0;
+	  break;
+	  // No more: by now, we've lost or won.
       }
-      turn.gest[hand] = GESTURE_PALM;
-      turn.spell[hand] = indexOfSpell("Shield");
-      turn.spell_target[hand] = 1;
+      count++;
     }
     void run() {
       for(;;) switch(state) {
@@ -853,6 +899,7 @@ public class MainView extends View {
 	arena.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
 	invalidate();
+	count = 0;
 	state = 1;
 	return;
       case 1:
@@ -862,6 +909,7 @@ public class MainView extends View {
 	return;
       }
     }
+    int count;
     int hand;
     int state;
   }
@@ -1061,6 +1109,7 @@ public class MainView extends View {
     add_spell(new ConfusionSpell(), 28);
     add_spell(new CureLightWoundsSpell(), 128);
     add_spell(new SummonGoblinSpell(), 17);
+    add_spell(new ProtectionSpell(), 7);
 
     being_list = new Being[16];
     summon_count = new int[2];
@@ -1891,6 +1940,26 @@ public class MainView extends View {
 	    being_list[target].status = Status.CONFUSED;
 	  }
 	  arena.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
+  public class ProtectionSpell extends Spell {
+    ProtectionSpell() {
+      init("Protection From Evil", "WWP", R.drawable.shield, R.string.WWPdesc, 0);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  arena.animate_shield(target);
+	  return;
+	case 1:
+	  if (target != -1) {
+	    Being b = being_list[target];
+	    b.shield = 4;
+	  }
+	  finish_spell();
 	  return;
       }
     }

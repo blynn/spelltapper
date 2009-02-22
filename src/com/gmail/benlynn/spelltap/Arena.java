@@ -38,15 +38,17 @@ public class Arena extends View {
     black_stroke_paint = new Paint();
     black_stroke_paint.setStyle(Paint.Style.STROKE);
     black_stroke_paint.setStrokeWidth(2);
-    shield_paint = new Paint[5];
+    shield_paint = new Paint[4];
     shield_paint[0] = new Paint();
     shield_paint[0].setARGB(255, 0, 0, 63);
     shield_paint[0].setStyle(Paint.Style.STROKE);
     shield_paint[0].setStrokeWidth(4);
-    shield_paint[1] = new Paint();
-    shield_paint[1].setARGB(255, 0, 0, 127);
-    shield_paint[1].setStyle(Paint.Style.STROKE);
-    shield_paint[1].setStrokeWidth(6);
+    shield_paint[1] = new Paint(shield_paint[0]);
+    shield_paint[1].setARGB(255, 63, 63, 191);
+    shield_paint[2] = new Paint(shield_paint[0]);
+    shield_paint[2].setARGB(255, 191, 191, 63);
+    shield_paint[3] = new Paint(shield_paint[0]);
+    shield_paint[3].setARGB(255, 128, 255, 127);
   }
 
   static int source, target;
@@ -92,7 +94,7 @@ public class Arena extends View {
       case ANIM_DAMAGE:
       case ANIM_SPELL:
       case ANIM_TILT:
-	fade_paint.setAlpha(fade_paint.getAlpha() - alphadelta);
+	fade_paint.setAlpha(fade_paint.getAlpha() + alphadelta);
 	break;
       case ANIM_SHIELD:
         shieldr += rdelta;
@@ -115,7 +117,7 @@ public class Arena extends View {
     frame = 0;
     x = x1;
     y = y1;
-    if (anim == ANIM_SPELL && alphadelta < 0) {
+    if (anim == ANIM_SPELL && alphadelta > 0) {
       // Fade out the spell.
       alphadelta = -alphadelta;
       anim_handler.sleep(delay);
@@ -133,7 +135,7 @@ public class Arena extends View {
   public void animate_tilt() {
     anim = ANIM_TILT;
     fade_paint.setARGB(255, 255, 255, 255);
-    alphadelta = 255 / 20;
+    alphadelta = -255 / 20;
     anim_handler.sleep(delay);
   }
 
@@ -211,7 +213,7 @@ public class Arena extends View {
     target = init_target;
     bitmap = init_bitmap;
     fade_paint.setARGB(0, 255, 0, 0);
-    alphadelta = -(255 / frame_max);
+    alphadelta = 255 / frame_max;
     anim_handler.sleep(delay);
   }
 
@@ -221,7 +223,7 @@ public class Arena extends View {
     target = init_target;
     damage = Integer.toString(init_damage);
     fade_paint.setARGB(200, 255, 0, 0);
-    alphadelta = 200 / frame_max;
+    alphadelta = -200 / frame_max;
     anim_handler.sleep(delay);
   }
 
@@ -230,7 +232,7 @@ public class Arena extends View {
     target = init_target;
     damage = Integer.toString(init_damage);
     fade_paint.setARGB(200, 255, 0, 0);
-    alphadelta = 200 / frame_max;
+    alphadelta = -200 / frame_max;
     anim_handler.sleep(delay);
   }
 
@@ -243,7 +245,9 @@ public class Arena extends View {
       canvas.drawBitmap(b.bitmap, mx, my, paint);
       canvas.drawText(b.lifeline, mx, my + 16 - 4, paint);
       if (b.shield > 0) {
-	canvas.drawCircle(mx + b.midw, my + b.midh, b.midw + 5, shield_paint[0]);
+	int n = b.shield - 1;
+	if (n > 3) n = 3;
+	canvas.drawCircle(mx + b.midw, my + b.midh, b.midw + 5, shield_paint[n]);
       }
       switch(b.status) {
 	case Status.CONFUSED:
@@ -300,7 +304,7 @@ public class Arena extends View {
         canvas.drawCircle(x, y, 11, black_stroke_paint);
 	break;
       case ANIM_TILT:
-        canvas.drawRect(0, MainView.ystatus, 320, 480, fade_paint);
+        canvas.drawRect(0, MainView.ylower, 320, 480, fade_paint);
 	break;
     }
   }

@@ -69,9 +69,14 @@
 <string name="cureteach1">Impressive! You\'re ready for more spells.</string>
 <string name="cureteach2"><b>DFW</b> is <i>Cure Light Wounds</i>, which restores up to one point of health.</string>
 <string name="cureteach3">And <b>SFW</b> is <i>Summon Goblin</i>, which summons a goblin to fight for you.</string>
-<string name="cureteach4">You encountered two goblins before. Each has 1 point of health and attacks for 1 damage. Use this knowledge wisely.</string>
+<string name="cureteach4">You encountered two goblins before. Each has 1 point of health and attacks for 1 damage.</string>
 
 <string name="duel3advice">Best of luck in your next battle!</string>
+
+<string name="lvl1teach1">There are two more Level 1 spells.</string>
+<string name="lvl1teach2"><b>WWP</b> is <i>Protection From Evil</i>. It acts as a Shield that lasts for 4 turns, including the turn it is cast.</string>
+<string name="lvl1teach3"><b>PSDF</b> is <i>Charm Person</i>, which forces the opponent to make a gesture of your choice on one hand.</string>
+<string name="lvl1teach4"><i>Charm Person</i> and <i>Confusion</i> are both psychological spells, and will cancel each other if cast on the same target.</string>
 
 <string name="bug">Oops! You\'ve uncovered a bug!</string>
 <string name="win">You win!</string>
@@ -97,7 +102,9 @@
 <string name="WFPdesc">2 magical damage to target. Ignores Shield.</string>
 <string name="SFWdesc">Target controls the summoned goblin, which can do 1 damage, and has 1 hit point.</string>
 <string name="DFWdesc">Restore up to 1 health.</string>
-<string name="DSFdesc">Target spellcaster must select same gesture for both hands. Target monster attacks its controller.</string>
+<string name="DSFdesc">Target spellcaster must select same gesture for both hands. Target monster attacks its controller. Cancels with other psychological spells.</string>
+<string name="PSDFdesc">Control target spellcaster's hand next turn. No effect on monsters. Cancels with other psychological spells.</string>
+<string name="WWPdesc">4-turn Shield.</string>
 
 <string name="servererror">Cannot connect to server :(</string>
 </resources>

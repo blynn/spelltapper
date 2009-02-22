@@ -1,6 +1,4 @@
-// TODO: Options: animation speed. Highlight current gesture.
-// Restart.
-// Disable back button, or warn on it.
+// TODO: Options: animation speed. Restart.
 package com.gmail.benlynn.spelltap;
 
 import android.app.Activity;
@@ -14,6 +12,7 @@ import android.widget.Button;
 import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.os.SystemClock;
+import android.view.KeyEvent;
 
 import android.util.Log;
 
@@ -65,6 +64,7 @@ public class SpellTap extends Activity {
     butv.setVisibility(View.GONE);
 
     init_gesture_state_knowledge();
+    spellbook_is_open = false;
 
     if (null != bun) {
       state = bun.getInt(ICE_STATE);
@@ -106,10 +106,12 @@ public class SpellTap extends Activity {
 	     j != i;
 	     j = 0 == j ? 8 - 1 : j - 1) {
 	  float delta = values[1] - hist[j];
-	  if (delta < -32) {
+	  if (delta < -180) delta += 360;
+	  else if (delta > 180) delta -= 360;
+	  if (delta < -25) {
 	    tilt_up();
 	    break;
-	  } else if (delta > 32) {
+	  } else if (delta > 25) {
 	    tilt_down();
 	    break;
 	  }
@@ -182,15 +184,22 @@ Log.i("MV", "Pause");
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
       case MENU_SPELLBOOK:
-	compute_spellbook();
-	spellbook.setVisibility(View.VISIBLE);
-	spellbookv.setVisibility(View.VISIBLE);
-	butv.setVisibility(View.VISIBLE);
-	butclo.setOnClickListener(new SpellBookCloser());
-	hog.blockInput();
+	open_spellbook();
 	return true;
     }
     return false;
+  }
+
+  @Override
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+    Log.i("Key", "" + keyCode);
+    if (keyCode == KeyEvent.KEYCODE_BACK) {
+      if (spellbook_is_open) {
+	close_spellbook();
+      }
+      return true;
+    }
+    return super.onKeyDown(keyCode, event);
   }
 
   static class Wisdom {
@@ -200,6 +209,7 @@ Log.i("MV", "Pause");
     static public final int UP_TO_WFP = 3;
     static public final int UP_TO_DSF = 4;
     static public final int UP_TO_DFW = 5;
+    static final int ALL_LEVEL_1 = 6;
 
     static final int NONE = -1;
     static final int KNIFE_ONLY = 0;
@@ -318,7 +328,14 @@ Log.i("MV", "Pause");
       school.set_state_duel3advice();
       dojo.set_state_dummy(5);
       break;
-    case 11:
+    case 11:  // Learn 2 remaining Level 1 spells.
+      set_spell_knowledge(Wisdom.ALL_LEVEL_1);
+      pit.set_state_closed();
+      school.set_state_lvl1lesson();
+      dojo.set_state_dummy(5);
+      break;
+    case 12:
+      break;
     case 13:  // Net play.
       break;
     }
@@ -360,6 +377,16 @@ Log.i("MV", "Pause");
     hog.setVisibility(View.GONE);
     if (null == curmach) mainview.run();
     else curmach.run();
+  }
+
+  void open_spellbook() {
+    compute_spellbook();
+    spellbook.setVisibility(View.VISIBLE);
+    spellbookv.setVisibility(View.VISIBLE);
+    butv.setVisibility(View.VISIBLE);
+    butclo.setOnClickListener(new SpellBookCloser());
+    hog.blockInput();
+    spellbook_is_open = true;
   }
 
   void compute_spellbook() {
@@ -405,8 +432,10 @@ Log.i("MV", "Pause");
     butv.setVisibility(View.GONE);
     spellbookv.setVisibility(View.GONE);
     hog.unblockInput();
+    spellbook_is_open = false;
   }
 
+  static boolean spellbook_is_open;
   static MainView mainview;
   static View mainframe;
   static View narrator;
@@ -430,5 +459,5 @@ Log.i("MV", "Pause");
   static Button butclo;
   static View butv;
   static Tubes tubes;
-  static int state = 3;
+  static int state = 9;
 }
