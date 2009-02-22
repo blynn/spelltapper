@@ -23,6 +23,11 @@ class Easel {
     white_rtext = new Paint(white_text);
     white_rtext.setTextAlign(Paint.Align.RIGHT);
 
+    charm_text = new Paint();
+    charm_text.setARGB(255, 255, 127, 255);
+    charm_rtext = new Paint(charm_text);
+    charm_rtext.setTextAlign(Paint.Align.RIGHT);
+
     octarine = new Paint();
     octarine.setARGB(255, 63, 0, 63);
 

@@ -57,7 +57,7 @@ public class ArrowView extends View {
       Being b = MainView.being_list[i];
       if (!b.dead && 0 == b.controller && -1 != b.target) {
 	Being b2 = MainView.being_list[b.target];
-	if (Status.OK == b2.status) {
+	if (Status.OK == b.status) {
 	  canvas.drawLine(b.x + b.midw, b.y + b.midh,
 	      b2.x + b2.midw, b2.y + b2.midh, Easel.arrow_paint);
 	} else {

@@ -140,6 +140,8 @@ public class MainView extends View {
 	turn.spell_target[h] = -1;
       }
     }
+    void AI_set_charm(int hand, int gesture) {
+    }
     int AI_get_charm_hand() {
       return 0;
     }
@@ -790,7 +792,7 @@ public class MainView extends View {
 	  break;
 	case 1:
 	  turn.gest[0] = Gesture.PALM;
-	  turn.spell[0] = indexOfSpellGesture("PSDF");
+	  turn.spell[0] = indexOfSpellGesture("P");
 	  turn.spell_target[0] = 0;
 	  turn.gest[1] = Gesture.FINGERS;
 	  turn.spell[1] = -1;
@@ -1097,6 +1099,7 @@ public class MainView extends View {
     tilt_state = 0;
     charmed_hand = -1;
     freeze_gesture = false;
+    choosing_charm = false;
   }
   static String emptyleftmsg;
   static String emptyrightmsg;
@@ -1157,7 +1160,7 @@ public class MainView extends View {
     // Gesture and spell text.
     y = ylower + 16 - 4;
     if (0 == charmed_hand) {
-      canvas.drawText("[Charmed!]", 0, y, Easel.white_text);
+      canvas.drawText("[Charmed]", 0, y, Easel.charm_text);
     } else {
       Gesture g = gesture[choice[0]];
       if (null == g) {
@@ -1167,7 +1170,7 @@ public class MainView extends View {
       }
     }
     if (1 == charmed_hand) {
-      canvas.drawText("[Charmed!]", 320, y, Easel.white_rtext);
+      canvas.drawText("[Charmed]", 320, y, Easel.charm_rtext);
     } else {
       Gesture g = gesture[choice[1]];
       if (null == g) {
@@ -1365,7 +1368,8 @@ public class MainView extends View {
       return;
     }
     if ((choice[0] != Gesture.NONE && choice[1] != Gesture.NONE) ||
-        (-1 != charmed_hand && choice[1 - charmed_hand] != Gesture.NONE)) {
+        (-1 != charmed_hand && choice[1 - charmed_hand] != Gesture.NONE) ||
+	(choosing_charm && (choice[0] != Gesture.NONE || choice[1] != Gesture.NONE))) {
       tilt_state = 1;
       arena.set_notify_me(tilt_done_handler);
       arena.animate_tilt();
@@ -1406,11 +1410,23 @@ public class MainView extends View {
   }
 
   private void confirm_move() {
+    if (choosing_charm) {
+      int h;
+      for (h = 0; h < 2 && Gesture.NONE == choice[h]; h++);
+      if (h < 2) {
+	choosing_charm = false;
+	clear_choices();
+	get_ready();
+	tut.AI_set_charm(h, choice[h]);
+	invalidate();
+      }
+      return;
+    }
     if (-1 != charmed_hand && !freeze_gesture) {
       choice[charmed_hand] = get_opp_charm_choice();
       handle_new_choice(charmed_hand);
       freeze_gesture = true;
-      print("Confirm spells.");
+      print("Charm takes effect. Confirm spells and targets.");
       return;
     }
     get_opp_move();
@@ -1636,9 +1652,23 @@ public class MainView extends View {
     return Status.CHARMED == being_list[0].status;
   }
 
+  boolean opp_charmed() {
+    return Status.CHARMED == being_list[1].status;
+  }
+
   // Start new round.
   void new_round() {
-    // Handle Charm Person.
+    // Handle Charm Person on opponent first. See rules of game.
+    if (opp_charmed()) {
+      choosing_charm = true;
+      print("Charm: Pick gesture for opponent.");
+      return;
+    }
+    post_charm();
+  }
+
+  void post_charm() {
+    // Handle charm on player.
     if (player_charmed()) {
       // Get charmed hand from opponent.
       charmed_hand = tut.AI_get_charm_hand();
@@ -1646,7 +1676,7 @@ public class MainView extends View {
       charmed_hand = -1;
     }
 
-    // Handle confusion.
+    // Handle confused monsters.
     for (int i = 2; i < being_list_count; i++) {
       Being b = being_list[i];
       if (Status.CONFUSED == b.status) {
@@ -1657,6 +1687,13 @@ public class MainView extends View {
   }
 
   private void handle_new_choice(int h) {
+    if (choosing_charm) {
+      if (Gesture.NONE != choice[h]) {
+	choice[1 - h] = Gesture.NONE;
+      }
+      invalidate();
+      return;
+    }
     spell_search(h);
     if (Status.CONFUSED == being_list[0].status) {
       if (choice[1 - h] != choice[h]) {
@@ -2168,4 +2205,5 @@ public class MainView extends View {
   static SpellTap spelltap;
   static int charmed_hand;
   static boolean freeze_gesture;
+  static boolean choosing_charm;
 }

@@ -461,5 +461,5 @@ Log.i("MV", "Pause");
   static Button butclo;
   static View butv;
   static Tubes tubes;
-  static int state = 9;
+  static int state = 11;
 }
