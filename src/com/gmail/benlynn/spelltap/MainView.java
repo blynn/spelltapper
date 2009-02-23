@@ -1212,14 +1212,16 @@ public class MainView extends View {
 	  if (drag_i <= 1) {
 	    if (target == -1) {
 	      // Doesn't count if still in spell icon.
-	      if (y0 >= yicon && y0 < yicon + 48) {
-		if (x0 < 48) {
+	      if (y1 >= yicon - SLOP && y1 < yicon + 48 + SLOP) {
+		if (x1 < 48 + SLOP) {
 		  // In the future I plan to add a meaning for dragging
 		  // one spell icon to the other.
-		} else if (x0 >= 320 - 48) {
+		} else if (x1 >= 320 - 48 - SLOP) {
 		} else {
 		  spell_target[drag_i] = -1;
 		}
+	      } else {
+		spell_target[drag_i] = -1;
 	      }
 	    } else {
 	      spell_target[drag_i] = target;
