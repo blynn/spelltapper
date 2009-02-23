@@ -11,7 +11,7 @@
     <string name="howtoknife2">Starting from the lower part of the screen, slide your finger up ( &#x2191; ).\n[Tap the screen to continue.]</string>
     <string name="howtoknifepass1">That\'s certainly a <b>Knife</b>! Do it again.\n[Tap the screen to continue.]</string>
     <string name="howtoknifepass2">Gesturing on the left half of the screen gives a left-handed <i>Stab</i>, and the right half gives a right-handed <i>Stab</i>.\n[Tap to continue.]</string>
-    <string name="howtoknifepass3">You show promise. Meet me at the training hall.\n[Tap to continue.]</string>
+    <string name="howtoknifepass3">You show promise. Wait for me at the training hall.\n[Tap to continue.]</string>
 
 <string name="jackwaitsatdummy">Jack awaits you at the training hall.</string>
 
@@ -48,20 +48,20 @@
     <string name="SDtutwrong">That\'s not right. Let\'s start again.</string>
 
     <string name="talkabouttilt1">There\'s a showier way to cast spells than tapping the bottom of the screen.</string>
-    <string name="talkabouttilt2">Once you have selected gestures for your hands, tilt the screen up vertically. When the bottom line flashes, return the screen to its original position to end your move.</string>
-    <string name="talkabouttilt3">Remember, you must have a gesture in each hand for this to work.</string>
+    <string name="talkabouttilt2">After gesturing, tilt the screen up vertically. When the bottom line flashes, tilt the screen back to its original position to confirm your choices.</string>
+    <string name="talkabouttilt3">You must have a gesture in each hand for this to work.</string>
     <string name="meetforwfp">Now, <i>Missile</i> is useful, but can be blocked by <i>Shield</i>. I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
 
     <string name="wavetut">To make a <b>Wave</b> gesture (<b>W</b>), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ). <b>Wave</b> both hands and end your turn.</string>
     <string name="fingerstut">Now make the <b>Fingers</b> gesture (<b>F</b>) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ). Then end your turn.</string>
     <string name="fingerstutpass1">Perfect! Gesture <b>Palm</b> with both hands. Normally this loses, but since <b>WFP</b> is <i>Cause Light Wounds</i>, you\'ll do 4 points of damage and kill your opponent!</string>
-    <string name="fingerstutpass2">One more thing...</string>
-    <string name="fingerstutpass3">A gesture can only complete 1 spell. Choose <i>Cause Light Wounds</i> over <i>Shield</i> by tapping its icon.</string>
-    <string name="fingerstutpass4">Well done! Practice on a few more dummies if you like, and visit me afterwards.</string>
+    <string name="fingerstutpass2">Well done! Notice a gesture can only complete 1 spell, explaining why no <i>Shield</i> was cast.</string>
+    <string name="fingerstutpass3">I\'ll see you back at school.</string>
     <string name="fingerstutfail">Almost. Try again.</string>
 
-    <string name="DSFteach1"><b>DSF</b> casts <i>Confusion</i>. If its victim is a spellcaster, they must gesture identically with both hands next turn. If cast on a monster, that monster will attack its controller.</string>
-    <string name="DSFteach2">Remember, press [MENU] to review all you have learned. Now head to the Arena, where your next foe awaits.</string>
+    <string name="DSFteach1"><b>DSF</b> casts <i>Confusion</i>. The victim must gesture identically with both hands next turn.</string>
+    <string name="DSFteach2">Observe a confused opponent who gestures <b>P</b> must do so with both hands, and thus surrenders!</string>
+    <string name="DSFteach3">Remember, press [MENU] to review all you have learned. Now head to the Arena, where your next foe awaits.</string>
 
     <string name="duel2advice1">Recall <i>Shield</i> blocks <i>Stab</i> and <i>Missile</i>.</string>
     <string name="duel2advice2">To deal with <i>Shield</i>, try <i>Cause Light Wounds</i> (<b>WFP</b>). The <i>Confusion</i> spell (<b>DSF</b>) may also help. Good luck!</string>

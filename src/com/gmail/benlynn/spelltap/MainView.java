@@ -333,7 +333,8 @@ public class MainView extends View {
       case 0:
         // Resurrect and restore HP
 	being_list[0].start_life(5);
-	being_list[1].start_life(3);
+	being_list[1].start_life(1);
+	reset_game();
 	// Two goblins.
 	being_list[2] = new Being("Porsap", R.drawable.goblin, 1);
 	being_list[2].start_life(1);
@@ -344,7 +345,6 @@ public class MainView extends View {
 	being_list[3].target = 0;
 	being_list_count = 4;
 
-	clear_choices();
 	jack_says(R.string.targettut);
 	arena.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
@@ -393,8 +393,7 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  set_gesture_knowledge(Wisdom.KNIFE_AND_PALM);
-	  hist.reset();
-	  opphist.reset();
+	  reset_game();
 	  arena.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
 	  jack_says(R.string.palmtut);
@@ -464,9 +463,7 @@ public class MainView extends View {
 	  being_list[1].setup("The Dummy", R.drawable.dummy, dummyhp);
 	  being_list_count = 2;
 	  state = 1;
-	  hist.reset();
-	  opphist.reset();
-	  clear_choices();
+	  reset_game();
 	  arena.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
 	  set_main_state(STATE_NORMAL);
@@ -664,29 +661,25 @@ public class MainView extends View {
 	  }
 	  return;
 	case 5:
-	  jack_says(R.string.fingerstutpass2);
+	  get_ready();
+	  invalidate();
 	  state = 6;
 	  return;
 	case 6:
-	  jack_says(R.string.fingerstutpass3);
-	  state = 7;
-	  return;
-	case 7:
-	  get_ready();
-	  invalidate();
-	  state = 8;
-	  return;
-	case 8:
 	  if (hist.gest[2][0] == Gesture.PALM &&
 	      hist.gest[2][1] == Gesture.PALM && 0 == winner) {
-	    jack_says(R.string.fingerstutpass4);
-	    state = 9;
+	    jack_says(R.string.fingerstutpass2);
+	    state = 7;
 	  } else {
 	    jack_says(R.string.fingerstutfail);
 	    state = 0;
 	  }
 	  return;
-	case 9:
+	case 7:
+	  jack_says(R.string.fingerstutpass3);
+	  state = 8;
+	  return;
+	case 8:
 	  spelltap.next_state();
 	  spelltap.goto_town();
 	  return;
@@ -1236,10 +1229,10 @@ public class MainView extends View {
 	    return false;
 	  }
 	  // Check for spell retargeting drag.
-	  if (y0 >= yicon && y0 < yicon + 48) {
-	    if (x0 < 48) {
+	  if (y0 >= yicon - SLOP && y0 < yicon + 48 + SLOP) {
+	    if (x0 < 48 + SLOP) {
 	      drag_i = 0;
-	    } else if (x0 >= 320 - 48) {
+	    } else if (x0 >= 320 - 48 - SLOP) {
 	      drag_i = 1;
 	    }
 	  } else {
@@ -1667,6 +1660,19 @@ public class MainView extends View {
     post_charm();
   }
 
+  void reset_game() {
+    clear_choices();
+    hist.reset();
+    opphist.reset();
+    being_list_count = 2;
+    being_list[0].status = Status.OK;
+    being_list[1].status = Status.OK;
+    being_list[0].shield = 0;
+    being_list[1].shield = 0;
+    being_list[0].heal_full();
+    being_list[1].heal_full();
+  }
+
   void post_charm() {
     // Handle charm on player.
     if (player_charmed()) {
@@ -1746,7 +1752,7 @@ public class MainView extends View {
       }
     }
     if (ready_spell_count[h] > 0) {
-      choose_spell(h, 0);
+      choose_spell(h, ready_spell_count[h] - 1);
     } else {
       arrow_view.bmspell[h] = null;
     }
@@ -2131,9 +2137,13 @@ public class MainView extends View {
       midw = midh = 32;
     }
     void start_life(int n) {
-      life = life_max = n;
+      life_max = n;
       dead = false;
-      lifeline = Integer.toString(n) + "/" + Integer.toString(n);
+      heal_full();
+    }
+    void heal_full() {
+      life = life_max;
+      lifeline = Integer.toString(life) + "/" + Integer.toString(life);
     }
     void die() {
       dead = true;
@@ -2164,7 +2174,6 @@ public class MainView extends View {
     // it must be the other player.
     short controller;
     boolean dead;
-    static final int SLOP = 4;
     // ID of monster consistent amongst all players in a net game.
     int id;
   }
@@ -2206,4 +2215,5 @@ public class MainView extends View {
   static int charmed_hand;
   static boolean freeze_gesture;
   static boolean choosing_charm;
+  static final int SLOP = 4;
 }

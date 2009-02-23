@@ -42,7 +42,8 @@ class School extends SpellTapMachine {
   void set_state_dsflesson() {
     machine = new LectureMachine(
       R.string.DSFteach1,
-      R.string.DSFteach2);
+      R.string.DSFteach2,
+      R.string.DSFteach3);
   }
   void set_state_curelesson() {
     machine = new LectureMachine(
