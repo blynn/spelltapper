@@ -9,7 +9,7 @@
     <string name="welcome">So you want to be a wizard? And partake in duels of sorcery? Then listen carefully...\n[Tap the screen to continue.]</string>
     <string name="howtoknife">Before any spells, you must learn to wield your <b>Knife</b>. Physical violence may be the last resort, but many a wizard owes their life to combat training. I will first teach you to <i>Stab</i>.\n[Tap the screen to continue.]</string>
     <string name="howtoknife2">Starting from the lower part of the screen, slide your finger up ( &#x2191; ).\n[Tap the screen to continue.]</string>
-    <string name="howtoknifepass1">That\'s certainly a <b>Knife</b>! Do it again.\n[Tap the screen to continue.]</string>
+    <string name="howtoknifepass1">That\'s certainly a <b>Knife</b>! Do it again.\n[Tap to continue.]</string>
     <string name="howtoknifepass2">Gesturing on the left half of the screen gives a left-handed <i>Stab</i>, and the right half gives a right-handed <i>Stab</i>.\n[Tap to continue.]</string>
     <string name="howtoknifepass3">You show promise. Wait for me at the training hall.\n[Tap to continue.]</string>
 
@@ -100,7 +100,7 @@
 <string name="Pdesc">Prevents all physical damage: stabs, monster attacks, and missiles.</string>
 <string name="SDdesc">Fire projectile at target for 1 damage.</string>
 <string name="WFPdesc">2 magical damage to target. Ignores Shield.</string>
-<string name="SFWdesc">Target controls the summoned goblin, which can do 1 damage, and has 1 hit point.</string>
+<string name="SFWdesc">Summon goblin to serve target spellcaster, or target monster's controller. A goblin can do 1 damage, and has 1 hit point.</string>
 <string name="DFWdesc">Restore up to 1 health.</string>
 <string name="DSFdesc">Target spellcaster must select same gesture for both hands. Target monster attacks its controller. Cancels with other psychological spells.</string>
 <string name="PSDFdesc">Control target spellcaster's hand next turn. No effect on monsters. Cancels with other psychological spells.</string>

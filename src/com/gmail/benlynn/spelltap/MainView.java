@@ -82,8 +82,8 @@ public class MainView extends View {
   void set_state_palmtutorial() {
     tut = new PalmTutorial();
   }
-  void set_state_stabatha() {
-    tut = new ShieldTutorial();
+  void set_state_win_to_advance(Agent a) {
+    tut = new WinToAdvance(a);
   }
   void set_state_practicemode(int hp) {
     dummyhp = hp;
@@ -94,12 +94,6 @@ public class MainView extends View {
   }
   void set_state_wfplesson() {
     tut = new WFPTutorial();
-  }
-  void set_state_duel2() {
-    tut = new PKFighter();
-  }
-  void set_state_duel3() {
-    tut = new WFPFighter();
   }
   void set_state_netduel() {
     tut = new NetDuel();
@@ -132,21 +126,6 @@ public class MainView extends View {
 
   abstract class Tutorial {
     abstract void run();
-    void AI_move(SpellTapMove turn) {
-      for(int h = 0; h < 2; h++) {
-	turn.gest[h] = Gesture.NONE;
-	turn.spell[h] = -1;
-	turn.spell_target[h] = -1;
-      }
-    }
-    void AI_set_charm(int hand, int gesture) {
-    }
-    int AI_get_charm_hand() {
-      return 0;
-    }
-    int AI_get_charm_gesture() {
-      return Gesture.PALM;
-    }
   }
 
   void set_gesture_knowledge(int level) {
@@ -476,23 +455,16 @@ public class MainView extends View {
     int state;
   }
 
-  // Opponent with 5 hit points that stabs every turn.
-  class ShieldTutorial extends Tutorial {
-    ShieldTutorial() {
+  // Beat given opponent to advance main game state.
+  class WinToAdvance extends Tutorial {
+    WinToAdvance(Agent a) {
       state = 0;
-      hand = 0;
-    }
-    void AI_move(SpellTapMove turn) {
-      super.AI_move(turn);
-      turn.gest[hand] = Gesture.KNIFE;
-      turn.spell[hand] = indexOfSpell("Stab");
-      turn.spell_target[hand] = 0;
-      hand = 1 - hand;
+      agent = a;
     }
     void run() {
       for(;;) switch(state) {
       case 0:
-	init_opponent(Agent.getStabatha());
+	init_opponent(agent);
 	reset_game();
 	board.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
@@ -507,10 +479,10 @@ public class MainView extends View {
       }
     }
     int state;
-    int hand;
+    Agent agent;
   }
 
-  // Introduce S D gestures.
+  // Introduce SD.
   class SDTutorial extends Tutorial {
     SDTutorial() {
       state = -1;
@@ -593,8 +565,7 @@ public class MainView extends View {
     int state;
   }
 
-  // Introduces W F P: this spells requires multiple turns, and also
-  // conflicts with another spell.
+  // Introduces WFP.
   class WFPTutorial extends Tutorial {
     WFPTutorial() {
       state = 0;
@@ -675,158 +646,32 @@ public class MainView extends View {
     int state;
   }
 
-  int indexOfSpell(String name) {
+  static int indexOfSpell(String name) {
     for(int i = 0; i < spell_list_count; i++) {
       if (name == spell_list[i].name) return i;
     }
     return -1;
   }
 
-  int indexOfSpellGesture(String gesture) {
+  static int indexOfSpellGesture(String gesture) {
     for(int i = 0; i < spell_list_count; i++) {
       if (gesture == spell_list[i].gesture) return i;
     }
     return -1;
   }
 
-  Spell spellAtName(String name) {
+  static Spell spellAtName(String name) {
     for(int i = 0; i < spell_list_count; i++) {
       if (name == spell_list[i].name) return spell_list[i];
     }
     return null;
   }
 
-  Spell spellAtGesture(String combo) {
+  static Spell spellAtGesture(String combo) {
     for(int i = 0; i < spell_list_count; i++) {
       if (combo == spell_list[i].gesture) return spell_list[i];
     }
     return null;
-  }
-
-  // An opponent gesturing P and K every turn.
-  class PKFighter extends Tutorial {
-    PKFighter() {
-      state = 0;
-      hand = 0;
-    }
-    void AI_move(SpellTapMove turn) {
-      turn.gest[hand] = Gesture.KNIFE;
-      turn.spell[hand] = indexOfSpell("Stab");
-      turn.spell_target[hand] = 0;
-      hand = 1 - hand;
-      // If confused, gesture knife with other hand even though it's useless.
-      // Beats surrendering!
-      if (Status.CONFUSED == being_list[1].status) {
-	turn.gest[hand] = Gesture.KNIFE;
-	turn.spell[hand] = -1;
-	return;
-      }
-      turn.gest[hand] = Gesture.PALM;
-      turn.spell[hand] = indexOfSpell("Shield");
-      turn.spell_target[hand] = 1;
-    }
-    void run() {
-      for(;;) switch(state) {
-      case 0:
-	init_opponent(Agent.getSendin());
-	reset_game();
-	board.setVisibility(View.VISIBLE);
-	arrow_view.setVisibility(View.VISIBLE);
-	invalidate();
-	state = 1;
-	return;
-      case 1:
-        if (winner == 0) spelltap.next_state();
-	spelltap.goto_town();
-	state = 0;
-	return;
-      }
-    }
-    int hand;
-    int state;
-  }
-
-  // An opponent who bets the game on WFP.
-  class WFPFighter extends Tutorial {
-    WFPFighter() {
-      state = 0;
-      hand = 0;
-    }
-    void AI_move(SpellTapMove turn) {
-      switch(count) {
-	case 0:
-	  turn.gest[0] = Gesture.PALM;
-	  turn.spell[0] = indexOfSpellGesture("P");
-	  turn.spell_target[0] = 1;
-	  turn.gest[1] = Gesture.WAVE;
-	  turn.spell[1] = -1;
-	  turn.spell_target[1] = -1;
-	  break;
-	case 1:
-	  turn.gest[0] = Gesture.PALM;
-	  turn.spell[0] = indexOfSpellGesture("P");
-	  turn.spell_target[0] = 0;
-	  turn.gest[1] = Gesture.FINGERS;
-	  turn.spell[1] = -1;
-	  turn.spell_target[1] = -1;
-	  break;
-	case 2:
-	  turn.gest[0] = Gesture.KNIFE;
-	  turn.spell[0] = indexOfSpellGesture("K");
-	  turn.spell_target[0] = 0;
-	  turn.gest[1] = Gesture.PALM;
-	  turn.spell[1] = indexOfSpellGesture("WFP");
-	  turn.spell_target[1] = 0;
-	  break;
-	case 3:
-	  turn.gest[0] = Gesture.WAVE;
-	  turn.spell[0] = -1;
-	  turn.spell_target[0] = -1;
-	  turn.gest[1] = Gesture.WAVE;
-	  turn.spell[1] = -1;
-	  turn.spell_target[1] = -1;
-	  break;
-	case 4:
-	  turn.gest[0] = Gesture.FINGERS;
-	  turn.spell[0] = -1;
-	  turn.spell_target[0] = -1;
-	  turn.gest[1] = Gesture.FINGERS;
-	  turn.spell[1] = -1;
-	  turn.spell_target[1] = -1;
-	  break;
-	case 5:
-	  turn.gest[0] = Gesture.PALM;
-	  turn.spell[0] = indexOfSpellGesture("WFP");
-	  turn.spell_target[0] = 0;
-	  turn.gest[1] = Gesture.PALM;
-	  turn.spell[1] = indexOfSpellGesture("WFP");
-	  turn.spell_target[1] = 0;
-	  break;
-	  // No more: by now, we've lost or won.
-      }
-      count++;
-    }
-    void run() {
-      for(;;) switch(state) {
-      case 0:
-	init_opponent(Agent.getSendin());
-	reset_game();
-	board.setVisibility(View.VISIBLE);
-	arrow_view.setVisibility(View.VISIBLE);
-	invalidate();
-	count = 0;
-	state = 1;
-	return;
-      case 1:
-        if (winner == 0) spelltap.next_state();
-	spelltap.goto_town();
-	state = 0;
-	return;
-      }
-    }
-    int count;
-    int hand;
-    int state;
   }
 
   private char encode_target(int target) {
@@ -907,12 +752,19 @@ public class MainView extends View {
     }
   }
 
+  class NetAgent extends Agent {
+    String name() { return "Opponent"; }
+    String name_full() { return "Opponent"; }
+    int life() { return 5; }
+    int bitmap_id() { return R.drawable.wiz; }
+    void move(SpellTapMove turn) {
+      net_move(turn);
+    }
+  }
+
   class NetDuel extends Tutorial {
     NetDuel() {
       state = 0;
-    }
-    void AI_move(SpellTapMove turn) {
-      net_move(turn);
     }
     void run() {
       for(;;) switch(state) {
@@ -924,8 +776,8 @@ public class MainView extends View {
 	    state = 1;
 	    return;
 	  }
+	  init_opponent(new NetAgent());
 	  reset_game();
-	  being_list[1].start_life(5);
 	  board.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
           state = 1;
@@ -997,6 +849,7 @@ public class MainView extends View {
   void init_opponent(Agent a) {
     being_list[1] = new Being(a.name(), a.bitmap_id(), -2);
     being_list[1].start_life(a.life());
+    agent = a;
   }
 
   // Constructor.
@@ -1371,7 +1224,7 @@ public class MainView extends View {
   static boolean opp_ready;
 
   private int get_opp_charm_choice() {
-    return tut.AI_get_charm_gesture();
+    return agent.get_charm_gesture();
   }
 
   private void confirm_move() {
@@ -1382,7 +1235,7 @@ public class MainView extends View {
 	choosing_charm = false;
 	clear_choices();
 	get_ready();
-	tut.AI_set_charm(h, choice[h]);
+	agent.set_charm(h, choice[h]);
 	invalidate();
       }
       return;
@@ -1407,7 +1260,7 @@ public class MainView extends View {
     opp_error = false;
     opp_ready = true;
     print("Waiting for opponent...");
-    tut.AI_move(oppmove);
+    agent.move(oppmove);
     if (opp_error) {
       Log.i("MV", "Error getting opponent moves");
     }
@@ -1650,7 +1503,7 @@ public class MainView extends View {
     // Handle charm on player.
     if (player_charmed()) {
       // Get charmed hand from opponent.
-      charmed_hand = tut.AI_get_charm_hand();
+      charmed_hand = agent.get_charm_hand();
     } else {
       charmed_hand = -1;
     }
@@ -2189,4 +2042,5 @@ public class MainView extends View {
   static boolean freeze_gesture;
   static boolean choosing_charm;
   static final int SLOP = 4;
+  static Agent agent;
 }

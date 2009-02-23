@@ -280,9 +280,9 @@ Log.i("MV", "Pause");
       dojo.set_state_dummy(3);
       school.set_state_palmlesson();
       break;
-    case 3:  // Knows Palm, Shield. Board is open.
+    case 3:  // Knows Palm, Shield. Arena is open.
       set_spell_knowledge(Wisdom.STABNSHIELD);
-      pit.set_state_stabatha();
+      pit.set_state_duel(Agent.getStabatha());
       school.set_state_firstadvice();
       break;
     case 4:  // One win. Time to learn SD.
@@ -311,7 +311,7 @@ Log.i("MV", "Pause");
       break;
     case 8:  // Second duel.
       set_spell_knowledge(Wisdom.UP_TO_DSF);
-      pit.set_state_duel2();
+      pit.set_state_duel(Agent.getBloodyRipper());
       school.set_state_duel2advice();
       dojo.set_state_dummy(5);
       break;
@@ -323,7 +323,7 @@ Log.i("MV", "Pause");
       break;
     case 10:  // Duel 3.
       set_spell_knowledge(Wisdom.UP_TO_DFW);
-      pit.set_state_duel3();
+      pit.set_state_duel(Agent.getSendin());
       school.set_state_duel3advice();
       dojo.set_state_dummy(5);
       break;
@@ -461,5 +461,5 @@ Log.i("MV", "Pause");
   static Button butclo;
   static View butv;
   static Tubes tubes;
-  static int state = 0;
+  static int state = 11;
 }
