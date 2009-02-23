@@ -34,7 +34,7 @@ public class SpellTap extends Activity {
     spellbookv.setVisibility(View.GONE);
     mainview = (MainView) findViewById(R.id.mainview);
     mainview.spelltap = this;
-    mainview.set_arena((Arena) findViewById(R.id.arena));
+    mainview.set_board((Board) findViewById(R.id.board));
     mainview.set_arrow_view((ArrowView) findViewById(R.id.arrow_view));
     mainview.emptyleftmsg = getText(R.string.empty_left_hand).toString();
     mainview.emptyrightmsg = getText(R.string.empty_right_hand).toString();
@@ -280,7 +280,7 @@ Log.i("MV", "Pause");
       dojo.set_state_dummy(3);
       school.set_state_palmlesson();
       break;
-    case 3:  // Knows Palm, Shield. Arena is open.
+    case 3:  // Knows Palm, Shield. Board is open.
       set_spell_knowledge(Wisdom.STABNSHIELD);
       pit.set_state_stabatha();
       school.set_state_firstadvice();
@@ -461,5 +461,5 @@ Log.i("MV", "Pause");
   static Button butclo;
   static View butv;
   static Tubes tubes;
-  static int state = 5;
+  static int state = 0;
 }

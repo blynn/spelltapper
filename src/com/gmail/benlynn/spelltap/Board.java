@@ -1,4 +1,4 @@
-// Confusing name: the "Arena" of the game is found in Pit.java
+// Board: where the action happens. Handles animation.
 package com.gmail.benlynn.spelltap;
 
 import android.content.Context;
@@ -15,18 +15,18 @@ import android.os.Message;
 import com.gmail.benlynn.spelltap.MainView.Being;
 import com.gmail.benlynn.spelltap.MainView.Status;
 
-public class Arena extends View {
-  public Arena(Context context, AttributeSet attrs) {
+public class Board extends View {
+  public Board(Context context, AttributeSet attrs) {
     super(context, attrs);
-    init_arena();
+    init_board();
   }
 
-  public Arena(Context context, AttributeSet attrs, int defStyle) {
+  public Board(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
-    init_arena();
+    init_board();
   }
 
-  void init_arena() {
+  void init_board() {
     animation_reset();
     paint = new Paint();
     fade_paint = new Paint();
@@ -313,8 +313,8 @@ public class Arena extends View {
   class RefreshHandler extends Handler {
     @Override
     public void handleMessage(Message msg) {
-      Arena.this.update();
-      Arena.this.invalidate();
+      Board.this.update();
+      Board.this.invalidate();
     }
 
     public void sleep(long delayMillis) {

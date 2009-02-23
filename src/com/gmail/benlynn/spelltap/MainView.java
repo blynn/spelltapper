@@ -40,10 +40,9 @@ public class MainView extends View {
   static BeingPosition being_pos[];
 
   static final int STATE_NORMAL = 0;
-  static final int STATE_BUSY = 1;
   // Special states for tutorials.
-  static final int STATE_GESTURE_ONLY = 129;
-  static final int STATE_ON_END_ROUND = 130;
+  static final int STATE_GESTURE_ONLY = 1;
+  static final int STATE_ON_END_ROUND = 2;
 
   static int choice[];  // Gesture choice.
   static int lastchoice[];
@@ -63,10 +62,10 @@ public class MainView extends View {
   static int winner;
   static MonsterAttack monatt[];
 
-  static Arena arena;
+  static Board board;
   static ArrowView arrow_view;
-  void set_arena(Arena a) {
-    arena = a;
+  void set_board(Board a) {
+    board = a;
   }
   void set_arrow_view(ArrowView a) {
     arrow_view = a;
@@ -107,7 +106,7 @@ public class MainView extends View {
   }
 
   static SpellTapMove oppmove;
-  class SpellTapMove {
+  static class SpellTapMove {
     SpellTapMove() {
       gest = new int[2];
       spell = new int[2];
@@ -217,7 +216,7 @@ public class MainView extends View {
 	  clear_choices();
 	  set_gesture_knowledge(Wisdom.KNIFE_ONLY);
 	  set_spell_knowledge(Wisdom.STAB);
-	  arena.setVisibility(View.GONE);
+	  board.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
 	  jack_says(R.string.welcome);
 	  state = 100;
@@ -280,15 +279,16 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-	clear_choices();
+        init_opponent(Agent.getDummy());
+	being_list[1].start_life(3);
+	reset_game();
 	jack_says(R.string.dummytut);
-	arena.setVisibility(View.VISIBLE);
+	board.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
 	invalidate();
 	state = 2;
         return;
       case 2:
-	set_main_state(STATE_NORMAL);
 	get_ready();
 	state = 3;
         return;
@@ -322,7 +322,7 @@ public class MainView extends View {
   }
 
   // Now we're talking! Two goblins and a dummy. Since the dummy is the
-  // default target, the player is forced to retarget their stabs if they are
+  // default target, the player is must retarget their stabs if they are
   // to win.
   class TargetTutorial extends Tutorial {
     TargetTutorial() {
@@ -331,9 +331,8 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-        // Resurrect and restore HP
-	being_list[0].start_life(5);
-	being_list[1].start_life(1);
+        init_opponent(Agent.getDummy());
+	being_list[1].start_life(3);
 	reset_game();
 	// Two goblins.
 	being_list[2] = new Being("Porsap", R.drawable.goblin, 1);
@@ -346,7 +345,7 @@ public class MainView extends View {
 	being_list_count = 4;
 
 	jack_says(R.string.targettut);
-	arena.setVisibility(View.VISIBLE);
+	board.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
 	state = 1;
 	invalidate();
@@ -394,7 +393,7 @@ public class MainView extends View {
 	case 0:
 	  set_gesture_knowledge(Wisdom.KNIFE_AND_PALM);
 	  reset_game();
-	  arena.setVisibility(View.GONE);
+	  board.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
 	  jack_says(R.string.palmtut);
 	  state = 100;
@@ -459,14 +458,12 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
 	case 0:
-	  being_list[0].start_life(5);
-	  being_list[1].setup("The Dummy", R.drawable.dummy, dummyhp);
-	  being_list_count = 2;
-	  state = 1;
+	  init_opponent(Agent.getDummy());
+	  being_list[1].start_life(dummyhp);
 	  reset_game();
-	  arena.setVisibility(View.VISIBLE);
+	  state = 1;
+	  board.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
-	  set_main_state(STATE_NORMAL);
 	  get_ready();
 	  invalidate();
 	  return;
@@ -495,16 +492,10 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-        // Resurrect and restore HP
-	being_list[0].start_life(5);
-	being_list[1].setup("Stabatha", R.drawable.stabatha, 5);
-	being_list_count = 2;
-	hist.reset();
-	opphist.reset();
-	clear_choices();
-	arena.setVisibility(View.VISIBLE);
+	init_opponent(Agent.getStabatha());
+	reset_game();
+	board.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
-	set_main_state(STATE_NORMAL);
 	get_ready();
 	invalidate();
 	state = 1;
@@ -529,12 +520,9 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case -1:
 	  set_gesture_knowledge(Wisdom.KPS);
-	  being_list[0].start_life(5);
-	  being_list[1].setup("The Dummy", R.drawable.dummy, 5);
-	  being_list_count = 2;
-	  hist.reset();
-	  opphist.reset();
-	  arena.setVisibility(View.VISIBLE);
+	  init_opponent(Agent.getDummy());
+	  reset_game();
+	  board.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
 	  jack_says(R.string.SDtut0);
 	  state = 0;
@@ -616,12 +604,10 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  set_gesture_knowledge(Wisdom.ALL_BUT_FC);
-	  being_list[0].start_life(5);
+	  init_opponent(Agent.getDummy());
 	  being_list[1].start_life(4);
-	  hist.reset();
-	  opphist.reset();
-	  being_list_count = 2;
-	  arena.setVisibility(View.VISIBLE);
+	  reset_game();
+	  board.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
 	  jack_says(R.string.wavetut);
 	  state = 1;
@@ -742,16 +728,9 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-        // Resurrect and restore HP
-	being_list[0].start_life(5);
-	being_list[1].setup("Sendin", R.drawable.clown, 5);
-	being_list_count = 2;
-	hist.reset();
-	opphist.reset();
-
-	set_main_state(STATE_NORMAL);
-	clear_choices();
-	arena.setVisibility(View.VISIBLE);
+	init_opponent(Agent.getSendin());
+	reset_game();
+	board.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
 	invalidate();
 	state = 1;
@@ -830,16 +809,9 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-        // Resurrect and restore HP
-	being_list[0].start_life(5);
-	being_list[1].setup("Sendin", R.drawable.clown, 5);
-	being_list_count = 2;
-	hist.reset();
-	opphist.reset();
-
-	set_main_state(STATE_NORMAL);
-	clear_choices();
-	arena.setVisibility(View.VISIBLE);
+	init_opponent(Agent.getSendin());
+	reset_game();
+	board.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
 	invalidate();
 	count = 0;
@@ -946,20 +918,15 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  if (0 != Tubes.newgame()) {
-	    arena.setVisibility(View.GONE);
+	    board.setVisibility(View.GONE);
 	    arrow_view.setVisibility(View.GONE);
 	    spelltap.narrate(R.string.servererror);
 	    state = 1;
 	    return;
 	  }
-	  clear_choices();
-	  hist.reset();
-	  opphist.reset();
-	  being_list[0].start_life(5);
+	  reset_game();
 	  being_list[1].start_life(5);
-	  being_list_count = 2;
-	  set_main_state(STATE_NORMAL);
-	  arena.setVisibility(View.VISIBLE);
+	  board.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
           state = 1;
 	  get_ready();
@@ -1027,6 +994,11 @@ public class MainView extends View {
     g.y = y;
   }
 
+  void init_opponent(Agent a) {
+    being_list[1] = new Being(a.name(), a.bitmap_id(), -2);
+    being_list[1].start_life(a.life());
+  }
+
   // Constructor.
   public MainView(Context context, AttributeSet attrs) {
     super(context, attrs);
@@ -1063,7 +1035,7 @@ public class MainView extends View {
 
     being_list[0] = new Being("Player", R.drawable.wiz, -1);
     being_list[0].start_life(5);
-    being_list[1] = new Being("The Dummy", R.drawable.dummy, -2);
+    init_opponent(Agent.getDummy());
     being_list[1].start_life(3);
     being_list_count = 2;
 
@@ -1115,7 +1087,7 @@ public class MainView extends View {
     super.onDraw(canvas);
     int x, y;
 
-    // Arena class handles avatars and status line.
+    // Board class handles avatars and status line.
 
     // Opponent history.
     y = 16 - 4;
@@ -1364,8 +1336,8 @@ public class MainView extends View {
         (-1 != charmed_hand && choice[1 - charmed_hand] != Gesture.NONE) ||
 	(choosing_charm && (choice[0] != Gesture.NONE || choice[1] != Gesture.NONE))) {
       tilt_state = 1;
-      arena.set_notify_me(tilt_done_handler);
-      arena.animate_tilt();
+      board.set_notify_me(tilt_done_handler);
+      board.animate_tilt();
     }
   }
   void tilt_down() {
@@ -1430,7 +1402,7 @@ public class MainView extends View {
     arrow_view.setVisibility(View.GONE);
     hist.add(choice);
 
-    arena.animation_reset();  // Stop tilt animation if it's still going.
+    board.animation_reset();  // Stop tilt animation if it's still going.
 
     opp_error = false;
     opp_ready = true;
@@ -1671,6 +1643,7 @@ public class MainView extends View {
     being_list[1].shield = 0;
     being_list[0].heal_full();
     being_list[1].heal_full();
+    set_main_state(STATE_NORMAL);
   }
 
   void post_charm() {
@@ -1798,7 +1771,7 @@ public class MainView extends View {
     public void execute(int init_source, int init_target) {
       state = 0;
       is_finished = false;
-      arena.set_notify_me(done_handler);
+      board.set_notify_me(done_handler);
       cast_source = init_source;
       cast_target = init_target;
       cast(cast_source, cast_target);
@@ -1830,7 +1803,7 @@ public class MainView extends View {
     public void cast(int source, int target) {
       switch(state) {
 	case 0:
-	  arena.animate_shield(target);
+	  board.animate_shield(target);
 	  return;
 	case 1:
 	  if (target != -1) {
@@ -1850,7 +1823,7 @@ public class MainView extends View {
     public void cast(int source, int target) {
       switch(state) {
 	case 0:
-	  arena.animate_move(source, target);
+	  board.animate_move(source, target);
 	  return;
 	case 1:
 	  // TODO: Remove duplicated code.
@@ -1858,18 +1831,18 @@ public class MainView extends View {
 	    Being b = being_list[target];
 	    if (0 == b.shield) {
 	      b.get_hurt(1);
-	      arena.animate_move_damage(target, 1);
+	      board.animate_move_damage(target, 1);
 	    } else {
 	      Log.i("TODO", "block animation");
-	      arena.animate_move_damage(target, 0);
+	      board.animate_move_damage(target, 0);
 	    }
 	  } else {
-	    arena.animate_delay();
+	    board.animate_delay();
 	  }
 	  return;
 	case 2:
 	  is_finished = true;
-	  arena.animate_move_back();
+	  board.animate_move_back();
 	  return;
       }
     }
@@ -1882,7 +1855,7 @@ public class MainView extends View {
     public void cast(int source, int target) {
       switch(state) {
 	case 0:
-	  arena.animate_bullet(source, target);
+	  board.animate_bullet(source, target);
 	  return;
 	case 1:
 	  is_finished = true;
@@ -1890,13 +1863,13 @@ public class MainView extends View {
 	    Being b = being_list[target];
 	    if (0 == b.shield) {
 	      b.get_hurt(1);
-	      arena.animate_damage(target, 1);
+	      board.animate_damage(target, 1);
 	    } else {
 	      Log.i("TODO", "block animation");
-	      arena.animate_damage(target, 0);
+	      board.animate_damage(target, 0);
 	    }
 	  } else {
-	    arena.animate_delay();
+	    board.animate_delay();
 	  }
 	  return;
       }
@@ -1910,7 +1883,7 @@ public class MainView extends View {
     public void cast(int source, int target) {
       switch(state) {
 	case 0:
-	  arena.animate_spell(target, bitmap);
+	  board.animate_spell(target, bitmap);
 	  return;
 	case 1:
 	  is_finished = true;
@@ -1918,7 +1891,7 @@ public class MainView extends View {
 	    being_list[target].get_hurt(2);
 	    print("Cause Light Wounds deals 2 damage.");
 	  }
-	  arena.animate_damage(target, 2);
+	  board.animate_damage(target, 2);
 	  return;
       }
     }
@@ -1939,9 +1912,9 @@ public class MainView extends View {
 	    b.start_life(1);
 	    b.target = 1 - k;
 	    Log.i("TODO", "fade in goblin");
-	    arena.animate_spell(target, bitmap);
+	    board.animate_spell(target, bitmap);
 	  } else {
-	    arena.animate_delay();
+	    board.animate_delay();
 	  }
 	  return;
       }
@@ -1960,7 +1933,7 @@ public class MainView extends View {
 	  if (-1 != target) {
 	    being_list[target].heal(1);
 	  }
-	  arena.animate_spell(target, bitmap);
+	  board.animate_spell(target, bitmap);
 	  return;
       }
     }
@@ -1977,7 +1950,7 @@ public class MainView extends View {
 	  if (-1 != target) {
 	    being_list[target].status = Status.CONFUSED;
 	  }
-	  arena.animate_spell(target, bitmap);
+	  board.animate_spell(target, bitmap);
 	  return;
       }
     }
@@ -1997,7 +1970,7 @@ public class MainView extends View {
 	      being_list[target].status = Status.CHARMED;
 	    }
 	  }
-	  arena.animate_spell(target, bitmap);
+	  board.animate_spell(target, bitmap);
 	  return;
       }
     }
@@ -2010,7 +1983,7 @@ public class MainView extends View {
     public void cast(int source, int target) {
       switch(state) {
 	case 0:
-	  arena.animate_shield(target);
+	  board.animate_shield(target);
 	  return;
 	case 1:
 	  if (target != -1) {
@@ -2031,25 +2004,25 @@ public class MainView extends View {
     public void cast(int source, int target) {
       switch(state) {
 	case 0:
-	  arena.animate_move(source, target);
+	  board.animate_move(source, target);
 	  return;
 	case 1:
 	  if (target != -1) {
 	    Being b = being_list[target];
 	    if (0 == b.shield) {
 	      b.get_hurt(1);
-	      arena.animate_move_damage(target, 1);
+	      board.animate_move_damage(target, 1);
 	    } else {
 	      Log.i("TODO", "block animation");
-	      arena.animate_move_damage(target, 0);
+	      board.animate_move_damage(target, 0);
 	    }
 	  } else {
-	    arena.animate_delay();
+	    board.animate_delay();
 	  }
 	  return;
 	case 2:
 	  is_finished = true;
-	  arena.animate_move_back();
+	  board.animate_move_back();
 	  return;
       }
     }
