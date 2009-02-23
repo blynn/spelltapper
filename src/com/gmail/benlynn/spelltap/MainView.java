@@ -738,6 +738,7 @@ public class MainView extends View {
   static final int NET_DECODE = 0;
   static final int NET_CHARM_CHOSEN = 1;
   static final int NET_GET_CHARM_HAND = 2;
+  static final int NET_GET_CHARM_GESTURE = 3;
 
   void net_set_charm(int hand, int gesture) {
     opp_ready = false;
@@ -753,6 +754,15 @@ public class MainView extends View {
     invalidate();
     net_state = NET_GET_CHARM_HAND;
     Tubes.send_get_charm_hand();
+    return -1;
+  }
+
+  int net_get_charm_gesture() {
+    opp_ready = false;
+    print("Waiting for server...");
+    invalidate();
+    net_state = NET_GET_CHARM_GESTURE;
+    Tubes.send_get_charm_gesture();
     return -1;
   }
 
@@ -791,6 +801,20 @@ public class MainView extends View {
 	  is_waiting = false;
 	  new_round_post_charm();
 	  break;
+	case NET_GET_CHARM_GESTURE:
+	  {
+	    int g = Tubes.reply.charAt(0) - '0';
+	    if (g >= 0 && g <= 8 && g != Gesture.NONE && gesture[g] != null) {
+	      choice[charmed_hand] = g;
+	    } else {
+	      Log.e("TODO", "Handle bad messages");
+	      break;
+	    }
+	    opp_ready = true;
+	    is_waiting = false;
+	    apply_charm();
+	    break;
+	  }
       }
     }
   }
@@ -831,6 +855,9 @@ public class MainView extends View {
     }
     int get_charm_hand() {
       return net_get_charm_hand();
+    }
+    int get_charm_gesture() {
+      return net_get_charm_gesture();
     }
   }
 
@@ -1050,9 +1077,15 @@ public class MainView extends View {
     canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
 
     // Gesture and spell text.
+    // TODO: Rethink Charm presentation.
     y = ylower + 16 - 4;
     if (0 == charmed_hand) {
-      canvas.drawText("[Charmed]", 0, y, Easel.charm_text);
+      if (freeze_gesture) {
+	Gesture g = gesture[choice[0]];
+	canvas.drawText(g.statusname, 0, y, Easel.charm_text);
+      } else {
+	canvas.drawText("[Charmed]", 0, y, Easel.charm_text);
+      }
     } else {
       Gesture g = gesture[choice[0]];
       if (null == g) {
@@ -1062,7 +1095,12 @@ public class MainView extends View {
       }
     }
     if (1 == charmed_hand) {
-      canvas.drawText("[Charmed]", 320, y, Easel.charm_rtext);
+      if (freeze_gesture) {
+	Gesture g = gesture[choice[1]];
+	canvas.drawText(g.statusname, 320, y, Easel.charm_rtext);
+      } else {
+	canvas.drawText("[Charmed]", 320, y, Easel.charm_rtext);
+      }
     } else {
       Gesture g = gesture[choice[1]];
       if (null == g) {
@@ -1295,11 +1333,10 @@ public class MainView extends View {
   static int exec_queue_count;
   static SpellCast[] exec_queue;
 
-  static boolean opp_ready;  // TODO: Move to Agent class.
-
-  private int get_opp_charm_choice() {
-    return agent.get_charm_gesture();
-  }
+  // TODO: Move to Agent class. Also, introduce charm_hand and charm_gesture
+  // variables there, so network code in this class can avoid touching
+  // charmed_hand and choice[].
+  static boolean opp_ready;
 
   private void confirm_move() {
     tilt_state = TILT_DISABLED;
@@ -1326,15 +1363,28 @@ public class MainView extends View {
     if (-1 != charmed_hand) {
       if (!freeze_gesture) {
 	tilt_state = TILT_AWAIT_UP;
-	choice[charmed_hand] = get_opp_charm_choice();
-	handle_new_choice(charmed_hand);
-	freeze_gesture = true;
-	print("Charm takes effect. Confirm spells and targets.");
+	opp_ready = true;
+	choice[charmed_hand] = agent.get_charm_gesture();
+	if (opp_ready) {
+	  apply_charm();
+	} else  {
+	  is_waiting = true;
+	  // Network code calls apply_charm().
+	}
 	return;
       }
       freeze_gesture = false;
     }
+    get_opp_moves();
+  }
 
+  void apply_charm() {
+    handle_new_choice(charmed_hand);
+    freeze_gesture = true;
+    print("Charm takes effect. Confirm spells and targets.");
+  }
+
+  void get_opp_moves() {
     arrow_view.setVisibility(View.GONE);
     hist.add(choice);
 
@@ -1354,6 +1404,7 @@ public class MainView extends View {
     clear_choices();
     get_ready();
     invalidate();
+    new_round2();
   }
 
   static boolean is_waiting;
@@ -1544,7 +1595,14 @@ public class MainView extends View {
 
   // Start new round.
   void new_round() {
-    // Handle Charm Person on opponent first.
+    // Thus begins the Charm Person spaghetti. The most complex case is
+    // when Charm Person has simultaneously been cast on both players. Then:
+    //  1. I pick a hand and gesture for my opponent.
+    //  2. I ask which hand of mine was chosen by my opponent.
+    //  3. I choose a gesture with my other hand.
+    //  4. I ask which gesture the opponent chose for my charmed hand.
+    //  5. I choose spells and targets from the results.
+    // Non-blocking network communication complicates the code further.
     if (opp_charmed()) {
       choosing_charm = true;
       print("Charm: Pick gesture for opponent.");
@@ -1890,7 +1948,7 @@ public class MainView extends View {
 
   public class CharmPersonSpell extends Spell {
     CharmPersonSpell() {
-      init("Charm Person", "F", R.drawable.confusion, R.string.PSDFdesc, 1);
+      init("Charm Person", "PSDF", R.drawable.confusion, R.string.PSDFdesc, 1);
     }
     public void cast(int source, int target) {
       switch(state) {

@@ -31,6 +31,8 @@ class Tubes extends SpellTapMachine {
 	Log.i("Cmon", "retrying");
 	if ('H' == message.charAt(1)) {
 	  reply = send(message);
+	} else if ('G' == message.charAt(1)) {
+	  reply = send(message);
 	} else {
 	  reply = send_retry();
 	}
@@ -73,6 +75,11 @@ class Tubes extends SpellTapMachine {
   static void send_set_charm(int hand, int gesture) {
     String s = (char) ('a' + netid) + "C" + (char) ('0' + hand) +
         (char) ('0' + gesture);
+    net_thread = new NetThread(s);
+    net_thread.run();
+  }
+  static void send_get_charm_gesture() {
+    String s = (char) ('a' + netid) + "G";
     net_thread = new NetThread(s);
     net_thread.run();
   }

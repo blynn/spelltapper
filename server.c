@@ -11,8 +11,8 @@ void handle(char *input) {
   static int id = 0;
   static int gotmove[2];
   static int sent[2];
-  static int charm_gesture = -1;
-  static int charm_hand = -1;
+  static int charm_gesture[2] = { -1, -1 };
+  static int charm_hand[2] = { -1, -1 };
   int i = 0;
   void add_char(char c) {
     reply[i] = c;
@@ -41,26 +41,26 @@ void handle(char *input) {
       s++;
       switch(*s) {
 	case 'C':  // Charm check-in.
-	  charm_hand = s[1] - '0';
-	  charm_gesture = s[2] - '0';
+	  charm_hand[j] = s[1] - '0';
+	  charm_gesture[j] = s[2] - '0';
 	  add_char('0');
 	  fin();
 	  break;
 	case 'G':  // Charmed gesture query.
-	  if (-1 == charm_gesture) {  // Should not happen!
+	  if (-1 == charm_gesture[1 - j]) {  // Should not happen!
 	    add_char('-');
 	  } else {
-	    add_char('0' + charm_gesture);
-	    charm_gesture = -1;
+	    add_char('0' + charm_gesture[1 - j]);
+	    charm_gesture[1 - j] = -1;
 	  }
 	  fin();
 	  break;
 	case 'H':  // Charmed hand query.
-	  if (-1 == charm_hand) {
+	  if (-1 == charm_hand[1 - j]) {
 	    add_char('-');
 	  } else {
-	    add_char('0' + charm_hand);
-	    charm_hand = -1;
+	    add_char('0' + charm_hand[1 - j]);
+	    charm_hand[1 - j] = -1;
 	  }
 	  fin();
 	  break;
