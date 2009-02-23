@@ -192,6 +192,7 @@ Log.i("MV", "Pause");
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     if (keyCode == KeyEvent.KEYCODE_BACK) {
+      Log.i("TODO", "Handle back button");
       if (spellbook_is_open) {
 	close_spellbook();
       }

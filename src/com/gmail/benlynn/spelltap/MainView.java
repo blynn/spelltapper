@@ -765,7 +765,6 @@ public class MainView extends View {
       turn.attack_source[n] = decode_target(r.charAt(7 + 2 * n));
       turn.attack_target[n] = decode_target(r.charAt(7 + 2 * n + 1));
     }
-    opp_error = false;
     opp_ready = true;
     is_waiting = false;
     resolve();
@@ -1067,6 +1066,7 @@ public class MainView extends View {
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
 	if (is_animating) return false;
+	if (is_waiting) return false;
 	x0 = event.getX();
 	y0 = event.getY();
 	if (y0 < ylower) {
@@ -1106,6 +1106,7 @@ public class MainView extends View {
 	return true;
       case MotionEvent.ACTION_UP:
 	if (is_animating) return false;
+	if (is_waiting) return false;
 	x1 = event.getX();
 	y1 = event.getY();
 	if (drag_i != -1) {
@@ -1240,7 +1241,6 @@ public class MainView extends View {
   static int exec_queue_count;
   static SpellCast[] exec_queue;
 
-  static boolean opp_error;
   static boolean opp_ready;
 
   private int get_opp_charm_choice() {
@@ -1249,14 +1249,17 @@ public class MainView extends View {
 
   private void confirm_move() {
     tilt_state = TILT_DISABLED;
+    board.animation_reset();  // Stop tilt animation if it's still going.
+    // If Charm Person has been cast on opponent, must first send
+    // chosen gesture before normal turn.
     if (choosing_charm) {
       int h;
       for (h = 0; h < 2 && Gesture.NONE == choice[h]; h++);
       if (h < 2) {
+	agent.set_charm(h, choice[h]);
 	choosing_charm = false;
 	clear_choices();
 	get_ready();
-	agent.set_charm(h, choice[h]);
 	invalidate();
       }
       tilt_state = TILT_AWAIT_UP;
@@ -1270,22 +1273,12 @@ public class MainView extends View {
       tilt_state = TILT_AWAIT_UP;
       return;
     }
-    get_opp_move();
-  }
 
-  private void get_opp_move() {
-    is_animating = true;
     arrow_view.setVisibility(View.GONE);
     hist.add(choice);
 
-    board.animation_reset();  // Stop tilt animation if it's still going.
-
-    opp_error = false;
     opp_ready = true;
     agent.move(oppmove);
-    if (opp_error) {
-      Log.i("MV", "Error getting opponent moves");
-    }
     // In local duels, opp_ready should still be true.
     if (opp_ready) {
       resolve();
@@ -1311,7 +1304,7 @@ public class MainView extends View {
   }
 
   private void resolve() {
-    tilt_state = TILT_AWAIT_UP;
+    is_animating = true;
     opphist.add(oppmove.gest);
 
     // Expire status effects.
@@ -1351,7 +1344,6 @@ public class MainView extends View {
     }
 
     clear_choices();
-
     exec_cursor = 0;
     // TODO: Print message and delay if there are no spells.
     // Or maybe flash the screen and make a sound unconditionally to get
@@ -1424,6 +1416,7 @@ public class MainView extends View {
     }
 
     is_animating = false;
+    tilt_state = TILT_AWAIT_UP;
     arrow_view.setVisibility(View.VISIBLE);
     int sid = R.string.bug;
     winner = -1;
@@ -1483,7 +1476,7 @@ public class MainView extends View {
 
   // Start new round.
   void new_round() {
-    // Handle Charm Person on opponent first. See rules of game.
+    // Handle Charm Person on opponent first.
     if (opp_charmed()) {
       choosing_charm = true;
       print("Charm: Pick gesture for opponent.");
@@ -1784,7 +1777,6 @@ public class MainView extends View {
 
   public class CureLightWoundsSpell extends Spell {
     CureLightWoundsSpell() {
-      // TODO: Draw an icon for this.
       init("Cure Light Wounds", "DFW", R.drawable.curelight, R.string.DFWdesc, 0);
     }
     public void cast(int source, int target) {
@@ -1917,7 +1909,7 @@ public class MainView extends View {
 	  }
 	  controller = 0;
 	  break;
-        case 1:  // Player controls this being.
+        case 1:  // Opponent controls this being.
 	  for (index = 16 - 1; index >= 0; index--) {
 	    if (null == being_pos[index].being) break;
 	  }

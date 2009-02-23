@@ -19,24 +19,20 @@ class Tubes extends SpellTapMachine {
   static class NetThread extends Thread {
     NetThread(String msg) {
       message = msg;
-      cmon_handler = new CmonHandler();
+      retry_handler = cmon_handler = new CmonHandler();
     }
     public void run() {
       reply = send(message);
-      if (null == reply) {
-	cmon_handler.sendEmptyMessageDelayed(0, 3000);
-      } else if ('-' == reply.charAt(0)) {
-	cmon_handler.sendEmptyMessageDelayed(0, 3000);
-      } else {
-	MainView.net_handler.sendEmptyMessage(0);
-      }
+      cmon_handler.handle_reply();
     }
-    String message;
     class CmonHandler extends Handler {
       @Override
       public void handleMessage(Message msg) {
 	Log.i("Cmon", "retrying");
 	reply = send_retry();
+	handle_reply();
+      }
+      public void handle_reply() {
 	if (null == reply) {
 	  sendEmptyMessageDelayed(0, 3000);
 	} else if ('-' == reply.charAt(0)) {
@@ -46,8 +42,10 @@ class Tubes extends SpellTapMachine {
 	}
       }
     }
+    String message;
+    CmonHandler cmon_handler;
   }
-  static Handler cmon_handler;
+  static Handler retry_handler;
 
   static int newgame() {
     String r = send("N");
