@@ -998,6 +998,7 @@ public class MainView extends View {
     monatt = new MonsterAttack[5];
     for (int i = 1; i <= 4; i++) {
       monatt[i] = new MonsterAttack(i);
+      monatt[i].priority = 66;
     }
 
     msg = "";
