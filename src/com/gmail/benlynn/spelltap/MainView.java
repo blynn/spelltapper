@@ -39,6 +39,7 @@ public class MainView extends View {
   static boolean is_animating;
   static BeingPosition being_pos[];
 
+  static final int STATE_VOID = -1;
   static final int STATE_NORMAL = 0;
   // Special states for tutorials.
   static final int STATE_GESTURE_ONLY = 1;
@@ -770,6 +771,7 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  if (0 != Tubes.newgame()) {
+	    main_state = STATE_VOID;
 	    board.setVisibility(View.GONE);
 	    arrow_view.setVisibility(View.GONE);
 	    spelltap.narrate(R.string.servererror);
@@ -914,7 +916,7 @@ public class MainView extends View {
     put_gest("Fingers", 1, 1);
 
     arrow_view = null;
-    tilt_state = 0;
+    tilt_state = TILT_AWAIT_UP;
     charmed_hand = -1;
     freeze_gesture = false;
     choosing_charm = false;
@@ -1182,28 +1184,27 @@ public class MainView extends View {
 
   static int tilt_state;
   void tilt_up() {
-    if (tilt_state != 0) {
-      return;
-    }
+    if (TILT_AWAIT_UP != tilt_state) return;
+    if (STATE_NORMAL != main_state) return;
+    // Tilt only works when there are gestures in both hands not counting
+    // charmed hands, or when the player has chosen a gesture for the opponent.
     if ((choice[0] != Gesture.NONE && choice[1] != Gesture.NONE) ||
         (-1 != charmed_hand && choice[1 - charmed_hand] != Gesture.NONE) ||
 	(choosing_charm && (choice[0] != Gesture.NONE || choice[1] != Gesture.NONE))) {
-      tilt_state = 1;
+      tilt_state = TILT_AWAIT_DOWN;
       board.set_notify_me(tilt_done_handler);
       board.animate_tilt();
     }
   }
   void tilt_down() {
-    if (1 != tilt_state) return;
-    // Fragile: requires gestures are cleared by confirm_move().
-    tilt_state = 0;
+    if (TILT_AWAIT_DOWN != tilt_state) return;
     confirm_move();
   }
   private TiltDoneHandler tilt_done_handler = new TiltDoneHandler();
   class TiltDoneHandler extends Handler {
     @Override
     public void handleMessage(Message msg) {
-      tilt_state = 0;
+      if (TILT_DISABLED != tilt_state) tilt_state = TILT_AWAIT_UP;
     }
   }
 
@@ -1228,6 +1229,7 @@ public class MainView extends View {
   }
 
   private void confirm_move() {
+    tilt_state = TILT_DISABLED;
     if (choosing_charm) {
       int h;
       for (h = 0; h < 2 && Gesture.NONE == choice[h]; h++);
@@ -1238,6 +1240,7 @@ public class MainView extends View {
 	agent.set_charm(h, choice[h]);
 	invalidate();
       }
+      tilt_state = TILT_AWAIT_UP;
       return;
     }
     if (-1 != charmed_hand && !freeze_gesture) {
@@ -1245,6 +1248,7 @@ public class MainView extends View {
       handle_new_choice(charmed_hand);
       freeze_gesture = true;
       print("Charm takes effect. Confirm spells and targets.");
+      tilt_state = TILT_AWAIT_UP;
       return;
     }
     get_opp_move();
@@ -1305,6 +1309,7 @@ public class MainView extends View {
   }
 
   private void resolve() {
+    tilt_state = TILT_AWAIT_UP;
     opphist.add(oppmove.gest);
 
     // Expire status effects.
@@ -2043,4 +2048,7 @@ public class MainView extends View {
   static boolean choosing_charm;
   static final int SLOP = 4;
   static Agent agent;
+  static final int TILT_AWAIT_UP = 0;
+  static final int TILT_AWAIT_DOWN = 1;
+  static final int TILT_DISABLED = 2;
 }
