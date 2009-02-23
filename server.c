@@ -6,10 +6,13 @@
 
 static char reply[128];
 static char move[2][128];
-void handle(char *s) {
+void handle(char *input) {
+  char *s = input;
   static int id = 0;
   static int gotmove[2];
   static int sent[2];
+  static int charm_gesture = -1;
+  static int charm_hand = -1;
   int i = 0;
   void add_char(char c) {
     reply[i] = c;
@@ -24,7 +27,7 @@ void handle(char *s) {
     reply[i + 1] = '\0';
   }
 
-  switch(s[0]) {
+  switch(*s) {
     case 'N':
       add_char('a' + id);
       fin();
@@ -34,27 +37,65 @@ void handle(char *s) {
     case 'a':
     case 'b':
       {
-      int j = s[0] - 'a';
-      if ('-' == s[1]) {  // Retry.
-      } else if (!gotmove[j]) {  // Move check-in.
-	gotmove[j] = 1;
-	strncpy(move[j], s + 1, 7);
-	int n = move[j][6] - '0';
-	if (n > 16) n = 16;
-	strncpy(move[j] + 7, s + 1 + 7, n * 2);
+      int j = *s - 'a';
+      s++;
+      switch(*s) {
+	case 'C':  // Charm check-in.
+	  charm_hand = s[1] - '0';
+	  charm_gesture = s[2] - '0';
+	  add_char('0');
+	  fin();
+	  break;
+	case 'G':  // Charmed gesture query.
+	  if (-1 == charm_gesture) {  // Should not happen!
+	    add_char('-');
+	  } else {
+	    add_char('0' + charm_gesture);
+	    charm_gesture = -1;
+	  }
+	  fin();
+	  break;
+	case 'H':  // Charmed hand query.
+	  if (-1 == charm_hand) {
+	    add_char('-');
+	  } else {
+	    add_char('0' + charm_hand);
+	    charm_hand = -1;
+	  }
+	  fin();
+	  break;
+	case 'M':  // Move check-in.
+	  if (!gotmove[j]) {
+	    gotmove[j] = 1;
+	    strncpy(move[j], s + 1, 7);
+	    int n = move[j][6] - '0';
+	    if (n > 16) n = 16;
+	    strncpy(move[j] + 7, s + 1 + 7, n * 2);
+	  }
+	  // *** FALL THROUGH ***
+	case '-':  // Retry.
+	  // Respond:
+	  if (gotmove[1 - j]) {
+	    add_nchar(move[1 - j], 7);
+	    int n = move[1 - j][6] - '0';
+	    if (n > 16) n = 16;
+	    add_nchar(move[1 - j] + 7, n * 2);
+	    sent[j] = 1;
+	  } else {
+	    add_char('-');
+	  }
+	  fin();
+	  break;
+	default:
+	  add_char('?');
+	  fin();
+	  break;
       }
-      // Respond:
-      if (gotmove[1 - j]) {
-	add_nchar(move[1 - j], 7);
-	int n = move[1 - j][6] - '0';
-	if (n > 16) n = 16;
-	add_nchar(move[1 - j] + 7, n * 2);
-	sent[j] = 1;
-      } else {
-	add_char('-');
       }
+      break;
+    default:
+      add_char('?');
       fin();
-      }
       break;
   }
   if (sent[0] && sent[1]) {

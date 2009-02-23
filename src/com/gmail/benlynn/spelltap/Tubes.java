@@ -29,7 +29,11 @@ class Tubes extends SpellTapMachine {
       @Override
       public void handleMessage(Message msg) {
 	Log.i("Cmon", "retrying");
-	reply = send_retry();
+	if ('H' == message.charAt(1)) {
+	  reply = send(message);
+	} else {
+	  reply = send_retry();
+	}
 	handle_reply();
       }
       public void handle_reply() {
@@ -62,7 +66,18 @@ class Tubes extends SpellTapMachine {
   }
 
   static void send_move(String move) {
-    String s = (char) ('a' + netid) + move;
+    String s = (char) ('a' + netid) + "M" + move;
+    net_thread = new NetThread(s);
+    net_thread.run();
+  }
+  static void send_set_charm(int hand, int gesture) {
+    String s = (char) ('a' + netid) + "C" + (char) ('0' + hand) +
+        (char) ('0' + gesture);
+    net_thread = new NetThread(s);
+    net_thread.run();
+  }
+  static void send_get_charm_hand() {
+    String s = (char) ('a' + netid) + "H";
     net_thread = new NetThread(s);
     net_thread.run();
   }

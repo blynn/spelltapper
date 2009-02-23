@@ -1,4 +1,4 @@
-.PHONY: binclasses target red ree
+.PHONY: target red ree
 
 SDKDIR=~/android-sdk-linux_x86-1.1_r1
 ADB=$(SDKDIR)/tools/adb
@@ -12,12 +12,12 @@ target: bin/out.apk
 src/$(MUCK)/R.java : res/*/* AndroidManifest.xml
 	$(AAPT) p -m -J src -M AndroidManifest.xml -S res -I $(SDKDIR)/android.jar
 
-binclasses : src/$(MUCK)/*.java src/$(MUCK)/R.java
+bin/classes/$(MUCK)/SpellTap.java : src/$(MUCK)/*.java src/$(MUCK)/R.java
 	install -d bin/classes
 	javac -encoding ascii -target 1.5 -d bin/classes -bootclasspath $(SDKDIR)/android.jar src/$(MUCK)/*.java
 	-rm bin/classes/$(MUCK)/R*.class
 
-bin/classes.dex : binclasses
+bin/classes.dex : bin/classes/$(MUCK)/SpellTap.java
 	$(DX) --dex --output=bin/classes.dex bin/classes
 
 bin/resources.ap_ : src/$(MUCK)/R.java AndroidManifest.xml

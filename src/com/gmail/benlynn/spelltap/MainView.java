@@ -1,4 +1,5 @@
 // TODO: Log, character sheet.
+// Turn UI pink on charm, to make it obvious why we need to wait for network?
 // Victory/defeat screen with stats.
 // Psych spell conflict.
 // Resize event.
@@ -730,7 +731,29 @@ public class MainView extends View {
     invalidate();
     // Spawn a thread to send move over the network, so we can keep handling
     // user input.
+    net_state = NET_DECODE;
     Tubes.send_move(s);
+  }
+  static int net_state;
+  static final int NET_DECODE = 0;
+  static final int NET_CHARM_CHOSEN = 1;
+  static final int NET_GET_CHARM_HAND = 2;
+
+  void net_set_charm(int hand, int gesture) {
+    opp_ready = false;
+    print("Informing server...");
+    invalidate();
+    net_state = NET_CHARM_CHOSEN;
+    Tubes.send_set_charm(hand, gesture);
+  }
+
+  int net_get_charm_hand() {
+    opp_ready = false;
+    print("Waiting for opponent to choose charmed hand...");
+    invalidate();
+    net_state = NET_GET_CHARM_HAND;
+    Tubes.send_get_charm_hand();
+    return -1;
   }
 
   static NetHandler net_handler;
@@ -743,7 +766,32 @@ public class MainView extends View {
       } catch (InterruptedException e) {
       }
       Log.i("Reply", Tubes.reply);
-      decode_move(oppmove, Tubes.reply);
+      switch(net_state) {
+	case NET_DECODE:
+	  decode_move(oppmove, Tubes.reply);
+	  break;
+	case NET_CHARM_CHOSEN:
+	  opp_ready = true;
+	  is_waiting = false;
+	  note_charm_chosen();
+	  break;
+	case NET_GET_CHARM_HAND:
+	  switch(Tubes.reply.charAt(0)) {
+	    case '0':
+	      charmed_hand = 0;
+	      break;
+	    case '1':
+	      charmed_hand = 1;
+	      break;
+	  }
+	  if (-1 == charmed_hand) {
+	    Log.e("TODO", "Handle bad messages");
+	  }
+	  opp_ready = true;
+	  is_waiting = false;
+	  new_round_post_charm();
+	  break;
+      }
     }
   }
 
@@ -777,6 +825,12 @@ public class MainView extends View {
     int bitmap_id() { return R.drawable.wiz; }
     void move(SpellTapMove turn) {
       net_move(turn);
+    }
+    void set_charm(int hand, int gesture) {
+      net_set_charm(hand, gesture);
+    }
+    int get_charm_hand() {
+      return net_get_charm_hand();
     }
   }
 
@@ -1241,7 +1295,7 @@ public class MainView extends View {
   static int exec_queue_count;
   static SpellCast[] exec_queue;
 
-  static boolean opp_ready;
+  static boolean opp_ready;  // TODO: Move to Agent class.
 
   private int get_opp_charm_choice() {
     return agent.get_charm_gesture();
@@ -1253,25 +1307,32 @@ public class MainView extends View {
     // If Charm Person has been cast on opponent, must first send
     // chosen gesture before normal turn.
     if (choosing_charm) {
+      tilt_state = TILT_AWAIT_UP;
       int h;
       for (h = 0; h < 2 && Gesture.NONE == choice[h]; h++);
       if (h < 2) {
+	opp_ready = true;
 	agent.set_charm(h, choice[h]);
-	choosing_charm = false;
-	clear_choices();
-	get_ready();
-	invalidate();
+	if (opp_ready) {
+	  note_charm_chosen();
+	} else  {
+	  // In network games, network code eventually calls
+	  // note_charm_chosen().
+	  is_waiting = true;
+	}
       }
-      tilt_state = TILT_AWAIT_UP;
       return;
     }
-    if (-1 != charmed_hand && !freeze_gesture) {
-      choice[charmed_hand] = get_opp_charm_choice();
-      handle_new_choice(charmed_hand);
-      freeze_gesture = true;
-      print("Charm takes effect. Confirm spells and targets.");
-      tilt_state = TILT_AWAIT_UP;
-      return;
+    if (-1 != charmed_hand) {
+      if (!freeze_gesture) {
+	tilt_state = TILT_AWAIT_UP;
+	choice[charmed_hand] = get_opp_charm_choice();
+	handle_new_choice(charmed_hand);
+	freeze_gesture = true;
+	print("Charm takes effect. Confirm spells and targets.");
+	return;
+      }
+      freeze_gesture = false;
     }
 
     arrow_view.setVisibility(View.GONE);
@@ -1286,6 +1347,13 @@ public class MainView extends View {
     }
     // Otherwise we wait for network code to call resolve().
     is_waiting = true;
+  }
+
+  void note_charm_chosen() {
+    choosing_charm = false;
+    clear_choices();
+    get_ready();
+    invalidate();
   }
 
   static boolean is_waiting;
@@ -1482,7 +1550,7 @@ public class MainView extends View {
       print("Charm: Pick gesture for opponent.");
       return;
     }
-    post_charm();
+    new_round2();
   }
 
   void reset_game() {
@@ -1500,15 +1568,25 @@ public class MainView extends View {
     is_waiting = false;
   }
 
-  void post_charm() {
+  void new_round2() {
     // Handle charm on player.
     if (player_charmed()) {
       // Get charmed hand from opponent.
+      opp_ready = true;
       charmed_hand = agent.get_charm_hand();
+      if (!opp_ready) {
+	// Network game. Handler will call new_round_post_charm once
+	// a valid reply is received.
+	is_waiting = true;
+	return;
+      }
     } else {
       charmed_hand = -1;
     }
+    new_round_post_charm();
+  }
 
+  void new_round_post_charm() {
     // Handle confused monsters.
     for (int i = 2; i < being_list_count; i++) {
       Being b = being_list[i];
@@ -1517,6 +1595,7 @@ public class MainView extends View {
       }
     }
     get_ready();
+    invalidate();
   }
 
   private void handle_new_choice(int h) {
@@ -1811,7 +1890,7 @@ public class MainView extends View {
 
   public class CharmPersonSpell extends Spell {
     CharmPersonSpell() {
-      init("Charm Person", "PSDF", R.drawable.confusion, R.string.PSDFdesc, 1);
+      init("Charm Person", "F", R.drawable.confusion, R.string.PSDFdesc, 1);
     }
     public void cast(int source, int target) {
       switch(state) {
