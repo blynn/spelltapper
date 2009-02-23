@@ -209,6 +209,7 @@ Log.i("MV", "Pause");
     static public final int UP_TO_DSF = 4;
     static public final int UP_TO_DFW = 5;
     static final int ALL_LEVEL_1 = 6;
+    static final int ALL_SPELLS = 128;
 
     static final int NONE = -1;
     static final int KNIFE_ONLY = 0;
@@ -328,14 +329,19 @@ Log.i("MV", "Pause");
       dojo.set_state_dummy(5);
       break;
     case 11:  // Learn 2 remaining Level 1 spells.
-      set_spell_knowledge(Wisdom.ALL_LEVEL_1);
+      set_spell_knowledge(Wisdom.UP_TO_DFW);
       pit.set_state_closed();
       school.set_state_lvl1lesson();
       dojo.set_state_dummy(5);
       break;
     case 12:
+      set_spell_knowledge(Wisdom.ALL_LEVEL_1);
       break;
     case 13:  // Net play.
+      break;
+    case 128:
+      set_spell_knowledge(Wisdom.ALL_SPELLS);
+      dojo.set_state_dummy(50);
       break;
     }
   }

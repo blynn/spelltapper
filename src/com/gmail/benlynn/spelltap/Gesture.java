@@ -54,7 +54,7 @@ class Gesture {
   boolean learned;
   int x, y;
 
-  static int flattenxy(int x, int y) {
+  static final int flattenxy(int x, int y) {
     return (x + 1) + (y + 1) * 3;
   }
 

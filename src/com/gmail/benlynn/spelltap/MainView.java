@@ -160,14 +160,16 @@ public class MainView extends View {
   }
 
   void set_spell_knowledge(int level) {
-    for (int i = 0; i < spell_list_count; i++) {
-      Spell sp = spell_list[i];
-      sp.learned = false;
+    if (Wisdom.ALL_SPELLS == level) {
+      for (int i = 0; i < spell_list_count; i++) spell_list[i].learned = true;
+      return;
     }
+    for (int i = 0; i < spell_list_count; i++) spell_list[i].learned = false;
     // Exploits fall-through.
     switch(level) {
       case Wisdom.ALL_LEVEL_1:
         learn(spellAtGesture("WWP"));
+        learn(spellAtGesture("PSDF"));
       case Wisdom.UP_TO_DFW:
         learn(spellAtGesture("DFW"));
         learn(spellAtGesture("SFW"));
@@ -980,6 +982,7 @@ public class MainView extends View {
     add_spell(new SummonGoblinSpell(), 17);
     add_spell(new ProtectionSpell(), 7);
     add_spell(new CharmPersonSpell(), 31);
+    add_spell(new FearSpell(), 30);
 
     being_list = new Being[16];
     summon_count = new int[2];
@@ -1287,6 +1290,11 @@ public class MainView extends View {
 	  if (null == gesture[choice[h]] || !gesture[choice[h]].learned) {
 	    choice[h] = Gesture.NONE;
 	  }
+	  if (Status.FEAR == being_list[0].status &&
+	      choice[h] != Gesture.PALM &&
+	      choice[h] != Gesture.WAVE &&
+	      choice[h] != Gesture.KNIFE) choice[h] = Gesture.NONE;
+
 	  if (choice[h] != lastchoice[h]) {
 	    handle_new_choice(h);
 	  }
@@ -1697,7 +1705,9 @@ public class MainView extends View {
       spell_text[h] = "";
       if (choice[h] != Gesture.NONE) {
 	for (int i = 0; i < spell_list_count; i++) {
-	  String g = spell_list[i].gesture;
+	  Spell sp = spell_list[i];
+	  if (!sp.learned) continue;
+	  String g = sp.gesture;
 	  int k = g.length();
 	  if (k > hist.cur - hist.start[h] + 1) continue;
 	  k--;
@@ -1713,7 +1723,7 @@ public class MainView extends View {
 	  }
 	  if (0 > k) {
 	    // At last we have a match.
-	    add_ready_spell(h, spell_list[i]);
+	    add_ready_spell(h, sp);
 	  }
 	}
       }
@@ -1969,6 +1979,24 @@ public class MainView extends View {
     }
   }
 
+  public class FearSpell extends Spell {
+    FearSpell() {
+      init("Fear", "SWD", R.drawable.confusion, R.string.SWDdesc, 1);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  // Only affects humans.
+	  if (target == 1 || target == 0) {
+	    being_list[target].status = Status.FEAR;
+	  }
+	  board.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
   public class ProtectionSpell extends Spell {
     ProtectionSpell() {
       init("Protection From Evil", "WWP", R.drawable.shield, R.string.WWPdesc, 0);
@@ -2026,6 +2054,7 @@ public class MainView extends View {
     static public final int OK = 0;
     static public final int CONFUSED = 1;
     static public final int CHARMED = 2;
+    static public final int FEAR = 3;
   }
 
   static int[] summon_count;
