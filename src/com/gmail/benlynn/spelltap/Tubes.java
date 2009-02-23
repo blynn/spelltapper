@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.*;
 
 import android.util.Log;
+import android.os.Handler;
+import android.os.Message;
 
 class Tubes extends SpellTapMachine {
   Tubes(SpellTap st) { super(st); }
@@ -12,6 +14,40 @@ class Tubes extends SpellTapMachine {
     spelltap.mainview.set_state_netduel();
     spelltap.goto_mainframe();
   }
+
+  static String reply;
+  static class NetThread extends Thread {
+    NetThread(String msg) {
+      message = msg;
+      cmon_handler = new CmonHandler();
+    }
+    public void run() {
+      reply = send(message);
+      if (null == reply) {
+	cmon_handler.sendEmptyMessageDelayed(0, 3000);
+      } else if ('-' == reply.charAt(0)) {
+	cmon_handler.sendEmptyMessageDelayed(0, 3000);
+      } else {
+	MainView.net_handler.sendEmptyMessage(0);
+      }
+    }
+    String message;
+    class CmonHandler extends Handler {
+      @Override
+      public void handleMessage(Message msg) {
+	Log.i("Cmon", "retrying");
+	reply = send_retry();
+	if (null == reply) {
+	  sendEmptyMessageDelayed(0, 3000);
+	} else if ('-' == reply.charAt(0)) {
+	  sendEmptyMessageDelayed(0, 3000);
+	} else {
+	  MainView.net_handler.sendEmptyMessage(0);
+	}
+      }
+    }
+  }
+  static Handler cmon_handler;
 
   static int newgame() {
     String r = send("N");
@@ -27,10 +63,12 @@ class Tubes extends SpellTapMachine {
     return send(s);
   }
 
-  static String send_move(String move) {
+  static void send_move(String move) {
     String s = (char) ('a' + netid) + move;
-    return send(s);
+    net_thread = new NetThread(s);
+    net_thread.run();
   }
+  static Thread net_thread;
 
   private static String send(String msg) {
     Socket sock = null;

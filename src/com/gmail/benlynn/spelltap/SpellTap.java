@@ -169,7 +169,6 @@ Log.i("MV", "Saving " + state);
   public void onPause() {
 Log.i("MV", "Pause");
     super.onPause();
-    MainView.is_retrying = false;
   }
 
   static final int MENU_SPELLBOOK = 1;

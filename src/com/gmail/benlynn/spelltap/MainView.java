@@ -725,20 +725,34 @@ public class MainView extends View {
     s += (char) ('0' + count);
     s += s2;
 
-    decode_move(turn, Tubes.send_move(s));
+    opp_ready = false;
+    print("Waiting for opponent...");
+    invalidate();
+    // Spawn a thread to send move over the network, so we can keep handling
+    // user input.
+    Tubes.send_move(s);
+  }
+
+  static NetHandler net_handler;
+  class NetHandler extends Handler {
+    @Override
+    public void handleMessage(Message msg) {
+      // Valid reply received from network.
+      try {
+	Tubes.net_thread.join();
+      } catch (InterruptedException e) {
+      }
+      Log.i("Reply", Tubes.reply);
+      decode_move(oppmove, Tubes.reply);
+    }
   }
 
   void decode_move(SpellTapMove turn, String r) {
     if (null == r || r.length() < 7) {
-      opp_error = true;
-      opp_ready = false;
+      // TODO: Do something for invalid messages!
       return;
     }
     // TODO: Check message is valid!
-    if ('-' == r.charAt(0)) {
-      opp_ready = false;
-      return;
-    }
     // Decode gestures, spells and spell targets.
     for (int h = 0; h < 2; h++) {
       turn.gest[h] = r.charAt(h) - '0';
@@ -751,6 +765,10 @@ public class MainView extends View {
       turn.attack_source[n] = decode_target(r.charAt(7 + 2 * n));
       turn.attack_target[n] = decode_target(r.charAt(7 + 2 * n + 1));
     }
+    opp_error = false;
+    opp_ready = true;
+    is_waiting = false;
+    resolve();
   }
 
   class NetAgent extends Agent {
@@ -920,6 +938,7 @@ public class MainView extends View {
     charmed_hand = -1;
     freeze_gesture = false;
     choosing_charm = false;
+    net_handler = new NetHandler();
   }
   static String emptyleftmsg;
   static String emptyrightmsg;
@@ -1263,37 +1282,20 @@ public class MainView extends View {
 
     opp_error = false;
     opp_ready = true;
-    print("Waiting for opponent...");
     agent.move(oppmove);
     if (opp_error) {
       Log.i("MV", "Error getting opponent moves");
     }
+    // In local duels, opp_ready should still be true.
     if (opp_ready) {
       resolve();
       return;
     }
-    invalidate();
-    is_retrying = true;
-    cmon_handler.sendEmptyMessageDelayed(0, 3000);
+    // Otherwise we wait for network code to call resolve().
+    is_waiting = true;
   }
 
-  static boolean is_retrying;
-
-  private CmonHandler cmon_handler = new CmonHandler();
-  class CmonHandler extends Handler {
-    @Override
-    public void handleMessage(Message msg) {
-      Log.i("Cmon", "retrying");
-      opp_ready = true;
-      opp_error = false;
-      decode_move(oppmove, Tubes.send_retry());
-      if (opp_ready) {
-	resolve();
-	return;
-      }
-      if (is_retrying) sendEmptyMessageDelayed(0, 3000);
-    }
-  }
+  static boolean is_waiting;
 
   // Insert spells by priority.
   private void insert_spell(SpellCast sc) {
@@ -1502,6 +1504,7 @@ public class MainView extends View {
     being_list[0].heal_full();
     being_list[1].heal_full();
     set_main_state(STATE_NORMAL);
+    is_waiting = false;
   }
 
   void post_charm() {
