@@ -195,6 +195,10 @@ Log.i("MV", "Pause");
       Log.i("TODO", "Handle back button");
       if (spellbook_is_open) {
 	close_spellbook();
+	return true;
+      }
+      if (is_in_town()) {
+	return super.onKeyDown(keyCode, event);
       }
       return true;
     }
@@ -338,6 +342,7 @@ Log.i("MV", "Pause");
       set_spell_knowledge(Wisdom.ALL_LEVEL_1);
       break;
     case 13:  // Net play.
+      set_spell_knowledge(Wisdom.ALL_LEVEL_1);
       break;
     case 128:
       set_spell_knowledge(Wisdom.ALL_SPELLS);
@@ -350,6 +355,7 @@ Log.i("MV", "Pause");
     curmach = mach[i];
     curmach.run();
   }
+  boolean is_in_town() { return townview.stmach == curmach; }
   void goto_town() {
     curmach = townview.stmach;
     curmach.run();
@@ -467,5 +473,5 @@ Log.i("MV", "Pause");
   static Button butclo;
   static View butv;
   static Tubes tubes;
-  static int state = 11;
+  static int state = 0;
 }
