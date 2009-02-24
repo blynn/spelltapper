@@ -83,7 +83,7 @@ abstract public class Agent {
     String name() { return "Bloody Ripper"; }
     String name_full() { return "Bloody Ripper"; }
     int life() { return 5; }
-    int bitmap_id() { return R.drawable.clown; }
+    int bitmap_id() { return R.drawable.ripper; }
     int hand;
   }
 
@@ -155,8 +155,77 @@ abstract public class Agent {
     int count;
   }
 
+  // Level 1 boss.
+  static class AlTeffor extends Agent {
+    AlTeffor() {
+      hand = 0;
+      count = 0;
+    }
+    void move(SpellTapMove turn) {
+      switch(count) {
+	case 0:
+	  turn.gest[0] = Gesture.PALM;
+	  turn.spell[0] = indexOfSpellGesture("P");
+	  turn.spell_target[0] = 1;
+	  turn.gest[1] = Gesture.WAVE;
+	  turn.spell[1] = -1;
+	  turn.spell_target[1] = -1;
+	  break;
+	case 1:
+	  turn.gest[0] = Gesture.PALM;
+	  turn.spell[0] = indexOfSpellGesture("P");
+	  turn.spell_target[0] = 0;
+	  turn.gest[1] = Gesture.FINGERS;
+	  turn.spell[1] = -1;
+	  turn.spell_target[1] = -1;
+	  break;
+	case 2:
+	  turn.gest[0] = Gesture.KNIFE;
+	  turn.spell[0] = indexOfSpellGesture("K");
+	  turn.spell_target[0] = 0;
+	  turn.gest[1] = Gesture.PALM;
+	  turn.spell[1] = indexOfSpellGesture("WFP");
+	  turn.spell_target[1] = 0;
+	  break;
+	case 3:
+	  turn.gest[0] = Gesture.WAVE;
+	  turn.spell[0] = -1;
+	  turn.spell_target[0] = -1;
+	  turn.gest[1] = Gesture.WAVE;
+	  turn.spell[1] = -1;
+	  turn.spell_target[1] = -1;
+	  break;
+	case 4:
+	  turn.gest[0] = Gesture.FINGERS;
+	  turn.spell[0] = -1;
+	  turn.spell_target[0] = -1;
+	  turn.gest[1] = Gesture.FINGERS;
+	  turn.spell[1] = -1;
+	  turn.spell_target[1] = -1;
+	  break;
+	case 5:
+	  turn.gest[0] = Gesture.PALM;
+	  turn.spell[0] = indexOfSpellGesture("WFP");
+	  turn.spell_target[0] = 0;
+	  turn.gest[1] = Gesture.PALM;
+	  turn.spell[1] = indexOfSpellGesture("WFP");
+	  turn.spell_target[1] = 0;
+	  break;
+	  // Do or die! By now, we've lost or won.
+      }
+      count++;
+    }
+    String name() { return "Al Teffor"; }
+    String name_full() { return "Al Teffor, Destroyer of Windows"; }
+    int life() { return 5; }
+    int bitmap_id() { return R.drawable.alteffor; }
+    int hand;
+    int count;
+  }
+
   static Agent getDummy() { return new DummyAgent(); }
   static Agent getStabatha() { return new Stabatha(); }
   static Agent getBloodyRipper() { return new BloodyRipper(); }
   static Agent getSendin() { return new Sendin(); }
+  static Agent getAlTeffor() { return new AlTeffor(); }
 }

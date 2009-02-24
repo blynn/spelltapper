@@ -52,8 +52,8 @@ class School extends SpellTapMachine {
       R.string.cureteach3,
       R.string.cureteach4);
   }
-  void set_state_duel3advice() {
-    machine = new AdviceMachine(R.string.duel3advice);
+  void set_state_generic_advice() {
+    machine = new AdviceMachine(R.string.generic_advice);
   }
   void set_state_lvl1lesson() {
     machine = new LectureMachine(
@@ -61,6 +61,12 @@ class School extends SpellTapMachine {
       R.string.lvl1teach2,
       R.string.lvl1teach3,
       R.string.lvl1teach4);
+  }
+  void set_state_graduate() {
+    machine = new LectureMachine(
+      R.string.graduate1,
+      R.string.graduate2,
+      R.string.graduate3);
   }
 
   class IntroMachine extends Machine {

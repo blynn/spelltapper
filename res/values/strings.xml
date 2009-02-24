@@ -48,7 +48,7 @@
     <string name="SDtutwrong">That\'s not right. Let\'s start again.</string>
 
     <string name="talkabouttilt1">There\'s a showier way to cast spells than tapping the bottom of the screen.</string>
-    <string name="talkabouttilt2">After gesturing, tilt the screen up vertically. When the bottom line flashes, tilt the screen back to its original position to confirm your choices.</string>
+    <string name="talkabouttilt2">After gesturing, tilt the screen up vertically. When the bottom line flashes, tilt the screen back to its original position.</string>
     <string name="talkabouttilt3">You must have a gesture in each hand for this to work.</string>
     <string name="meetforwfp">Now, <i>Missile</i> is useful, but can be blocked by <i>Shield</i>. I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
 
@@ -71,12 +71,16 @@
 <string name="cureteach3">And <b>SFW</b> is <i>Summon Goblin</i>, which summons a goblin to fight for you.</string>
 <string name="cureteach4">You encountered two goblins before. Each has 1 point of health and attacks for 1 damage.</string>
 
-<string name="duel3advice">Best of luck in your next battle!</string>
+<string name="generic_advice">Best of luck in your next battle!</string>
 
 <string name="lvl1teach1">There are two more Level 1 spells.</string>
 <string name="lvl1teach2"><b>WWP</b> is <i>Protection From Evil</i>. It acts as a Shield that lasts for 4 turns, including the turn it is cast.</string>
-<string name="lvl1teach3"><b>PSDF</b> is <i>Charm Person</i>, which forces the opponent to make a gesture of your choice on one hand.</string>
-<string name="lvl1teach4"><i>Charm Person</i> and <i>Confusion</i> are both psychological spells, and will cancel each other if cast on the same target.</string>
+<string name="lvl1teach3"><b>PSDF</b> is <i>Charm Person</i>, which forces the opponent to make a gesture of your choice on one hand. It also cancels with <i>Confusion</i>.</string>
+<string name="lvl1teach4">Your next challenger is waiting for you at the Arena.</string>
+
+<string name="graduate1">Congratulations! You are now a Level 1 Wizard!</string>
+<string name="graduate2">You can now challenge other players at the Tavern.</string>
+<string name="graduate3">Gain experience by casting spells in duels, and reach higher levels.</string>
 
 <string name="bug">Oops! You\'ve uncovered a bug!</string>
 <string name="win">You win!</string>

@@ -375,6 +375,7 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  set_gesture_knowledge(Wisdom.KNIFE_AND_PALM);
+	  set_spell_knowledge(Wisdom.STABNSHIELD);
 	  reset_game();
 	  board.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);

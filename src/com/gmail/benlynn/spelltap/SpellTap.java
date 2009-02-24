@@ -264,7 +264,7 @@ Log.i("MV", "Pause");
     if (state > 2) {
       unlock_place(SpellTap.PLACE_PIT);
     }
-    if (state > 12) {
+    if (state > 13) {
       unlock_place(SpellTap.PLACE_NET);
     }
     int i;
@@ -329,7 +329,7 @@ Log.i("MV", "Pause");
     case 10:  // Duel 3.
       set_spell_knowledge(Wisdom.UP_TO_DFW);
       pit.set_state_duel(Agent.getSendin());
-      school.set_state_duel3advice();
+      school.set_state_generic_advice();
       dojo.set_state_dummy(5);
       break;
     case 11:  // Learn 2 remaining Level 1 spells.
@@ -338,14 +338,28 @@ Log.i("MV", "Pause");
       school.set_state_lvl1lesson();
       dojo.set_state_dummy(5);
       break;
-    case 12:
+    case 12:  // Level 1 boss.
       set_spell_knowledge(Wisdom.ALL_LEVEL_1);
+      pit.set_state_duel(Agent.getAlTeffor());
+      school.set_state_generic_advice();
+      dojo.set_state_dummy(5);
       break;
-    case 13:  // Net play.
+    case 13:  // Graduation.
       set_spell_knowledge(Wisdom.ALL_LEVEL_1);
+      pit.set_state_closed();
+      school.set_state_graduate();
+      dojo.set_state_dummy(5);
+      break;
+    case 14:  // Net play.
+      set_spell_knowledge(Wisdom.ALL_LEVEL_1);
+      pit.set_state_closed();
+      school.set_state_generic_advice();
+      dojo.set_state_dummy(5);
       break;
     case 128:
       set_spell_knowledge(Wisdom.ALL_SPELLS);
+      pit.set_state_closed();
+      school.set_state_generic_advice();
       dojo.set_state_dummy(50);
       break;
     }
