@@ -79,8 +79,8 @@
 <string name="lvl1teach4">Your next challenger is waiting for you at the Arena.</string>
 
 <string name="graduate1">Congratulations! You are now a Level 1 Wizard!</string>
-<string name="graduate2">You can now challenge other players at the Tavern.</string>
-<string name="graduate3">Gain experience by casting spells in duels, and reach higher levels.</string>
+<string name="graduate2">Pick fights with other wizards at the Tavern.</string>
+<string name="graduate3">Earn experience by casting spells in duels, and gain higher levels.</string>
 
 <string name="bug">Oops! You\'ve uncovered a bug!</string>
 <string name="win">You win!</string>

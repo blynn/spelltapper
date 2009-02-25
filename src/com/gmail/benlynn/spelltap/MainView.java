@@ -498,7 +498,6 @@ public class MainView extends View {
 	case -1:
 	  set_gesture_knowledge(Wisdom.KPS);
 	  init_opponent(Agent.getDummy());
-	  reset_game();
 	  board.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
 	  jack_says(R.string.SDtut0);
@@ -508,8 +507,7 @@ public class MainView extends View {
 	  // Restore life in case player has been messing around.
 	  being_list[0].start_life(5);
 	  being_list[1].start_life(5);
-	  hist.reset();
-	  opphist.reset();
+	  reset_game();
 	  jack_says(R.string.SDtut);
 	  state = 1;
 	  return;
@@ -1309,7 +1307,8 @@ public class MainView extends View {
   static int tilt_state;
   void tilt_up() {
     if (TILT_AWAIT_UP != tilt_state) return;
-    if (STATE_NORMAL != main_state) return;
+    if (STATE_VOID == main_state) return;
+    if (STATE_GESTURE_ONLY == main_state) return;
     // Tilt only works when there are gestures in both hands not counting
     // charmed hands, or when the player has chosen a gesture for the opponent.
     if ((choice[0] != Gesture.NONE && choice[1] != Gesture.NONE) ||
@@ -1636,6 +1635,7 @@ public class MainView extends View {
     being_list[1].heal_full();
     set_main_state(STATE_NORMAL);
     is_waiting = false;
+    tilt_state = TILT_AWAIT_UP;
   }
 
   void new_round2() {
