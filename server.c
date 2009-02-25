@@ -23,8 +23,7 @@ void handle(char *input) {
     i += n;
   }
   void fin() {
-    reply[i] = '\n';
-    reply[i + 1] = '\0';
+    reply[i] = '\0';
   }
 
   switch(*s) {
@@ -139,9 +138,9 @@ int main(int argc, char **argv) {
 	char buffer[128];
 	if ((res = SDLNet_TCP_Recv(csd, buffer, 128 - 1)) > 0) {
 	  buffer[res] = '\0';
-	  printf("%d recv '%s'\n", res, buffer);
+	  printf("recv '%s'\n", buffer);
 	  handle(buffer);
-	  printf("sending '%s'\n", reply);
+	  printf("send '%s'\n", reply);
 	  SDLNet_TCP_Send(csd, reply, strlen(reply));
 	} else {
 	  printf("error or bug: %d\n", res);

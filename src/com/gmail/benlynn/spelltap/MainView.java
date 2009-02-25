@@ -5,6 +5,7 @@
 // Resize event.
 // Clean up get_ready() nonsense.
 // Stop handlers on init.
+// Hide spells on end of turn?
 package com.gmail.benlynn.spelltap;
 
 import android.content.Context;
@@ -2134,10 +2135,10 @@ public class MainView extends View {
     }
     void start_life(int n) {
       life_max = n;
-      dead = false;
       heal_full();
     }
     void heal_full() {
+      dead = false;
       life = life_max;
       lifeline = Integer.toString(life) + "/" + Integer.toString(life);
     }

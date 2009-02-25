@@ -92,18 +92,22 @@ class Tubes extends SpellTapMachine {
 
   private static String send(String msg) {
     Socket sock = null;
-    PrintWriter out = null;
-    BufferedReader in = null;
+    DataOutputStream out = null;
+    DataInputStream in = null;
+    byte[] buf = new byte[16];
 
     try {
       sock = new Socket();
       sock.bind(null);
       sock.connect(new InetSocketAddress("192.168.1.101", 3333), 2000);
-      out = new PrintWriter(sock.getOutputStream(), true);
-      // TODO(blynn): Lose the BufferedReader and PrintWriter.
-      in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-      out.println(msg);
-      String response = in.readLine();
+      out = new DataOutputStream(sock.getOutputStream());
+      in = new DataInputStream(sock.getInputStream());
+      out.writeBytes(msg);
+      int count = in.read(buf, 0, 16);
+      Log.i("Count = ", "" + count);
+      if (count < 1) return null;
+      String response = new String(buf, 0, count);
+      Log.i("resp = ", "" + response);
       out.close();
       in.close();
       sock.close();

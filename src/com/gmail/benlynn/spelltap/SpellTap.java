@@ -189,18 +189,47 @@ Log.i("MV", "Pause");
     return false;
   }
 
+  void warp(int n) {
+    state = n;
+    // When the G1 is opened/closed, this entire object is recreated thus
+    // there is no more to do. TODO(blynn): detect opening/closing of the
+    // device and ignore it, and then warp will have to do more work.
+  }
+
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
-    if (keyCode == KeyEvent.KEYCODE_BACK) {
-      Log.i("TODO", "Handle back button");
-      if (spellbook_is_open) {
-	close_spellbook();
+    switch(keyCode) {
+      case KeyEvent.KEYCODE_BACK:
+	Log.i("TODO", "Handle back button");
+	if (spellbook_is_open) {
+	  close_spellbook();
+	  return true;
+	}
+	if (is_in_town()) {
+	  return super.onKeyDown(keyCode, event);
+	}
 	return true;
-      }
-      if (is_in_town()) {
-	return super.onKeyDown(keyCode, event);
-      }
-      return true;
+      case KeyEvent.KEYCODE_A:
+	warp(0);
+	return true;
+      case KeyEvent.KEYCODE_B:
+	warp(14);
+	return true;
+      case KeyEvent.KEYCODE_C:
+	warp(128);
+	return true;
+      case KeyEvent.KEYCODE_1:
+	warp(3);
+	return true;
+      case KeyEvent.KEYCODE_2:
+	warp(8);
+	return true;
+      case KeyEvent.KEYCODE_3:
+	warp(10);
+	return true;
+      case KeyEvent.KEYCODE_4:
+	warp(12);
+	return true;
     }
     return super.onKeyDown(keyCode, event);
   }
@@ -487,5 +516,5 @@ Log.i("MV", "Pause");
   static Button butclo;
   static View butv;
   static Tubes tubes;
-  static int state = 0;
+  static int state = 14;
 }
