@@ -285,6 +285,11 @@ Log.i("MV", "Pause");
 
   void run() {
     // Fragile code. Take care!
+    if (state > 13) {
+      allow_confirm_empty = false;
+    } else {
+      allow_confirm_empty = true;
+    }
     mainframe.setVisibility(View.GONE);
     if (state > 0) {
       unlock_place(SpellTap.PLACE_DOJO);
@@ -517,4 +522,5 @@ Log.i("MV", "Pause");
   static View butv;
   static Tubes tubes;
   static int state = 14;
+  static boolean allow_confirm_empty;
 }

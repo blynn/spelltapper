@@ -66,7 +66,8 @@ class School extends SpellTapMachine {
     machine = new LectureMachine(
       R.string.graduate1,
       R.string.graduate2,
-      R.string.graduate3);
+      R.string.graduate3,
+      R.string.graduate4);
   }
 
   class IntroMachine extends Machine {

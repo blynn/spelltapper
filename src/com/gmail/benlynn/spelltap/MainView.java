@@ -1005,7 +1005,7 @@ public class MainView extends View {
     }
 
     msg = "";
-    bmcorpse = BitmapFactory.decodeResource(getResources(), R.drawable.corpse);
+    bmcorpse = get_bitmap(R.drawable.corpse);
     oppmove = new SpellTapMove();
 
     gesture = new Gesture[9];
@@ -1283,7 +1283,8 @@ public class MainView extends View {
 	    h = 1;
 	    dirx *= -1;
 	  }
-	  if (h == charmed_hand || freeze_gesture) {
+	  if (h == charmed_hand || freeze_gesture ||
+	      TILT_AWAIT_DOWN == tilt_state) {
 	    return true;
 	  }
 	  choice[h] = Gesture.flattenxy(dirx, diry);
@@ -1305,16 +1306,24 @@ public class MainView extends View {
     return false;
   }
 
+  // Return true if there are gestures in both hands, or we are charmed
+  // and the other hand is gesturing, or when the player has chosen a gesture
+  // for the opponent.
+  boolean is_confirmable() {
+    if ((choice[0] != Gesture.NONE && choice[1] != Gesture.NONE) ||
+        (-1 != charmed_hand && choice[1 - charmed_hand] != Gesture.NONE) ||
+	(choosing_charm && (choice[0] != Gesture.NONE || choice[1] != Gesture.NONE))) {
+      return true;
+    }
+    return false;
+  }
+
   static int tilt_state;
   void tilt_up() {
     if (TILT_AWAIT_UP != tilt_state) return;
     if (STATE_VOID == main_state) return;
     if (STATE_GESTURE_ONLY == main_state) return;
-    // Tilt only works when there are gestures in both hands not counting
-    // charmed hands, or when the player has chosen a gesture for the opponent.
-    if ((choice[0] != Gesture.NONE && choice[1] != Gesture.NONE) ||
-        (-1 != charmed_hand && choice[1 - charmed_hand] != Gesture.NONE) ||
-	(choosing_charm && (choice[0] != Gesture.NONE || choice[1] != Gesture.NONE))) {
+    if (is_confirmable()) {
       tilt_state = TILT_AWAIT_DOWN;
       board.set_notify_me(tilt_done_handler);
       board.animate_tilt();
@@ -1351,6 +1360,10 @@ public class MainView extends View {
   static boolean opp_ready;
 
   private void confirm_move() {
+    if (spelltap.allow_confirm_empty || is_confirmable()) confirm_move_body();
+  }
+
+  private void confirm_move_body() {
     tilt_state = TILT_DISABLED;
     board.animation_reset();  // Stop tilt animation if it's still going.
     // If Charm Person has been cast on opponent, must first send
@@ -1755,7 +1768,7 @@ public class MainView extends View {
       int n = gesture.length();
       purty.setSpan(new StyleSpan(Typeface.BOLD), 0, n, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
       purty.setSpan(new StyleSpan(Typeface.ITALIC), n + 1, n + name.length() + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-      bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
+      bitmap = get_bitmap(bitmapid);
       target = def_target;
       learned = false;
     }
@@ -1903,9 +1916,13 @@ public class MainView extends View {
     }
   }
 
-  public class SummonGoblinSpell extends Spell {
-    SummonGoblinSpell() {
-      init("Summon Goblin", "SFW", R.drawable.summon1, R.string.SFWdesc, 0);
+  public class SummonSpell extends Spell {
+    void init_summon(String i_monster, String gesture,
+	int bitmapid, int description, int monsterbitmapid, int i_level) {
+      init("Summon " + monster, gesture, bitmapid, description, 0);
+      monster_bmid = monsterbitmapid;
+      level = i_level;
+      monster = i_monster;
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -1913,17 +1930,28 @@ public class MainView extends View {
 	  is_finished = true;
 	  if (-1 != target) {
 	    int k = being_list[target].controller;
-	    Being b = being_list[being_list_count] = new Being("Goblin", R.drawable.goblin, k);
+	    Being b = being_list[being_list_count] =
+		new Being(monster, monster_bmid, k);
 	    being_list_count++;
-	    b.start_life(1);
+	    b.start_life(level);
 	    b.target = 1 - k;
-	    Log.i("TODO", "fade in goblin");
+	    Log.i("TODO", "fade in monster_bitmap");
 	    board.animate_spell(target, bitmap);
 	  } else {
 	    board.animate_delay();
 	  }
 	  return;
       }
+    }
+    int level;
+    String monster;
+    int monster_bmid;
+  }
+
+  public class SummonGoblinSpell extends SummonSpell {
+    SummonGoblinSpell() {
+      init_summon("Goblin", "SFW", R.drawable.summon1, R.string.SFWdesc,
+	  R.drawable.goblin, 1);
     }
   }
 
@@ -2109,7 +2137,7 @@ public class MainView extends View {
     }
     void setup(String init_name, int bitmapid, int life) {
       name = init_name;
-      bitmap = BitmapFactory.decodeResource(getResources(), bitmapid);
+      bitmap = get_bitmap(bitmapid);
       start_life(life);
     }
     void heal(int amount) {
@@ -2206,6 +2234,10 @@ public class MainView extends View {
   }
   void reset_being_pos() {
     for (int i = 0; i < 16; i++) being_pos[i].being = null;
+  }
+
+  Bitmap get_bitmap(int id) {
+    return BitmapFactory.decodeResource(getResources(), id);
   }
 
   static SpellTap spelltap;
