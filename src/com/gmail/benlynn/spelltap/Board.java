@@ -253,7 +253,11 @@ public class Board extends View {
 	  canvas.drawText("?", mx + b.w - 8, my + 16 - 4, Easel.octarine);
 	  break;
       }
-      canvas.drawText(b.lifeline, mx, my + 16 - 4, Easel.green_paint);
+      if (b.dead) {
+	canvas.drawText(b.lifeline, mx, my + 16 - 4, Easel.red_paint);
+      } else {
+	canvas.drawText(b.lifeline, mx, my + 16 - 4, Easel.green_paint);
+      }
   }
 
   @Override

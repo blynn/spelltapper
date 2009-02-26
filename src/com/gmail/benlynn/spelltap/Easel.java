@@ -16,6 +16,9 @@ class Easel {
     green_paint = new Paint();
     green_paint.setARGB(255, 127, 255, 125);
 
+    red_paint = new Paint();
+    red_paint.setARGB(255, 255, 63, 63);
+
     grey_text = new Paint();
     grey_text.setARGB(255, 143, 143, 143);
     grey_rtext = new Paint(grey_text);
@@ -46,6 +49,7 @@ class Easel {
   static Paint grey_text, grey_rtext;
   static Paint white_text, white_rtext;
   static Paint green_paint;
+  static Paint red_paint;
   static Paint octarine;
   static Paint status_paint;
   static Paint sel_paint;
