@@ -20,7 +20,7 @@
     <string name="dummytut"><i>Stab</i> this wooden dummy 3 times to destroy it.</string>
     <string name="dummytut1">Do the <b>K</b> (<b>Knife</b>) gesture in either hand.</string>
     <string name="dummytut2">Now tap the bottom of the screen.</string>
-    <string name="dummytut3">Nice! Repeat these steps to finish off the dummy.</string>
+    <string name="dummytut3">Nice! Repeat to finish off the dummy.</string>
     <string name="dummytutwin">Well done. But let\'s see how you handle hostile targets.</string>
     <string name="dummytutdraw">Very funny, though strictly speaking you did destroy the dummy. You\'re lucky I know the Raise Dead spell.</string>
     <string name="dummytutlose">Very funny. You\'re lucky I know the Raise Dead spell. We\'ll move on, even though you lost to a wooden dummy.</string>

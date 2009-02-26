@@ -36,6 +36,7 @@ public class MainView extends View {
   // If 0 or 1, represents left or right spell icon, otherwise represents
   // controlled monster.
   static int drag_i;
+  static boolean okstate;
 
   static boolean is_animating;
   static BeingPosition being_pos[];
@@ -79,6 +80,7 @@ public class MainView extends View {
   void go_back() {
     // TODO: Confirm player wants to leave.
     // TODO: Clean up, e.g. stop network retry.
+    help_arrow_off();
     spelltap.goto_town();
   }
 
@@ -221,13 +223,23 @@ public class MainView extends View {
 	  state = 1;
 	  return;
 	case 1:
-	  // TODO: Draw helper arrows on interface.
+	  arr_x0 = 75;
+	  arr_y0 = ystatus - 8;
+	  arr_x1 = 75;
+	  arr_y1 = ylower + 32;
+	  help_arrow_on();
 	  jack_tip(R.string.howtoknife2);
 	  set_main_state(STATE_GESTURE_TEACH);
 	  state = 2;
 	  return;
 	case 2:
 	  if (Gesture.KNIFE == choice[0]) {
+	    help_arrow_off();
+	    arr_x0 = 320 - 75;
+	    arr_y0 = ystatus - 8;
+	    arr_x1 = 320 - 75;
+	    arr_y1 = ylower + 32;
+	    help_arrow_on();
 	    jack_tip(R.string.howtoknifepass1);
 	    state = 3;
 	    return;
@@ -236,6 +248,7 @@ public class MainView extends View {
 	  }
 	  return;
 	case 3:
+	  help_arrow_off();
 	  if (Gesture.KNIFE == choice[1]) {
 	    jack_says(R.string.howtoknifepass2);
 	    state = 4;
@@ -245,11 +258,17 @@ public class MainView extends View {
 	  }
 	  return;
 	case 4:
+	  arr_x0 = 75;
+	  arr_y0 = ystatus - 8;
+	  arr_x1 = 75;
+	  arr_y1 = ylower + 32;
+	  help_arrow_on();
 	  jack_tip(R.string.howtoknifeonemore);
 	  state = 5;
 	  return;
 	case 5:
 	  if (choice[0] == Gesture.KNIFE) {
+	    help_arrow_off();
 	    jack_says(R.string.howtoknifepass3);
 	    state = 6;
 	  }
@@ -1042,6 +1061,7 @@ public class MainView extends View {
     choosing_charm = false;
     net_handler = new NetHandler();
     is_showing_modal = false;
+    is_help_arrow_on = false;
   }
   static String emptyleftmsg;
   static String emptyrightmsg;
@@ -1158,9 +1178,45 @@ public class MainView extends View {
     y += 50;
     canvas.drawRect(0, y, 50 - 1, y + 50 - 1, Easel.paint);
     */
+
+    if (is_help_arrow_on) {
+      canvas.drawLine(arr_x0, arr_y0, arr_x2, arr_y2, Easel.arrow_paint);
+    }
   }
 
-  static boolean okstate;
+  // Drives animation for helper arrows in tutorials.
+  private RefreshHandler anim_handler = new RefreshHandler();
+  class RefreshHandler extends Handler {
+    @Override
+    public void handleMessage(Message msg) {
+      MainView.this.updateHelpArrow();
+      MainView.this.invalidate();
+    }
+
+    public void sleep(long delayMillis) {
+      this.removeMessages(0);
+      if (is_help_arrow_on) {
+	sendEmptyMessageDelayed(0, delayMillis);
+      }
+    }
+  }
+  void updateHelpArrow() {
+    if (frame <= 16) {
+      arr_x2 = arr_x0 + (arr_x1 - arr_x0) * frame / 16;
+      arr_y2 = arr_y0 + (arr_y1 - arr_y0) * frame / 16;
+    }
+    frame++;
+    if (frame > 32) frame = 0;
+    anim_handler.sleep(64);
+  }
+  void help_arrow_on() {
+    is_help_arrow_on = true;
+    frame = 1;
+    updateHelpArrow();
+  }
+  void help_arrow_off() {
+    is_help_arrow_on = false;
+  }
 
   private void choose_spell(int h, int i) {
     // Assumes i is a valid choice for hand h.
@@ -2291,4 +2347,7 @@ public class MainView extends View {
   static final int TILT_DISABLED = 2;
   static boolean is_showing_modal;
   static boolean is_confirmable;
+  static boolean is_help_arrow_on;
+  static float arr_x0, arr_y0, arr_x1, arr_y1, frame;
+  static float arr_x2, arr_y2;
 }
