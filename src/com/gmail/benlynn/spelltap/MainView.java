@@ -3,7 +3,6 @@
 // Victory/defeat screen with stats.
 // Psych spell conflict.
 // Resize event.
-// Clean up get_ready() nonsense.
 // Stop handlers on init.
 // Hide spells on end of turn?
 package com.gmail.benlynn.spelltap;
@@ -53,7 +52,7 @@ public class MainView extends View {
   static int lastchoice[];
   static History hist, opphist;
   static final int ylower = 128 + 144 + 4 * 4;
-  static final int ystatus = ylower + 32 + 2 * 50 + 16 - 4;
+  static final int ystatus = ylower + 24 + 2 * 50;
   static final int yicon = 64 + 48 + 2 * 4;
   static String spell_text[];
   static int ready_spell_count[];
@@ -308,7 +307,6 @@ public class MainView extends View {
 	state = 2;
 	return;
       case 2:
-	get_ready();
 	state = 3;
         return;
       case 3:
@@ -371,7 +369,6 @@ public class MainView extends View {
         return;
       case 1:
 	set_main_state(STATE_NORMAL);
-        get_ready();
 	state = 2;
         return;
       case 2:
@@ -474,7 +471,6 @@ public class MainView extends View {
 	  state = 1;
 	  board.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
-	  get_ready();
 	  invalidate();
 	  return;
 	case 1:
@@ -499,7 +495,6 @@ public class MainView extends View {
 	reset_game();
 	board.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
-	get_ready();
 	invalidate();
 	state = 1;
 	return;
@@ -539,7 +534,6 @@ public class MainView extends View {
 	  return;
 	case 2:
 	  clear_choices();
-	  get_ready();
 	  set_main_state(STATE_ON_END_ROUND);
 	  state = 3;
 	  invalidate();
@@ -557,7 +551,6 @@ public class MainView extends View {
 	  return;
 	case 4:
 	  set_gesture_knowledge(Wisdom.DKPS);
-	  get_ready();
 	  state = 5;
 	  invalidate();
 	  return;
@@ -581,7 +574,6 @@ public class MainView extends View {
 	  return;
 	case 8:
 	  set_main_state(STATE_NORMAL);
-	  get_ready();
 	  state = 9;
 	  return;
 	case 9:
@@ -614,7 +606,6 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  clear_choices();
-	  get_ready();
 	  set_main_state(STATE_ON_END_ROUND);
 	  state = 2;
 	  invalidate();
@@ -631,7 +622,6 @@ public class MainView extends View {
 	  return;
 	case 3:
 	  set_gesture_knowledge(Wisdom.ALL_BUT_C);
-	  get_ready();
 	  state = 4;
 	  invalidate();
 	  return;
@@ -647,7 +637,6 @@ public class MainView extends View {
 	  }
 	  return;
 	case 5:
-	  get_ready();
 	  invalidate();
 	  state = 6;
 	  return;
@@ -912,7 +901,6 @@ public class MainView extends View {
 	  board.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
           state = 1;
-	  get_ready();
 	  invalidate();
 	  return;
 	case 1:
@@ -931,6 +919,7 @@ public class MainView extends View {
     spell_choice[0] = spell_choice[1] = -1;
     spell_text[0] = spell_text[1] = "";
     arrow_view.bmspell[0] = arrow_view.bmspell[1] = null;
+    is_confirmable = false;
   }
 
   class History {
@@ -1057,10 +1046,6 @@ public class MainView extends View {
   static String emptyleftmsg;
   static String emptyrightmsg;
 
-  public void get_ready() {
-    print("Draw gestures, and tap here to confirm.");
-  }
-
   public void add_spell(Spell sp, int priority) {
     spell_list[spell_list_count] = sp;
     sp.index = spell_list_count;
@@ -1091,28 +1076,30 @@ public class MainView extends View {
     canvas.drawText(s, 320, y, Easel.grey_rtext);
 
     // Player history.
-    y = ylower - 4;
+    y = ylower - 2;
     s = "";
     for (int i = hist.start[0]; i < hist.cur; i++) {
       s += " " + gesture[hist.gest[i][0]].abbr;
     }
-    canvas.drawText(s, 0, y, Easel.grey_text);
+    canvas.drawText(s, 0, y, Easel.history_text);
     s = "";
     for (int i = hist.start[1]; i < hist.cur; i++) {
-      s += " " + gesture[hist.gest[i][1]].abbr;
+      s += gesture[hist.gest[i][1]].abbr + " ";
     }
-    canvas.drawText(s, 320, y, Easel.grey_rtext);
+    canvas.drawText(s, 320, y, Easel.history_rtext);
 
     // Gesture area.
     y = ylower;
     canvas.drawRect(0, y, 320, 480, Easel.octarine);
 
     // Status line highlight.
-    canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
+    if (is_confirmable) {
+      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
+    }
 
     // Gesture and spell text.
     // TODO: Rethink Charm presentation.
-    y = ylower + 16 - 4;
+    y = ylower + 24 - 8;
     if (0 == charmed_hand) {
       if (freeze_gesture) {
 	Gesture g = gesture[choice[0]];
@@ -1144,12 +1131,12 @@ public class MainView extends View {
       }
     }
 
-    canvas.drawText(spell_text[0], 0, y + 16, Easel.white_text);
-    canvas.drawText(spell_text[1], 320, y + 16, Easel.white_rtext);
+    canvas.drawText(spell_text[0], 0, ystatus + 24 - 4, Easel.white_text);
+    canvas.drawText(spell_text[1], 320, ystatus + 24 - 4, Easel.white_rtext);
 
     // Spell choice row 1
     x = 0;
-    y = ylower + 32;
+    y = ylower + 24;
     if (!is_showing_modal) {
       for (int h = 0; h < 2; h++) {
 	for (int i = 0; i < ready_spell_count[h]; i++) {
@@ -1252,7 +1239,6 @@ public class MainView extends View {
 	x1 = event.getX();
 	y1 = event.getY();
 	if (drag_i != -1) {
-	  get_ready();
 	  int target;
 	  for(target = being_list_count - 1; target >= 0; target--) {
 	    Being b = being_list[target];
@@ -1299,7 +1285,7 @@ public class MainView extends View {
 	    return true;
 	  }
 	  if (STATE_ON_CONFIRM == main_state) return false;
-	  if (y1 >= ylower + 32 && y1 < ylower + 32 + 50) {
+	  if (y1 >= ylower + 24 && y1 < ylower + 24 + 50) {
 	    // Could be choosing a ready spell.
 	    for (int h = 0; h < 2; h++) {
 	      int i;
@@ -1356,24 +1342,12 @@ public class MainView extends View {
     return false;
   }
 
-  // Return true if there are gestures in both hands, or we are charmed
-  // and the other hand is gesturing, or when the player has chosen a gesture
-  // for the opponent.
-  boolean is_confirmable() {
-    if ((choice[0] != Gesture.NONE && choice[1] != Gesture.NONE) ||
-        (-1 != charmed_hand && choice[1 - charmed_hand] != Gesture.NONE) ||
-	(choosing_charm && (choice[0] != Gesture.NONE || choice[1] != Gesture.NONE))) {
-      return true;
-    }
-    return false;
-  }
-
   static int tilt_state;
   void tilt_up() {
     if (TILT_AWAIT_UP != tilt_state) return;
     if (STATE_VOID == main_state) return;
     if (STATE_GESTURE_TEACH == main_state) return;
-    if (is_confirmable()) {
+    if (is_confirmable) {
       tilt_state = TILT_AWAIT_DOWN;
       board.set_notify_me(tilt_done_handler);
       board.animate_tilt();
@@ -1410,10 +1384,7 @@ public class MainView extends View {
   static boolean opp_ready;
 
   private void confirm_move() {
-    if (spelltap.allow_confirm_empty || is_confirmable()) confirm_move_body();
-  }
-
-  private void confirm_move_body() {
+    if (!is_confirmable) return;
     if (STATE_ON_CONFIRM == main_state) run();
     tilt_state = TILT_DISABLED;
     board.animation_reset();  // Stop tilt animation if it's still going.
@@ -1478,7 +1449,6 @@ public class MainView extends View {
   void note_charm_chosen() {
     choosing_charm = false;
     clear_choices();
-    get_ready();
     invalidate();
     new_round2();
   }
@@ -1728,7 +1698,6 @@ public class MainView extends View {
 	b.target = b.controller;
       }
     }
-    get_ready();
     invalidate();
   }
 
@@ -1736,6 +1705,9 @@ public class MainView extends View {
     if (choosing_charm) {
       if (Gesture.NONE != choice[h]) {
 	choice[1 - h] = Gesture.NONE;
+	is_confirmable = true;
+      } else if (Gesture.NONE == choice[1 - h]) {
+	is_confirmable = false;
       }
       invalidate();
       return;
@@ -1748,6 +1720,13 @@ public class MainView extends View {
       }
     }
     invalidate();
+    if (spelltap.allow_confirm_one) {
+      is_confirmable = Gesture.NONE != choice[h] ||
+	  Gesture.NONE != choice[1 - h];
+    } else {
+      is_confirmable = Gesture.NONE != choice[h] &&
+	  Gesture.NONE != choice[1 - h];
+    }
   }
 
   private void spell_search(int h) {
@@ -2311,4 +2290,5 @@ public class MainView extends View {
   static final int TILT_AWAIT_DOWN = 1;
   static final int TILT_DISABLED = 2;
   static boolean is_showing_modal;
+  static boolean is_confirmable;
 }

@@ -40,15 +40,14 @@ public class Board extends View {
     black_stroke_paint.setStrokeWidth(2);
     shield_paint = new Paint[4];
     shield_paint[0] = new Paint();
-    shield_paint[0].setARGB(255, 0, 0, 63);
+    shield_paint[0].setARGB(127, 255, 63, 63);
     shield_paint[0].setStyle(Paint.Style.STROKE);
     shield_paint[0].setStrokeWidth(4);
     shield_paint[1] = new Paint(shield_paint[0]);
-    shield_paint[1].setARGB(255, 63, 63, 191);
+    shield_paint[1].setARGB(127, 255, 255, 63);
     shield_paint[2] = new Paint(shield_paint[0]);
-    shield_paint[2].setARGB(255, 191, 191, 63);
-    shield_paint[3] = new Paint(shield_paint[0]);
-    shield_paint[3].setARGB(255, 128, 255, 127);
+    shield_paint[2].setARGB(127, 127, 255, 127);
+    shield_paint[3] = new Paint(shield_paint[2]);
   }
 
   static int source, target;
@@ -276,7 +275,7 @@ public class Board extends View {
     }
 
     // Status line.
-    canvas.drawText(MainView.msg, 0, MainView.ystatus + 16 - 4, white_paint);
+    //canvas.drawText(MainView.msg, 0, MainView.ystatus + 16 - 4, white_paint);
 
     switch(anim) {
       case ANIM_MOVE:

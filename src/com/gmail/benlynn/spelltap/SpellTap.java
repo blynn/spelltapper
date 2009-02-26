@@ -286,9 +286,9 @@ Log.i("MV", "Pause");
   void run() {
     // Fragile code. Take care!
     if (state > 13) {
-      allow_confirm_empty = false;
+      allow_confirm_one = false;
     } else {
-      allow_confirm_empty = true;
+      allow_confirm_one = true;
     }
     mainframe.setVisibility(View.GONE);
     if (state > 0) {
@@ -528,5 +528,5 @@ Log.i("MV", "Pause");
   static View butv;
   static Tubes tubes;
   static int state = 2;
-  static boolean allow_confirm_empty;
+  static boolean allow_confirm_one;
 }
