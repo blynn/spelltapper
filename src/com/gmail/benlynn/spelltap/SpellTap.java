@@ -473,11 +473,6 @@ Log.i("MV", "Pause");
       MainView.Spell sp = MainView.spell_list[i];
       if (sp.learned) {
 	spellbook.append(sp.purty);
-	/*
-	spellbook.append(sp.gesture + " " + sp.name + ": ");
-	spellbook.append(getText(sp.description));
-	spellbook.append("\n");
-	*/
       }
     }
   }

@@ -841,7 +841,11 @@ public class MainView extends View {
     }
     opp_ready = true;
     is_waiting = false;
-    resolve();
+
+    // Notify player and wait for tap. onDraw() calls resolve() on
+    // receiving the tap.
+    is_showing_modal = true;
+    invalidate();
   }
 
   class NetAgent extends Agent {
@@ -1023,6 +1027,7 @@ public class MainView extends View {
     freeze_gesture = false;
     choosing_charm = false;
     net_handler = new NetHandler();
+    is_showing_modal = false;
   }
   static String emptyleftmsg;
   static String emptyrightmsg;
@@ -1120,16 +1125,20 @@ public class MainView extends View {
     // Spell choice row 1
     x = 0;
     y = ylower + 32;
-    for (int h = 0; h < 2; h++) {
-      for (int i = 0; i < ready_spell_count[h]; i++) {
-	if (i == spell_choice[h]) {
-	  canvas.drawRect(x, y, x + 50, y + 50, Easel.sel_paint);
+    if (!is_showing_modal) {
+      for (int h = 0; h < 2; h++) {
+	for (int i = 0; i < ready_spell_count[h]; i++) {
+	  if (i == spell_choice[h]) {
+	    canvas.drawRect(x, y, x + 50, y + 50, Easel.sel_paint);
+	  }
+	  canvas.drawBitmap(ready_spell[i][h].bitmap, x + 1, y + 1, Easel.paint);
+	  if (h == 0) x += 50;
+	  else x -= 50;
 	}
-	canvas.drawBitmap(ready_spell[i][h].bitmap, x + 1, y + 1, Easel.paint);
-	if (h == 0) x += 50;
-	else x -= 50;
+	x = 320 - 50;
       }
-      x = 320 - 50;
+    } else {
+      print("Opponent has moved. Tap to contnue.");
     }
 
     // Spell choice row 2
@@ -1161,6 +1170,11 @@ public class MainView extends View {
   public boolean onTouchEvent(MotionEvent event) {
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
+	if (is_showing_modal) {
+	  is_showing_modal = false;
+	  resolve();
+	  return false;
+	}
 	if (is_animating) return false;
 	if (is_waiting) return false;
 	x0 = event.getX();
@@ -1198,7 +1212,13 @@ public class MainView extends View {
 	  }
 	  return false;
 	}
-	okstate = y0 >= ystatus;
+	if (y0 >= ystatus) {
+	  okstate = true;
+	  return true;
+	}
+	if (x0 >= 160 - BUFFERZONE && x0 < 160 + BUFFERZONE) {
+	  return false;
+	}
 	return true;
       case MotionEvent.ACTION_UP:
 	if (is_animating) return false;
@@ -1706,7 +1726,6 @@ public class MainView extends View {
     if (choice[h] == Gesture.KNIFE) {
       if (choice[1 - h] == Gesture.KNIFE) {
 	spell_text[h] = "(only one knife)";
-	return;
       } else {
 	add_ready_spell(h, stab_spell);
 	spell_text[h] = "";
@@ -2245,8 +2264,10 @@ public class MainView extends View {
   static boolean freeze_gesture;
   static boolean choosing_charm;
   static final int SLOP = 4;
+  static final int BUFFERZONE = 32;
   static Agent agent;
   static final int TILT_AWAIT_UP = 0;
   static final int TILT_AWAIT_DOWN = 1;
   static final int TILT_DISABLED = 2;
+  static boolean is_showing_modal;
 }
