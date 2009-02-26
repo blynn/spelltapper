@@ -195,7 +195,7 @@ public class TownView extends View {
     Place p = place_list[choice];
     is_animating = true;
     xtarget = p.x + 64 - 32;
-    ytarget = p.y + 96;
+    ytarget = p.y + 96 - 40;
     ydelta = (ytarget - yplayer) / frame_max;
     xdelta = (xtarget - xplayer) / frame_max;
     frame = 0;

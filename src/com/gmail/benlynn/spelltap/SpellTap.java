@@ -527,6 +527,6 @@ Log.i("MV", "Pause");
   static Button butclo;
   static View butv;
   static Tubes tubes;
-  static int state = 0;
+  static int state = 2;
   static boolean allow_confirm_empty;
 }

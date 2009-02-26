@@ -416,16 +416,11 @@ public class MainView extends View {
 	  board.setVisibility(View.GONE);
 	  arrow_view.setVisibility(View.GONE);
 	  jack_says(R.string.palmtut);
-	  state = 100;
-	  return;
-	case 100:
-	  jack_says(R.string.palmtut1);
 	  state = 1;
 	  return;
 	case 1:
-	  clear_choices();
+	  jack_tip(R.string.palmtut1);
 	  set_main_state(STATE_GESTURE_TEACH);
-	  invalidate();
 	  state = 2;
 	  return;
 	case 2:
@@ -437,17 +432,12 @@ public class MainView extends View {
 	      state = 3;
 	      break;
 	    case 2:
-	      jack_says(R.string.palmtutpass2);
-	      state = 1;
+	      jack_tip(R.string.palmtutpass2);
 	      break;
 	    case 1:
-	      jack_says(R.string.palmtutpass1);
-	      state = 1;
+	      jack_tip(R.string.palmtutpass1);
 	      break;
 	    }
-	  } else {
-	    state = 100;
-	    break;
 	  }
 	  return;
 	case 3:
@@ -1215,7 +1205,6 @@ public class MainView extends View {
 	x0 = event.getX();
 	y0 = event.getY();
 	if (y0 < ylower) {
-	  if (STATE_ON_CONFIRM == main_state) return false;
 	  if (STATE_GESTURE_TEACH == main_state) {
 	    clear_choices();
 	    run();

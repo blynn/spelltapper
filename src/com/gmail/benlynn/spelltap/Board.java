@@ -243,7 +243,6 @@ public class Board extends View {
   public void drawBeing(int i, int mx, int my, Canvas canvas) {
       Being b = MainView.being_list[i];
       canvas.drawBitmap(b.bitmap, mx, my, paint);
-      canvas.drawText(b.lifeline, mx, my + 16 - 4, paint);
       if (b.shield > 0) {
 	int n = b.shield - 1;
 	if (n > 3) n = 3;
@@ -251,9 +250,10 @@ public class Board extends View {
       }
       switch(b.status) {
 	case Status.CONFUSED:
-	  canvas.drawText("?", mx + b.w - 8, my + 16 - 4, paint);
+	  canvas.drawText("?", mx + b.w - 8, my + 16 - 4, Easel.octarine);
 	  break;
       }
+      canvas.drawText(b.lifeline, mx, my + 16 - 4, Easel.green_paint);
   }
 
   @Override

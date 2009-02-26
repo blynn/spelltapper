@@ -32,8 +32,8 @@
 
     <string name="palmtut"><b>Palm</b> is a simple but powerful magical gesture.</string>
     <string name="palmtut1">Drag your finger downwards ( &#x2193; ) in the lower part of the screen to make the <b>Palm</b> gesture (<b>P</b>). </string>
-    <string name="palmtutpass1">Good. In a duel, you could cast <i><i>Shield</i></i> now.</string>
-    <string name="palmtutpass2">Great! <i>Shield</i> protects you from all physical attacks. Try <b>P</b> again.</string>
+    <string name="palmtutpass1">Good. In a duel, you could cast <i><i>Shield</i></i> now. Try <b>P</b> again.</string>
+    <string name="palmtutpass2">Great! <i>Shield</i> protects you from all physical attacks. Do one more <b>P</b>.</string>
     <string name="palmtutpass3">Excellent! But beware! Gesturing <b>P</b> with both hands means you surrender!</string>
     <string name="palmtutpass4">Double <b>P</b> loses, unless your opponent dies.</string>
     <string name="palmtutpass5">Your first opponent awaits you at the Arena. See me once you\'ve won.</string>
