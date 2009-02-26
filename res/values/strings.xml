@@ -3,15 +3,16 @@
     <string name="app_name">Spell Tap</string>
 
 <string name="town0">Welcome to Spell Tap!\n[Tap the screen to continue.]</string>
-<string name="town1">You\'ve travelled for days, but your journey has just begun. At last, you stand before the world\'s top magic academy: The School of Thought.\n[Tap on a building to enter.]</string>
-    <string name="academynag">Tap on the academy.</string>
+<string name="town1">You\'ve travelled for days, but your journey has just begun. At last, you stand before the world\'s top magic academy: The School of Thought.\n[Tap the screen to continue.]</string>
+    <string name="academynag">[Tap on the academy.]</string>
+    <string name="academynag2">[Tap the academy again to enter.]</string>
 
-    <string name="welcome">So you want to be a wizard? And partake in duels of sorcery? Then listen carefully...\n[Tap the screen to continue.]</string>
-    <string name="howtoknife">Before any spells, you must learn to wield your <b>Knife</b>. Physical violence may be the last resort, but many a wizard owes their life to combat training. I will first teach you to <i>Stab</i>.\n[Tap the screen to continue.]</string>
-    <string name="howtoknife2">Starting from the lower part of the screen, slide your finger up ( &#x2191; ).\n[Tap the screen to continue.]</string>
-    <string name="howtoknifepass1">That\'s certainly a <b>Knife</b>! Do it again.\n[Tap to continue.]</string>
-    <string name="howtoknifepass2">Gesturing on the left half of the screen gives a left-handed <i>Stab</i>, and the right half gives a right-handed <i>Stab</i>.\n[Tap to continue.]</string>
-    <string name="howtoknifepass3">You show promise. Wait for me at the training hall.\n[Tap to continue.]</string>
+    <string name="welcome">So you want to be a wizard? And partake in duels of sorcery? Then listen carefully...</string>
+    <string name="howtoknife">Before any spells, you must learn to wield your <b>Knife</b>. Physical violence may be the last resort, but many a wizard owes their life to combat training. I will first teach you to <i>Stab</i>.</string>
+    <string name="howtoknife2">Starting from the lower left of the screen, slide your finger up ( &#x2191; ).</string>
+    <string name="howtoknifepass1">That\'s certainly a <b>Knife</b>! Try stabbing on the right side.</string>
+    <string name="howtoknifepass2">Good! Gesturing on the left half of the screen gives a left-handed <i>Stab</i>, and the right half gives a right-handed <i>Stab</i>. Try one more! </string>
+    <string name="howtoknifepass3">You show promise. Wait for me at the training hall.</string>
 
 <string name="jackwaitsatdummy">Jack awaits you at the training hall.</string>
 

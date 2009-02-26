@@ -33,7 +33,7 @@ public class SpellTap extends Activity {
     spellbookv = findViewById(R.id.spellbookscroll);
     spellbookv.setVisibility(View.GONE);
     mainview = (MainView) findViewById(R.id.mainview);
-    mainview.spelltap = this;
+    mainview.set_spelltap(this);
     mainview.set_board((Board) findViewById(R.id.board));
     mainview.set_arrow_view((ArrowView) findViewById(R.id.arrow_view));
     mainview.emptyleftmsg = getText(R.string.empty_left_hand).toString();
@@ -129,12 +129,12 @@ public class SpellTap extends Activity {
 
   void tilt_up() {
     // Log.i("Tilt", "Up");
-    if (null == curmach) mainview.tilt_up();
+    if (mainview.stmach == curmach) mainview.tilt_up();
   }
 
   void tilt_down() {
     // Log.i("Tilt", "Down");
-    if (null == curmach) mainview.tilt_down();
+    if (mainview.stmach == curmach) mainview.tilt_down();
   }
 
   @Override
@@ -200,7 +200,6 @@ Log.i("MV", "Pause");
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     switch(keyCode) {
       case KeyEvent.KEYCODE_BACK:
-	Log.i("TODO", "Handle back button");
 	if (spellbook_is_open) {
 	  close_spellbook();
 	  return true;
@@ -208,6 +207,7 @@ Log.i("MV", "Pause");
 	if (is_in_town()) {
 	  return super.onKeyDown(keyCode, event);
 	}
+	curmach.go_back();
 	return true;
       case KeyEvent.KEYCODE_A:
 	warp(0);
@@ -411,31 +411,42 @@ Log.i("MV", "Pause");
     townview.setVisibility(View.VISIBLE);
   }
   void goto_mainframe() {
-    curmach = null;
-    mainview.run();
+    curmach = mainview.stmach;
+    curmach.run();
+    townview.setVisibility(View.GONE);
     mainframe.setVisibility(View.VISIBLE);
   }
   void unlock_place(int place) {
     townview.unlock(place);
   }
 
-  void jack_says(int string_constant) {
+  void jack_tip_off() {
+    speech_layout.setVisibility(View.GONE);
+  }
+  void jack_tip(int string_constant) {
     speech_layout.setVisibility(View.VISIBLE);
     speech_box.setText(string_constant);
+  }
+  void jack_says(int string_constant) {
+    jack_tip(string_constant);
     hog.setVisibility(View.VISIBLE);
   }
   void narrate(int string_constant) {
-    narratortext.setText(string_constant);
-    narrator.setVisibility(View.VISIBLE);
+    show_tip(string_constant);
     hog.setVisibility(View.VISIBLE);
   }
-
-  void hogup() {
+  void show_tip(int string_constant) {
+    narratortext.setText(string_constant);
+    narrator.setVisibility(View.VISIBLE);
+  }
+  void tip_off() {
+    narrator.setVisibility(View.GONE);
+  }
+  void hogoff() {
     speech_layout.setVisibility(View.GONE);
     narrator.setVisibility(View.GONE);
     hog.setVisibility(View.GONE);
-    if (null == curmach) mainview.run();
-    else curmach.run();
+    curmach.run();
   }
 
   void open_spellbook() {
@@ -516,6 +527,6 @@ Log.i("MV", "Pause");
   static Button butclo;
   static View butv;
   static Tubes tubes;
-  static int state = 14;
+  static int state = 0;
   static boolean allow_confirm_empty;
 }

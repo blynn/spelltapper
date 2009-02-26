@@ -31,7 +31,7 @@ public class InputHog extends View {
       case MotionEvent.ACTION_DOWN:
 	return true;
       case MotionEvent.ACTION_UP:
-        spelltap.hogup();
+        spelltap.hogoff();
 	return true;
     }
     return false;

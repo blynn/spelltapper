@@ -57,6 +57,10 @@ public class TownView extends View {
     spelltap.narrate(string_constant);
   }
 
+  void show_tip(int string_constant) {
+    spelltap.show_tip(string_constant);
+  }
+
   abstract class Machine {
     abstract void run();
   }
@@ -77,18 +81,18 @@ public class TownView extends View {
 	  return;
 	case 2:
 	  ui_state = STATE_ON_TAP;
-	  count = 0;
+	  show_tip(R.string.academynag);
 	  state = 3;
 	  return;
 	case 3:
-	  if (choice != 0) {
-	    count++;
-	    if (count == 3) {
-	      narrate(R.string.academynag);
-	      count = 0;
+	  if (SpellTap.PLACE_SCHOOL == choice) {
+	    if (SpellTap.PLACE_SCHOOL == location) {
+	      spelltap.tip_off();
+	      ui_state = STATE_NORMAL;
+	      travel();
+	    } else {
+	      show_tip(R.string.academynag2);
 	    }
-	  } else {
-	    ui_state = STATE_NORMAL;
 	  }
 	  return;
       }
@@ -151,12 +155,8 @@ public class TownView extends View {
 	  machine.run();
 	}
 	if (choice != -1) {
-	  if (choice != location) travel();
-	  else  {
-	    // TODO: Fade screen.
-	    setVisibility(View.GONE);
-	    spelltap.set_place(location);
-	  }
+	  if (choice != location) animate_move();
+	  else travel();
 	}
 	return true;
     }
@@ -191,7 +191,7 @@ public class TownView extends View {
     }
   }
 
-  void travel() {
+  void animate_move() {
     Place p = place_list[choice];
     is_animating = true;
     xtarget = p.x + 64 - 32;
@@ -200,6 +200,12 @@ public class TownView extends View {
     xdelta = (xtarget - xplayer) / frame_max;
     frame = 0;
     anim_handler.sleep(delay);
+  }
+
+  void travel() {
+    // TODO: Fade screen.
+    setVisibility(View.GONE);
+    spelltap.set_place(location);
   }
 
   class Place {
@@ -223,6 +229,9 @@ public class TownView extends View {
   class Kludge extends SpellTapMachine {
     Kludge(SpellTap st) { super(st); }
     void run() { machine.run(); }
+    void go_back() {
+      Log.e("TownView", "BACK should have been handled already.");
+    }
   }
   static SpellTapMachine stmach;
 

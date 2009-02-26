@@ -75,6 +75,11 @@ public class MainView extends View {
   }
 
   void run() { tut.run(); }
+  void go_back() {
+    // TODO: Confirm player wants to leave.
+    // TODO: Clean up, e.g. stop network retry.
+    spelltap.goto_town();
+  }
 
   void set_state_dummytutorial() {
     tut = new DummyTutorial();
@@ -119,10 +124,12 @@ public class MainView extends View {
     int attack_target[];
   }
 
+  void jack_tip(int string_constant) {
+    spelltap.jack_tip(string_constant);
+  }
   void jack_says(int string_constant) {
     spelltap.jack_says(string_constant);
   }
-
   void set_main_state(int new_state) {
     main_state = new_state;
   }
@@ -210,38 +217,36 @@ public class MainView extends View {
 	  state = 1;
 	  return;
 	case 1:
-	  jack_says(R.string.howtoknife2);
+	  // TODO: Draw helper arrows on interface.
+	  jack_tip(R.string.howtoknife2);
+	  set_main_state(STATE_GESTURE_ONLY);
 	  state = 2;
 	  return;
 	case 2:
-	  clear_choices();
-	  invalidate();
-	  set_main_state(STATE_GESTURE_ONLY);
-	  state = 3;
+	  if (Gesture.KNIFE == choice[0]) {
+	    jack_tip(R.string.howtoknifepass1);
+	    state = 3;
+	    return;
+	  } else {
+	    clear_choices();
+	  }
 	  return;
 	case 3:
-	  if (choice[0] == Gesture.KNIFE || choice[1] == Gesture.KNIFE) {
-	    count++;
-	    switch(count) {
-	    case 3:
-	      jack_says(R.string.howtoknifepass3);
-	      state = 4;
-	      break;
-	    case 2:
-	      jack_says(R.string.howtoknifepass2);
-	      state = 2;
-	      break;
-	    case 1:
-	      jack_says(R.string.howtoknifepass1);
-	      state = 2;
-	      break;
-	    }
+	  if (Gesture.KNIFE == choice[1]) {
+	    jack_tip(R.string.howtoknifepass2);
+	    state = 4;
+	    return;
 	  } else {
-	    state = 1;
-	    break;
+	    clear_choices();
 	  }
 	  return;
 	case 4:
+	  if (choice[0] == Gesture.KNIFE || choice[1] == Gesture.KNIFE) {
+	    jack_says(R.string.howtoknifepass3);
+	    state = 5;
+	  }
+	  return;
+	case 5:
 	  set_main_state(STATE_NORMAL);
 	  spelltap.next_state();
 	  spelltap.goto_town();
@@ -491,75 +496,75 @@ public class MainView extends View {
   // Introduce SD.
   class SDTutorial extends Tutorial {
     SDTutorial() {
-      state = -1;
+      state = 0;
       hand = 0;
     }
     void run() {
       for(;;) switch(state) {
-	case -1:
+	case 0:
 	  set_gesture_knowledge(Wisdom.KPS);
 	  init_opponent(Agent.getDummy());
 	  board.setVisibility(View.VISIBLE);
 	  arrow_view.setVisibility(View.VISIBLE);
 	  jack_says(R.string.SDtut0);
-	  state = 0;
+	  state = 1;
 	  return;
-	case 0:
+	case 1:
 	  // Restore life in case player has been messing around.
 	  being_list[0].start_life(5);
 	  being_list[1].start_life(5);
 	  reset_game();
 	  jack_says(R.string.SDtut);
-	  state = 1;
+	  state = 2;
 	  return;
-	case 1:
+	case 2:
 	  clear_choices();
 	  get_ready();
 	  set_main_state(STATE_ON_END_ROUND);
-	  state = 2;
+	  state = 3;
 	  invalidate();
 	  return;
-	case 2:
+	case 3:
 	  if (hist.gest[0][0] == Gesture.SNAP &&
 	      hist.gest[0][1] == Gesture.SNAP) {
 	    jack_says(R.string.SDtutpass1);
 	    set_spell_knowledge(Wisdom.UP_TO_MISSILE);
-	    state = 3;
+	    state = 4;
 	  } else {
 	    jack_says(R.string.SDtutwrong);
-	    state = 0;
+	    state = 1;
 	  }
 	  return;
-	case 3:
+	case 4:
 	  set_gesture_knowledge(Wisdom.DKPS);
 	  get_ready();
-	  state = 4;
+	  state = 5;
 	  invalidate();
 	  return;
-	case 4:
+	case 5:
 	  if (hist.gest[1][0] == Gesture.DIGIT &&
 	      hist.gest[1][1] == Gesture.DIGIT) {
 	    jack_says(R.string.SDtutpass2);
-	    state = 5;
+	    state = 6;
 	  } else {
 	    jack_says(R.string.SDtutwrong);
-	    state = 0;
+	    state = 1;
 	  }
 	  return;
-	case 5:
-	  jack_says(R.string.SDtutpass3);
-	  state = 6;
-	  return;
 	case 6:
-	  jack_says(R.string.SDtutpass4);
+	  jack_says(R.string.SDtutpass3);
 	  state = 7;
 	  return;
 	case 7:
-	  set_main_state(STATE_NORMAL);
-	  get_ready();
+	  jack_says(R.string.SDtutpass4);
 	  state = 8;
 	  return;
 	case 8:
+	  set_main_state(STATE_NORMAL);
+	  get_ready();
+	  state = 9;
+	  return;
+	case 9:
 	  spelltap.next_state();
 	  spelltap.goto_town();
 	  return;
@@ -1288,6 +1293,7 @@ public class MainView extends View {
 	    }
 	  }
 	} else {
+	  if (STATE_GESTURE_ONLY == main_state) clear_choices();
 	  int dirx, diry;
 	  int h;
 	  dirx = dx > 0 ? 1 : -1;
@@ -2258,6 +2264,17 @@ public class MainView extends View {
   Bitmap get_bitmap(int id) {
     return BitmapFactory.decodeResource(getResources(), id);
   }
+
+  void set_spelltap(SpellTap i_spelltap) {
+    spelltap = i_spelltap;
+    stmach = new Kludge(spelltap);
+  }
+  class Kludge extends SpellTapMachine {
+    Kludge(SpellTap st) { super(st); }
+    void run() { MainView.this.run(); }
+    void go_back() { MainView.this.go_back(); }
+  }
+  static SpellTapMachine stmach;
 
   static SpellTap spelltap;
   static int charmed_hand;
