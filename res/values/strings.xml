@@ -11,12 +11,16 @@
     <string name="howtoknife">Before any spells, you must learn to wield your <b>Knife</b>. Physical violence may be the last resort, but many a wizard owes their life to combat training. I will first teach you to <i>Stab</i>.</string>
     <string name="howtoknife2">Starting from the lower left of the screen, slide your finger up ( &#x2191; ).</string>
     <string name="howtoknifepass1">That\'s certainly a <b>Knife</b>! Try stabbing on the right side.</string>
-    <string name="howtoknifepass2">Good! Gesturing on the left half of the screen gives a left-handed <i>Stab</i>, and the right half gives a right-handed <i>Stab</i>. Try one more! </string>
+    <string name="howtoknifepass2">Good! Gesturing on the left half of the screen gives a left-handed <i>Stab</i>, and the right half gives a right-handed <i>Stab</i>.</string>
+    <string name="howtoknifeonemore">Try another left-hand <i>Stab</i>.</string>
     <string name="howtoknifepass3">You show promise. Wait for me at the training hall.</string>
 
 <string name="jackwaitsatdummy">Jack awaits you at the training hall.</string>
 
-    <string name="dummytut"><i>Stab</i> this wooden dummy 3 times to destroy it. Do the <b>Knife</b> motion (<b>K</b>), then tap the bottom of the screen.</string>
+    <string name="dummytut"><i>Stab</i> this wooden dummy 3 times to destroy it.</string>
+    <string name="dummytut1">Do the <b>K</b> (<b>Knife</b>) gesture in either hand.</string>
+    <string name="dummytut2">Now tap the bottom of the screen.</string>
+    <string name="dummytut3">Nice! Repeat these steps to finish off the dummy.</string>
     <string name="dummytutwin">Well done. But let\'s see how you handle hostile targets.</string>
     <string name="dummytutdraw">Very funny, though strictly speaking you did destroy the dummy. You\'re lucky I know the Raise Dead spell.</string>
     <string name="dummytutlose">Very funny. You\'re lucky I know the Raise Dead spell. We\'ll move on, even though you lost to a wooden dummy.</string>
