@@ -5,6 +5,7 @@
 // Resize event.
 // Stop handlers on init.
 // Hide spells on end of turn?
+// Clean up setVisibility calls.
 package com.gmail.benlynn.spelltap;
 
 import android.content.Context;
@@ -138,6 +139,8 @@ public class MainView extends View {
   }
   void set_main_state(int new_state) {
     main_state = new_state;
+    if (STATE_TARGET_TEACH == main_state) is_confirmable = false;
+    else if (STATE_ON_CONFIRM == main_state) is_confirmable = true;
   }
 
   abstract class Tutorial {
@@ -221,6 +224,7 @@ public class MainView extends View {
 	case 100:
 	  jack_says(R.string.howtoknife);
 	  state = 1;
+	  is_confirmable = false;
 	  return;
 	case 1:
 	  arr_x0 = 75;
@@ -242,7 +246,6 @@ public class MainView extends View {
 	    help_arrow_on();
 	    jack_tip(R.string.howtoknifepass1);
 	    state = 3;
-	    return;
 	  } else {
 	    clear_choices();
 	  }
@@ -250,6 +253,8 @@ public class MainView extends View {
 	case 3:
 	  help_arrow_off();
 	  if (Gesture.KNIFE == choice[1]) {
+	    choice[0] = Gesture.NONE;
+	    handle_new_choice(0);
 	    jack_says(R.string.howtoknifepass2);
 	    state = 4;
 	    return;
@@ -380,21 +385,61 @@ public class MainView extends View {
 	being_list[3].target = 0;
 	being_list_count = 4;
 
-	jack_says(R.string.targettut);
 	board.setVisibility(View.VISIBLE);
 	arrow_view.setVisibility(View.VISIBLE);
+
+	jack_tip(R.string.targettut);
+	set_main_state(STATE_GESTURE_TEACH);
 	state = 1;
 	invalidate();
         return;
       case 1:
-	set_main_state(STATE_NORMAL);
-	state = 2;
-        return;
+	{
+	  int h = -1;
+	  if (Gesture.KNIFE == choice[0]) {
+	    h = 0;
+	    arr_x0 = 24;
+	  }
+	  else if (Gesture.KNIFE == choice[1]) {
+	    h = 1;
+	    arr_x0 = 320 - 24;
+	  }
+	  if (-1 == h) return;
+	  jack_tip_off();
+	  arr_y0 = MainView.yicon + 24;
+	  Being b = being_list[2 + h];
+	  arr_x1 = b.x + b.midw;
+	  arr_y1 = b.y + b.midh;
+	  help_arrow_on();
+	  jack_says(R.string.targettut1);
+	  state = 2;
+	}
+	return;
       case 2:
+	set_main_state(STATE_TARGET_TEACH);
+	state = 3;
+	return;
+      case 3:
+	help_arrow_off();
+	jack_tip(R.string.targettut2);
+	set_main_state(STATE_ON_CONFIRM);
+	state = 4;
+	return;
+      case 4:
+	jack_tip_off();
+	set_main_state(STATE_ON_END_ROUND);
+	state = 5;
+        return;
+      case 5:
+	jack_says(R.string.targettut3);
+	set_main_state(STATE_NORMAL);
+	state = 6;
+        return;
+      case 6:
 	switch(winner) {
 	case 0:
 	  jack_says(R.string.targettutwin);
-	  state = 3;
+	  state = 7;
 	  break;
 	case 1:
 	  jack_says(R.string.targettutlose);
@@ -407,7 +452,7 @@ public class MainView extends View {
 	}
 	reset_being_pos();
         return;
-      case 3:
+      case 7:
 	spelltap.next_state();
 	spelltap.goto_town();
 	return;
@@ -435,15 +480,28 @@ public class MainView extends View {
 	  state = 1;
 	  return;
 	case 1:
+	  arr_x0 = 75;
+	  arr_y0 = ylower + 32;
+	  arr_x1 = 75;
+	  arr_y1 = ystatus - 8;
+	  help_arrow_on_symmetric();
 	  jack_tip(R.string.palmtut1);
 	  set_main_state(STATE_GESTURE_TEACH);
 	  state = 2;
 	  return;
 	case 2:
 	  if (choice[0] == Gesture.PALM || choice[1] == Gesture.PALM) {
+	    if (choice[0] == Gesture.PALM) {
+	      choice[1] = Gesture.NONE;
+	      handle_new_choice(1);
+	    } else {
+	      choice[0] = Gesture.NONE;
+	      handle_new_choice(0);
+	    }
 	    count++;
 	    switch(count) {
 	    case 3:
+	      help_arrow_off();
 	      jack_says(R.string.palmtutpass3);
 	      state = 3;
 	      break;
@@ -548,54 +606,75 @@ public class MainView extends View {
 	  being_list[0].start_life(5);
 	  being_list[1].start_life(5);
 	  reset_game();
-	  jack_says(R.string.SDtut);
+	  clear_choices();
+	  jack_says(R.string.SDtut1);
 	  state = 2;
 	  return;
 	case 2:
-	  clear_choices();
-	  set_main_state(STATE_ON_END_ROUND);
-	  state = 3;
+	  arr_x1 = 0;
+	  arr_y0 = ystatus - 8;
+	  arr_y1 = ylower + 32;
+	  arr_x0 = arr_x1 - (arr_y1 - arr_y0);
+	  help_arrow_on_symmetric();
+	  jack_tip(R.string.SDtut2);
+	  set_main_state(STATE_GESTURE_TEACH);
+	  state = 200;
 	  invalidate();
+	  return;
+	case 200:
+	  if (Gesture.SNAP == choice[0] && Gesture.SNAP == choice[1]) {
+	    help_arrow_off();
+	    jack_tip(R.string.SDtut3);
+	    set_main_state(STATE_ON_CONFIRM);
+	    state = 3;
+	  }
 	  return;
 	case 3:
-	  if (hist.gest[0][0] == Gesture.SNAP &&
-	      hist.gest[0][1] == Gesture.SNAP) {
-	    jack_says(R.string.SDtutpass1);
-	    set_spell_knowledge(Wisdom.UP_TO_MISSILE);
-	    state = 4;
-	  } else {
-	    jack_says(R.string.SDtutwrong);
-	    state = 1;
-	  }
+	  jack_says(R.string.SDtutpass1);
+	  state = 300;
+	  return;
+	case 300:
+	  arr_x0 = 0;
+	  arr_y0 = ystatus - 8;
+	  arr_y1 = ylower + 32;
+	  arr_x1 = arr_x0 - (arr_y1 - arr_y0);
+	  help_arrow_on_symmetric();
+	  jack_tip(R.string.SDtutpass100);
+	  set_spell_knowledge(Wisdom.UP_TO_MISSILE);
+	  set_gesture_knowledge(Wisdom.DKPS);
+	  set_main_state(STATE_GESTURE_TEACH);
+	  state = 4;
 	  return;
 	case 4:
-	  set_gesture_knowledge(Wisdom.DKPS);
-	  state = 5;
-	  invalidate();
-	  return;
-	case 5:
-	  if (hist.gest[1][0] == Gesture.DIGIT &&
-	      hist.gest[1][1] == Gesture.DIGIT) {
-	    jack_says(R.string.SDtutpass2);
-	    state = 6;
-	  } else {
-	    jack_says(R.string.SDtutwrong);
-	    state = 1;
+	  if (Gesture.DIGIT == choice[0] && Gesture.DIGIT == choice[1]) {
+	    help_arrow_off();
+	    jack_tip(R.string.SDtut3);
+	    set_main_state(STATE_ON_CONFIRM);
+	    state = 5;
 	  }
 	  return;
+	case 5:
+	  jack_tip_off();
+	  set_main_state(STATE_ON_END_ROUND);
+	  state = 6;
+	  return;
 	case 6:
-	  jack_says(R.string.SDtutpass3);
+	  jack_says(R.string.SDtutpass2);
 	  state = 7;
 	  return;
 	case 7:
-	  jack_says(R.string.SDtutpass4);
+	  jack_says(R.string.SDtutpass3);
 	  state = 8;
 	  return;
 	case 8:
-	  set_main_state(STATE_NORMAL);
+	  jack_says(R.string.SDtutpass4);
 	  state = 9;
 	  return;
 	case 9:
+	  set_main_state(STATE_NORMAL);
+	  state = 10;
+	  return;
+	case 10:
 	  spelltap.next_state();
 	  spelltap.goto_town();
 	  return;
@@ -1115,6 +1194,7 @@ public class MainView extends View {
     // Status line highlight.
     if (is_confirmable) {
       canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
+      canvas.drawText("TAP!", 160, ystatus + 24, Easel.tap_ctext);
     }
 
     // Gesture and spell text.
@@ -1181,6 +1261,10 @@ public class MainView extends View {
 
     if (is_help_arrow_on) {
       canvas.drawLine(arr_x0, arr_y0, arr_x2, arr_y2, Easel.arrow_paint);
+      if (is_symmetric_help_arrow) {
+	canvas.drawLine(320 - arr_x0, arr_y0,
+	    320 - arr_x2, arr_y2, Easel.arrow_paint);
+      }
     }
   }
 
@@ -1210,6 +1294,13 @@ public class MainView extends View {
     anim_handler.sleep(64);
   }
   void help_arrow_on() {
+    is_symmetric_help_arrow = false;
+    is_help_arrow_on = true;
+    frame = 1;
+    updateHelpArrow();
+  }
+  void help_arrow_on_symmetric() {
+    is_symmetric_help_arrow = true;
     is_help_arrow_on = true;
     frame = 1;
     updateHelpArrow();
@@ -1249,7 +1340,6 @@ public class MainView extends View {
 	y0 = event.getY();
 	if (y0 < ylower) {
 	  if (STATE_GESTURE_TEACH == main_state) {
-	    clear_choices();
 	    run();
 	    return false;
 	  }
@@ -1317,6 +1407,7 @@ public class MainView extends View {
 	      }
 	    } else {
 	      spell_target[drag_i] = target;
+	      if (STATE_TARGET_TEACH == main_state && target > 1) run();
 	    }
 	  } else {
 	    Being b = being_list[drag_i];
@@ -1332,7 +1423,6 @@ public class MainView extends View {
 	float dy = y1 - y0;
 	if (dx * dx + dy * dy < 32 * 32) {
 	  if (STATE_GESTURE_TEACH == main_state) {
-	    clear_choices();
 	    run();
 	    return true;
 	  }
@@ -1359,7 +1449,6 @@ public class MainView extends View {
 	  }
 	} else {
 	  if (STATE_ON_CONFIRM == main_state) return false;
-	  if (STATE_GESTURE_TEACH == main_state) clear_choices();
 	  int dirx, diry;
 	  int h;
 	  dirx = dx > 0 ? 1 : -1;
@@ -1375,8 +1464,10 @@ public class MainView extends View {
 	    h = 1;
 	    dirx *= -1;
 	  }
-	  if (h == charmed_hand || freeze_gesture ||
-	      TILT_AWAIT_DOWN == tilt_state) {
+	  if (h == charmed_hand ||
+	      freeze_gesture ||
+	      TILT_AWAIT_DOWN == tilt_state ||
+	      STATE_TARGET_TEACH == main_state) {
 	    return true;
 	  }
 	  choice[h] = Gesture.flattenxy(dirx, diry);
@@ -2348,6 +2439,7 @@ public class MainView extends View {
   static boolean is_showing_modal;
   static boolean is_confirmable;
   static boolean is_help_arrow_on;
+  static boolean is_symmetric_help_arrow;
   static float arr_x0, arr_y0, arr_x1, arr_y1, frame;
   static float arr_x2, arr_y2;
 }
