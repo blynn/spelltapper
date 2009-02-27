@@ -47,6 +47,7 @@ public class MainView extends View {
   // Special states for tutorials.
   static final int STATE_GESTURE_TEACH = 1;
   static final int STATE_TARGET_TEACH = 2;
+  // TODO: Use freeze_gesture flag instead of checking for the following state.
   static final int STATE_ON_CONFIRM = 3;
   static final int STATE_ON_END_ROUND = 4;
 
@@ -1026,6 +1027,8 @@ public class MainView extends View {
     spell_text[0] = spell_text[1] = "";
     arrow_view.bmspell[0] = arrow_view.bmspell[1] = null;
     is_confirmable = false;
+    freeze_gesture = false;
+    charmed_hand = -1;
   }
 
   class History {
@@ -1151,7 +1154,6 @@ public class MainView extends View {
     arrow_view = null;
     tilt_state = TILT_AWAIT_UP;
     charmed_hand = -1;
-    freeze_gesture = false;
     choosing_charm = false;
     net_handler = new NetHandler();
     is_help_arrow_on = false;
@@ -1213,18 +1215,22 @@ public class MainView extends View {
 	break;
       case NET_REPLY:
 	canvas.drawRect(0, ystatus, 320, 480, Easel.reply_paint);
-	canvas.drawText("Opponent has moved. Tap to continue.", 160, ystatus + 36, Easel.tap_ctext);
+	canvas.drawText("Tap to continue.", 160, ystatus + 36, Easel.white_ctext);
 	break;
       case NET_IDLE:
 	if (is_confirmable) {
-	  canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
-	  canvas.drawText("TAP!", 160, ystatus + 36, Easel.tap_ctext);
+	  if (choosing_charm) {
+	    canvas.drawRect(0, ystatus, 320, 480, Easel.charm_text);
+	    canvas.drawText("CHARM!", 160, ystatus + 36, Easel.tap_ctext);
+	  } else {
+	    canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
+	    canvas.drawText("TAP!", 160, ystatus + 36, Easel.tap_ctext);
+	  }
 	}
 	break;
     }
 
     // Gesture and spell text.
-    // TODO: Rethink Charm presentation.
     y = ylower + 24 - 8;
     if (0 == charmed_hand) {
       if (freeze_gesture) {
@@ -1263,6 +1269,11 @@ public class MainView extends View {
     // Spell choice row 1
     x = 0;
     y = ylower + 24;
+
+    if (choosing_charm) {
+      canvas.drawText("Charm Person: Choose gesture...",
+          x, y + 50, Easel.white_text);
+    }
     for (int h = 0; h < 2; h++) {
       for (int i = 0; i < ready_spell_count[h]; i++) {
 	if (i == spell_choice[h]) {
@@ -1592,7 +1603,6 @@ public class MainView extends View {
 	}
 	return;
       }
-      freeze_gesture = false;
     }
     get_opp_moves();
   }
@@ -1876,8 +1886,11 @@ public class MainView extends View {
     if (choosing_charm) {
       if (Gesture.NONE != choice[h]) {
 	choice[1 - h] = Gesture.NONE;
+	spell_text[1 - h] = "";
+	spell_text[h] = "(charm opponent)";
 	is_confirmable = true;
       } else if (Gesture.NONE == choice[1 - h]) {
+	spell_text[h] = "";
 	is_confirmable = false;
       }
       invalidate();
@@ -1890,14 +1903,16 @@ public class MainView extends View {
 	spell_search(1 - h);
       }
     }
-    invalidate();
-    if (spelltap.allow_confirm_one) {
+    if (-1 != charmed_hand) {
+      is_confirmable = Gesture.NONE != choice[1 - charmed_hand];
+    } else if (spelltap.allow_confirm_one) {
       is_confirmable = Gesture.NONE != choice[h] ||
 	  Gesture.NONE != choice[1 - h];
     } else {
       is_confirmable = Gesture.NONE != choice[h] &&
 	  Gesture.NONE != choice[1 - h];
     }
+    invalidate();
   }
 
   private void spell_search(int h) {

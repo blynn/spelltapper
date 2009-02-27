@@ -27,6 +27,9 @@ class Easel {
     white_rtext = new Paint(white_text);
     white_rtext.setTextAlign(Paint.Align.RIGHT);
 
+    white_ctext = new Paint(white_text);
+    white_ctext.setTextAlign(Paint.Align.CENTER);
+
     spell_text = new Paint(white_text);
     spell_text.setTextSize(16);
     spell_rtext = new Paint(white_rtext);
@@ -37,9 +40,8 @@ class Easel {
     grey_rtext = new Paint(grey_text);
     grey_rtext.setTextAlign(Paint.Align.RIGHT);
 
-    tap_ctext = new Paint(grey_text);
-    tap_ctext.setARGB(255, 63, 0, 63);
-    tap_ctext.setTextAlign(Paint.Align.CENTER);
+    tap_ctext = new Paint(white_ctext);
+    tap_ctext.setARGB(255, 127, 255, 127);
 
     charm_text = new Paint(white_text);
     charm_text.setARGB(255, 255, 127, 255);
@@ -71,6 +73,7 @@ class Easel {
   static Paint grey_text, grey_rtext;
   static Paint tap_ctext;
   static Paint white_text, white_rtext;
+  static Paint white_ctext;
   static Paint green_paint;
   static Paint red_paint;
   static Paint octarine;
