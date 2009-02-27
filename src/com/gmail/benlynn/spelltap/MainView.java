@@ -1,7 +1,6 @@
 // TODO: Log, character sheet.
 // Turn UI pink on charm, to make it obvious why we need to wait for network?
 // Victory/defeat screen with stats.
-// Psych spell conflict.
 // Resize event.
 // Stop handlers on init.
 // Hide spells on end of turn?
@@ -1048,6 +1047,10 @@ public class MainView extends View {
       if (cur == 0) Log.e("History", "is_doubleP called with no history");
       return gest[cur - 1][0] == Gesture.PALM && gest[cur - 1][1] == Gesture.PALM;
     }
+    int last_gesture(int h) {
+      if (0 == cur) return Gesture.NONE;
+      return gest[cur - 1][h];
+    }
     void add(int g[]) {
       gest[cur][0] = g[0];
       gest[cur][1] = g[1];
@@ -1115,8 +1118,15 @@ public class MainView extends View {
     add_spell(new CharmPersonSpell(), 31);
     add_spell(new AntiSpellSpell(), 27);
 
+    add_spell(new AmnesiaSpell(), 29);
     add_spell(new FearSpell(), 30);
     add_spell(new SummonOgreSpell(), 18);
+
+    add_spell(new SummonTrollSpell(), 19);
+
+    add_spell(new SummonGiantSpell(), 20);
+
+    add_spell(new FingerOfDeathSpell(), 50);
 
     being_list = new Being[16];
     summon_count = new int[2];
@@ -1387,8 +1397,7 @@ public class MainView extends View {
 	    // Check for monster retargeting drag.
 	    for (int i = 2; i < being_list_count; i++) {
 	      Being b = being_list[i];
-	      // It might not matter if you can retarget a corpse's
-	      // attack, but it doesn't seem useful.
+	      // TODO: Allow corpse retargeting at Level 5 (for Raise Dead).
 	      if (b.dead || 0 != b.controller) continue;
 	      if (b.contains(x0, y0)) {
 		drag_i = i;
@@ -1645,6 +1654,10 @@ public class MainView extends View {
     }
     exec_queue[i] = sc;
     exec_queue_count++;
+    if (sc.spell.is_psych) {
+      Being b = being_list[sc.target];
+      b.psych++;
+    }
   }
 
   private void resolve() {
@@ -1655,6 +1668,7 @@ public class MainView extends View {
     for (int i = 0; i < being_list_count; i++) {
       Being b = being_list[i];
       b.status = Status.OK;
+      b.psych = 0;
     }
 
     exec_queue_count = 0;
@@ -1742,7 +1756,20 @@ public class MainView extends View {
       }
       print(s);
       Log.i("MV", s);
-      sc.spell.execute(sc.source, sc.target);
+      if (-1 == sc.target) {
+	// Only Dispel Magic, Fire/Ice Storm/Elemental work.
+	sc.spell.just_wait();
+      } else if (sc.spell.is_psych) {
+	Being b = being_list[sc.target];
+	if (1 != b.psych) {
+	  Log.i("MV", "Psych spell conflict.");
+	  sc.spell.psych_fizzle(sc.target);
+	} else {
+	  sc.spell.execute(sc.source, sc.target);
+	}
+      } else {
+	sc.spell.execute(sc.source, sc.target);
+      }
       exec_cursor++;
     } else {
       end_round();
@@ -1872,6 +1899,15 @@ public class MainView extends View {
   }
 
   void new_round_post_charm() {
+    // Handle amnesia.
+    if (Status.AMNESIA == being_list[0].status) {
+      choice[0] = hist.last_gesture(0);
+      handle_new_choice(0);
+      choice[1] = hist.last_gesture(1);
+      handle_new_choice(1);
+      freeze_gesture = true;
+    }
+
     // Handle confused monsters.
     for (int i = 2; i < being_list_count; i++) {
       Being b = being_list[i];
@@ -1985,9 +2021,11 @@ public class MainView extends View {
       bitmap = get_bitmap(bitmapid);
       target = def_target;
       learned = false;
+      is_psych = false;
     }
 
     abstract public void cast(int init_source, int init_target);
+    void set_is_psych() { is_psych = true; }
     Bitmap bitmap;
     String name;
     String gesture;
@@ -1997,10 +2035,23 @@ public class MainView extends View {
     int description;
     SpannableString purty;
     boolean learned;
+    boolean is_psych;
     boolean is_finished;  // Set this to true before calling last animation.
                           // Or call finish_spell() [it's slower].
     int cast_source, cast_target;
 
+    public void psych_fizzle(int init_target) {
+      state = 0;
+      is_finished = true;
+      board.set_notify_me(done_handler);
+      board.animate_spell(init_target, bitmap);
+    }
+    public void just_wait() {
+      state = 0;
+      is_finished = true;
+      board.set_notify_me(done_handler);
+      board.animate_delay();
+    }
     public void execute(int init_source, int init_target) {
       state = 0;
       is_finished = false;
@@ -2039,10 +2090,8 @@ public class MainView extends View {
 	  board.animate_shield(target);
 	  return;
 	case 1:
-	  if (target != -1) {
-	    Being b = being_list[target];
-	    if (0 == b.shield) b.shield = 1;
-	  }
+	  Being b = being_list[target];
+	  if (0 == b.shield) b.shield = 1;
 	  finish_spell();
 	  return;
       }
@@ -2060,17 +2109,13 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  // TODO: Remove duplicated code.
-	  if (target != -1) {
-	    Being b = being_list[target];
-	    if (0 == b.shield) {
-	      b.get_hurt(1);
-	      board.animate_move_damage(target, 1);
-	    } else {
-	      Log.i("TODO", "block animation");
-	      board.animate_move_damage(target, 0);
-	    }
+	  Being b = being_list[target];
+	  if (0 == b.shield) {
+	    b.get_hurt(1);
+	    board.animate_move_damage(target, 1);
 	  } else {
-	    board.animate_delay();
+	    Log.i("TODO", "block animation");
+	    board.animate_move_damage(target, 0);
 	  }
 	  return;
 	case 2:
@@ -2092,17 +2137,13 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  is_finished = true;
-	  if (target != -1) {
-	    Being b = being_list[target];
-	    if (0 == b.shield) {
-	      b.get_hurt(1);
-	      board.animate_damage(target, 1);
-	    } else {
-	      Log.i("TODO", "block animation");
-	      board.animate_damage(target, 0);
-	    }
+	  Being b = being_list[target];
+	  if (0 == b.shield) {
+	    b.get_hurt(1);
+	    board.animate_damage(target, 1);
 	  } else {
-	    board.animate_delay();
+	    Log.i("TODO", "block animation");
+	    board.animate_damage(target, 0);
 	  }
 	  return;
       }
@@ -2120,12 +2161,37 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  is_finished = true;
+	  being_list[target].get_hurt(2);
+	  print("Cause Light Wounds deals 2 damage.");
+	  board.animate_damage(target, 2);
+	  return;
+      }
+    }
+  }
+
+  public class FingerOfDeathSpell extends Spell {
+    FingerOfDeathSpell() {
+      init("Finger of Death", "PWPFSSSD", R.drawable.wound, R.string.PWPFSSSDdesc, 1);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  board.animate_spell(target, bitmap);
+	  being_list[target].dead = true;
+	  return;
+	/* TODO: Ominous animation.
+	case 0:
+	  board.animate_spell(target, bitmap);
+	  return;
+	case 1:
+	  is_finished = true;
 	  if (-1 != target) {
-	    being_list[target].get_hurt(2);
-	    print("Cause Light Wounds deals 2 damage.");
+	    being_list[target].dead = true;
 	  }
 	  board.animate_damage(target, 2);
 	  return;
+	  */
       }
     }
   }
@@ -2142,18 +2208,14 @@ public class MainView extends View {
       switch(state) {
 	case 0:
 	  is_finished = true;
-	  if (-1 != target) {
-	    int k = being_list[target].controller;
-	    Being b = being_list[being_list_count] =
-		new Being(monster, monster_bmid, k);
-	    being_list_count++;
-	    b.start_life(level);
-	    b.target = 1 - k;
-	    Log.i("TODO", "fade in monster_bitmap");
-	    board.animate_spell(target, bitmap);
-	  } else {
-	    board.animate_delay();
-	  }
+	  int k = being_list[target].controller;
+	  Being b = being_list[being_list_count] =
+	      new Being(monster, monster_bmid, k);
+	  being_list_count++;
+	  b.start_life(level);
+	  b.target = 1 - k;
+	  Log.i("TODO", "fade in monster_bitmap");
+	  board.animate_spell(target, bitmap);
 	  return;
       }
     }
@@ -2176,6 +2238,20 @@ public class MainView extends View {
     }
   }
 
+  public class SummonTrollSpell extends SummonSpell {
+    SummonTrollSpell() {
+      init_summon("Troll", "FPSFW", R.drawable.summon1, R.string.FPSFWdesc,
+	  R.drawable.goblin, 3);
+    }
+  }
+
+  public class SummonGiantSpell extends SummonSpell {
+    SummonGiantSpell() {
+      init_summon("Giant", "WFPSFW", R.drawable.summon1, R.string.WFPSFWdesc,
+	  R.drawable.goblin, 4);
+    }
+  }
+
   public class CureLightWoundsSpell extends Spell {
     CureLightWoundsSpell() {
       init("Cure Light Wounds", "DFW", R.drawable.curelight, R.string.DFWdesc, 0);
@@ -2184,9 +2260,7 @@ public class MainView extends View {
       switch(state) {
 	case 0:
 	  is_finished = true;
-	  if (-1 != target) {
-	    being_list[target].heal(1);
-	  }
+	  being_list[target].heal(1);
 	  board.animate_spell(target, bitmap);
 	  return;
       }
@@ -2196,14 +2270,13 @@ public class MainView extends View {
   public class ConfusionSpell extends Spell {
     ConfusionSpell() {
       init("Confusion", "DSF", R.drawable.confusion, R.string.DSFdesc, 1);
+      set_is_psych();
     }
     public void cast(int source, int target) {
       switch(state) {
 	case 0:
 	  is_finished = true;
-	  if (-1 != target) {
-	    being_list[target].status = Status.CONFUSED;
-	  }
+	  being_list[target].status = Status.CONFUSED;
 	  board.animate_spell(target, bitmap);
 	  return;
       }
@@ -2213,16 +2286,15 @@ public class MainView extends View {
   public class CharmPersonSpell extends Spell {
     CharmPersonSpell() {
       init("Charm Person", "PSDF", R.drawable.confusion, R.string.PSDFdesc, 1);
+      set_is_psych();
     }
     public void cast(int source, int target) {
       switch(state) {
 	case 0:
 	  is_finished = true;
-	  if (-1 != target) {
-	    // Only works on opponent.
-	    if (1 - source == target) {
-	      being_list[target].status = Status.CHARMED;
-	    }
+	  // Only works on opponent.
+	  if (1 - source == target) {
+	    being_list[target].status = Status.CHARMED;
 	  }
 	  board.animate_spell(target, bitmap);
 	  return;
@@ -2233,6 +2305,7 @@ public class MainView extends View {
   public class FearSpell extends Spell {
     FearSpell() {
       init("Fear", "SWD", R.drawable.confusion, R.string.SWDdesc, 1);
+      set_is_psych();
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -2248,6 +2321,22 @@ public class MainView extends View {
     }
   }
 
+  public class AmnesiaSpell extends Spell {
+    AmnesiaSpell() {
+      init("Amnesia", "DPP", R.drawable.confusion, R.string.DPPdesc, 1);
+      set_is_psych();
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  being_list[target].status = Status.AMNESIA;
+	  board.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
   public class AntiSpellSpell extends Spell {
     AntiSpellSpell() {
       init("Anti-spell", "SPFP", R.drawable.confusion, R.string.SPFPdesc, 1);
@@ -2257,10 +2346,8 @@ public class MainView extends View {
 	case 0:
 	  is_finished = true;
 	  // Only affects humans.
-	  if (target == 1 || target == 0) {
-	    if (target == 1) opphist.fast_forward();
-	    else hist.fast_forward();
-	  }
+	  if (target == 1) opphist.fast_forward();
+	  else hist.fast_forward();
 	  board.animate_spell(target, bitmap);
 	  return;
       }
@@ -2277,10 +2364,8 @@ public class MainView extends View {
 	  board.animate_shield(target);
 	  return;
 	case 1:
-	  if (target != -1) {
-	    Being b = being_list[target];
-	    b.shield = 4;
-	  }
+	  Being b = being_list[target];
+	  b.shield = 4;
 	  finish_spell();
 	  return;
       }
@@ -2298,17 +2383,13 @@ public class MainView extends View {
 	  board.animate_move(source, target);
 	  return;
 	case 1:
-	  if (target != -1) {
-	    Being b = being_list[target];
-	    if (0 == b.shield) {
-	      b.get_hurt(level);
-	      board.animate_move_damage(target, 1);
-	    } else {
-	      Log.i("TODO", "block animation");
-	      board.animate_move_damage(target, 0);
-	    }
+	  Being b = being_list[target];
+	  if (0 == b.shield) {
+	    b.get_hurt(level);
+	    board.animate_move_damage(target, 1);
 	  } else {
-	    board.animate_delay();
+	    Log.i("TODO", "block animation");
+	    board.animate_move_damage(target, 0);
 	  }
 	  return;
 	case 2:
@@ -2325,6 +2406,7 @@ public class MainView extends View {
     static public final int CONFUSED = 1;
     static public final int CHARMED = 2;
     static public final int FEAR = 3;
+    static public final int AMNESIA = 4;
   }
 
   static int[] summon_count;
@@ -2439,8 +2521,8 @@ public class MainView extends View {
     // it must be the other player.
     short controller;
     boolean dead;
-    // ID of monster consistent amongst all players in a net game.
-    int id;
+    int psych;  // Detects psychological spell conflicts.
+    int id;  // ID of monster consistent amongst all players in a net game.
   }
 
   class BeingPosition {
