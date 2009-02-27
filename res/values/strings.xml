@@ -62,8 +62,10 @@
     <string name="talkabouttilt2">After gesturing, tilt the screen up vertically. When the bottom line flashes, tilt the screen back to its original position.</string>
     <string name="meetforwfp">Now, <i>Missile</i> is useful, but can be blocked by <i>Shield</i>. I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
 
-    <string name="wavetut">To make a <b>Wave</b> gesture (<b>W</b>), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ). <b>Wave</b> both hands and end your turn.</string>
-    <string name="fingerstut">Now make the <b>Fingers</b> gesture (<b>F</b>) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ). Then end your turn.</string>
+    <string name="wavetut">To make a <b>Wave</b> gesture (<b>W</b>), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ).</string>
+    <string name="wavetut1">Gesture <b>Wave</b> with both hands.</string>
+    <string name="wavetut2">Tap the bottom of the screen</string>
+    <string name="fingerstut">Now make the <b>Fingers</b> gesture (<b>F</b>) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ).</string>
     <string name="fingerstutpass1">Perfect! Gesture <b>Palm</b> with both hands. Normally this loses, but since <b>WFP</b> is <i>Cause Light Wounds</i>, you\'ll do 4 points of damage and kill your opponent!</string>
     <string name="fingerstutpass2">Well done! Notice a gesture can only complete 1 spell, explaining why no <i>Shield</i> was cast.</string>
     <string name="fingerstutpass3">I\'ll see you back at school.</string>
@@ -122,6 +124,10 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="PSDFdesc">Control target spellcaster's hand next turn. No effect on monsters. Cancels with other psychological spells.</string>
 <string name="WWPdesc">4-turn Shield.</string>
 <string name="SWDdesc">Target can only gesture P K or W next turn.</string>
+<string name="PSFWdesc">Ogres can do 2 damage, and have 2 hit points.</string>
+<string name="FPSFWdesc">Trolls can do 3 damage, and have 3 hit points.</string>
+<string name="WFPSFWdesc">Giants can do 4 damage, and have 4 hit points.</string>
+<string name="SPFPdesc">Interrupt target wizard's spell combo. Starting next turn, target can only start new spells.</string>
 
 <string name="servererror">Cannot connect to server :(</string>
 </resources>

@@ -99,7 +99,7 @@ class Tubes extends SpellTapMachine {
     try {
       sock = new Socket();
       sock.bind(null);
-      sock.connect(new InetSocketAddress("67.188.86.161", 3333), 2000);
+      sock.connect(new InetSocketAddress("192.168.1.101", 3333), 2000);
       out = new DataOutputStream(sock.getOutputStream());
       in = new DataInputStream(sock.getInputStream());
       out.writeBytes(msg);

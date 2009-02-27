@@ -619,7 +619,6 @@ public class MainView extends View {
 	  jack_tip(R.string.SDtut2);
 	  set_main_state(STATE_GESTURE_TEACH);
 	  state = 200;
-	  invalidate();
 	  return;
 	case 200:
 	  if (Gesture.SNAP == choice[0] && Gesture.SNAP == choice[1]) {
@@ -703,39 +702,54 @@ public class MainView extends View {
 	  state = 1;
 	  return;
 	case 1:
-	  clear_choices();
-	  set_main_state(STATE_ON_END_ROUND);
+	  jack_tip(R.string.wavetut1);
+	  arr_x1 = 0;
+	  arr_y0 = ylower + 32;
+	  arr_y1 = ystatus - 8;
+	  arr_x0 = arr_x1 + (arr_y1 - arr_y0);
+	  help_arrow_on_symmetric();
+	  set_main_state(STATE_GESTURE_TEACH);
 	  state = 2;
-	  invalidate();
 	  return;
 	case 2:
-	  if (hist.gest[0][0] == Gesture.WAVE &&
-	      hist.gest[0][1] == Gesture.WAVE) {
-	    jack_says(R.string.fingerstut);
+	  if (Gesture.WAVE == choice[0] && Gesture.WAVE == choice[1]) {
+	    help_arrow_off();
+	    jack_tip(R.string.wavetut2);
+	    set_main_state(STATE_ON_CONFIRM);
 	    state = 3;
-	  } else {
-	    jack_says(R.string.fingerstutfail);
-	    state = 0;
 	  }
 	  return;
 	case 3:
+	  jack_tip_off();
+	  jack_tip(R.string.fingerstut);
+	  arr_x0 = 0;
+	  arr_y0 = ylower + 32;
+	  arr_y1 = ystatus - 8;
+	  arr_x1 = arr_x0 + (arr_y1 - arr_y0);
+	  help_arrow_on_symmetric();
 	  set_gesture_knowledge(Wisdom.ALL_BUT_C);
+	  set_main_state(STATE_GESTURE_TEACH);
 	  state = 4;
-	  invalidate();
 	  return;
 	case 4:
-	  if (hist.gest[1][0] == Gesture.FINGERS &&
-	      hist.gest[1][1] == Gesture.FINGERS) {
-	    jack_says(R.string.fingerstutpass1);
+	  if (Gesture.FINGERS == choice[0] && Gesture.FINGERS == choice[1]) {
+	    help_arrow_off();
+	    jack_tip(R.string.wavetut2);
+	    set_main_state(STATE_ON_CONFIRM);
 	    set_spell_knowledge(Wisdom.UP_TO_WFP);
 	    state = 5;
-	  } else {
-	    jack_says(R.string.fingerstutfail);
-	    state = 0;
 	  }
 	  return;
 	case 5:
-	  invalidate();
+	  jack_tip_off();
+	  set_main_state(STATE_ON_END_ROUND);
+	  state = 500;
+	  return;
+	case 500:
+	  jack_says(R.string.fingerstutpass1);
+	  state = 501;
+	  return;
+	case 501:
 	  state = 6;
 	  return;
 	case 6:
@@ -1026,6 +1040,9 @@ public class MainView extends View {
       start = new int[2];
       reset();
     }
+    void fast_forward() {
+      start[0] = start[1] = cur;
+    }
     void reset() {
       cur = 0;
       start[0] = start[1] = 0;
@@ -1090,6 +1107,7 @@ public class MainView extends View {
     spell_list_count = 0;
     stab_spell = new StabSpell();
     add_spell(stab_spell, 65);
+
     add_spell(new ShieldSpell(), 8);
     add_spell(new MissileSpell(), 64);
     add_spell(new CauseLightWoundsSpell(), 63);
@@ -1098,7 +1116,10 @@ public class MainView extends View {
     add_spell(new SummonGoblinSpell(), 17);
     add_spell(new ProtectionSpell(), 7);
     add_spell(new CharmPersonSpell(), 31);
+    add_spell(new AntiSpellSpell(), 27);
+
     add_spell(new FearSpell(), 30);
+    add_spell(new SummonOgreSpell(), 18);
 
     being_list = new Being[16];
     summon_count = new int[2];
@@ -2094,10 +2115,10 @@ public class MainView extends View {
   public class SummonSpell extends Spell {
     void init_summon(String i_monster, String gesture,
 	int bitmapid, int description, int monsterbitmapid, int i_level) {
-      init("Summon " + monster, gesture, bitmapid, description, 0);
       monster_bmid = monsterbitmapid;
       level = i_level;
       monster = i_monster;
+      init("Summon " + monster, gesture, bitmapid, description, 0);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -2127,6 +2148,13 @@ public class MainView extends View {
     SummonGoblinSpell() {
       init_summon("Goblin", "SFW", R.drawable.summon1, R.string.SFWdesc,
 	  R.drawable.goblin, 1);
+    }
+  }
+
+  public class SummonOgreSpell extends SummonSpell {
+    SummonOgreSpell() {
+      init_summon("Ogre", "PSFW", R.drawable.summon1, R.string.PSFWdesc,
+	  R.drawable.goblin, 2);
     }
   }
 
@@ -2202,6 +2230,25 @@ public class MainView extends View {
     }
   }
 
+  public class AntiSpellSpell extends Spell {
+    AntiSpellSpell() {
+      init("Anti-spell", "SPFP", R.drawable.confusion, R.string.SPFPdesc, 1);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  // Only affects humans.
+	  if (target == 1 || target == 0) {
+	    if (target == 1) opphist.fast_forward();
+	    else hist.fast_forward();
+	  }
+	  board.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
   public class ProtectionSpell extends Spell {
     ProtectionSpell() {
       init("Protection From Evil", "WWP", R.drawable.shield, R.string.WWPdesc, 0);
@@ -2236,7 +2283,7 @@ public class MainView extends View {
 	  if (target != -1) {
 	    Being b = being_list[target];
 	    if (0 == b.shield) {
-	      b.get_hurt(1);
+	      b.get_hurt(level);
 	      board.animate_move_damage(target, 1);
 	    } else {
 	      Log.i("TODO", "block animation");
