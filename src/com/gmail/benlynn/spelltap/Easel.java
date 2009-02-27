@@ -27,6 +27,11 @@ class Easel {
     white_rtext = new Paint(white_text);
     white_rtext.setTextAlign(Paint.Align.RIGHT);
 
+    spell_text = new Paint(white_text);
+    spell_text.setTextSize(16);
+    spell_rtext = new Paint(white_rtext);
+    spell_rtext.setTextSize(16);
+
     grey_text = new Paint(white_text);
     grey_text.setARGB(255, 143, 143, 143);
     grey_rtext = new Paint(grey_text);
@@ -54,6 +59,11 @@ class Easel {
 
     sel_paint = new Paint();
     sel_paint.setARGB(255, 127, 255, 127);
+
+    wait_paint = new Paint();
+    wait_paint.setARGB(255, 127, 0, 0);
+    reply_paint = new Paint();
+    reply_paint.setARGB(255, 0, 0, 170);
   }
 
   static Paint paint;
@@ -68,4 +78,6 @@ class Easel {
   static Paint sel_paint;
   static Paint charm_text, charm_rtext;
   static Paint history_text, history_rtext;
+  static Paint spell_text, spell_rtext;
+  static Paint wait_paint, reply_paint;
 }

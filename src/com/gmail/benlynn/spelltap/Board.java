@@ -40,13 +40,13 @@ public class Board extends View {
     black_stroke_paint.setStrokeWidth(2);
     shield_paint = new Paint[4];
     shield_paint[0] = new Paint();
-    shield_paint[0].setARGB(127, 255, 63, 63);
+    shield_paint[0].setARGB(191, 255, 63, 63);
     shield_paint[0].setStyle(Paint.Style.STROKE);
     shield_paint[0].setStrokeWidth(4);
     shield_paint[1] = new Paint(shield_paint[0]);
-    shield_paint[1].setARGB(127, 255, 255, 63);
+    shield_paint[1].setARGB(191, 255, 255, 63);
     shield_paint[2] = new Paint(shield_paint[0]);
-    shield_paint[2].setARGB(127, 127, 255, 127);
+    shield_paint[2].setARGB(191, 127, 255, 127);
     shield_paint[3] = new Paint(shield_paint[2]);
   }
 

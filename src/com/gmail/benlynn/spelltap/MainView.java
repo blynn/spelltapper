@@ -855,24 +855,22 @@ public class MainView extends View {
     s += s2;
 
     opp_ready = false;
-    print("Waiting for opponent...");
-    invalidate();
     // Spawn a thread to send move over the network, so we can keep handling
     // user input.
-    net_state = NET_DECODE;
+    handler_state = HANDLER_DECODE;
     Tubes.send_move(s);
   }
-  static int net_state;
-  static final int NET_DECODE = 0;
-  static final int NET_CHARM_CHOSEN = 1;
-  static final int NET_GET_CHARM_HAND = 2;
-  static final int NET_GET_CHARM_GESTURE = 3;
+  static int handler_state;
+  static final int HANDLER_DECODE = 0;
+  static final int HANDLER_CHARM_CHOSEN = 1;
+  static final int HANDLER_GET_CHARM_HAND = 2;
+  static final int HANDLER_GET_CHARM_GESTURE = 3;
 
   void net_set_charm(int hand, int gesture) {
     opp_ready = false;
     print("Informing server...");
     invalidate();
-    net_state = NET_CHARM_CHOSEN;
+    handler_state = HANDLER_CHARM_CHOSEN;
     Tubes.send_set_charm(hand, gesture);
   }
 
@@ -880,7 +878,7 @@ public class MainView extends View {
     opp_ready = false;
     print("Waiting for opponent to choose charmed hand...");
     invalidate();
-    net_state = NET_GET_CHARM_HAND;
+    handler_state = HANDLER_GET_CHARM_HAND;
     Tubes.send_get_charm_hand();
     return -1;
   }
@@ -889,7 +887,7 @@ public class MainView extends View {
     opp_ready = false;
     print("Waiting for server...");
     invalidate();
-    net_state = NET_GET_CHARM_GESTURE;
+    handler_state = HANDLER_GET_CHARM_GESTURE;
     Tubes.send_get_charm_gesture();
     return -1;
   }
@@ -904,16 +902,16 @@ public class MainView extends View {
       } catch (InterruptedException e) {
       }
       Log.i("Reply", Tubes.reply);
-      switch(net_state) {
-	case NET_DECODE:
+      switch(handler_state) {
+	case HANDLER_DECODE:
 	  decode_move(oppmove, Tubes.reply);
 	  break;
-	case NET_CHARM_CHOSEN:
+	case HANDLER_CHARM_CHOSEN:
 	  opp_ready = true;
-	  is_waiting = false;
+	  net_state = NET_IDLE;
 	  note_charm_chosen();
 	  break;
-	case NET_GET_CHARM_HAND:
+	case HANDLER_GET_CHARM_HAND:
 	  switch(Tubes.reply.charAt(0)) {
 	    case '0':
 	      charmed_hand = 0;
@@ -926,10 +924,10 @@ public class MainView extends View {
 	    Log.e("TODO", "Handle bad messages");
 	  }
 	  opp_ready = true;
-	  is_waiting = false;
+	  net_state = NET_IDLE;
 	  new_round_post_charm();
 	  break;
-	case NET_GET_CHARM_GESTURE:
+	case HANDLER_GET_CHARM_GESTURE:
 	  {
 	    int g = Tubes.reply.charAt(0) - '0';
 	    if (g >= 0 && g <= 8 && g != Gesture.NONE && gesture[g] != null) {
@@ -939,7 +937,7 @@ public class MainView extends View {
 	      break;
 	    }
 	    opp_ready = true;
-	    is_waiting = false;
+	    net_state = NET_IDLE;
 	    apply_charm();
 	    break;
 	  }
@@ -966,11 +964,7 @@ public class MainView extends View {
       turn.attack_target[n] = decode_target(r.charAt(7 + 2 * n + 1));
     }
     opp_ready = true;
-    is_waiting = false;
-
-    // Notify player and wait for tap. onDraw() calls resolve() on
-    // receiving the tap.
-    is_showing_modal = true;
+    net_state = NET_REPLY;
     invalidate();
   }
 
@@ -1160,7 +1154,6 @@ public class MainView extends View {
     freeze_gesture = false;
     choosing_charm = false;
     net_handler = new NetHandler();
-    is_showing_modal = false;
     is_help_arrow_on = false;
   }
   static String emptyleftmsg;
@@ -1212,10 +1205,22 @@ public class MainView extends View {
     y = ylower;
     canvas.drawRect(0, y, 320, 480, Easel.octarine);
 
-    // Status line highlight.
-    if (is_confirmable) {
-      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
-      canvas.drawText("TAP!", 160, ystatus + 24, Easel.tap_ctext);
+    // Bottom line.
+    switch(net_state) {
+      case NET_WAIT: 
+	canvas.drawRect(0, ystatus, 320, 480, Easel.wait_paint);
+	canvas.drawText("Waiting for opponent...", 160, ystatus + 36, Easel.tap_ctext);
+	break;
+      case NET_REPLY:
+	canvas.drawRect(0, ystatus, 320, 480, Easel.reply_paint);
+	canvas.drawText("Opponent has moved. Tap to continue.", 160, ystatus + 36, Easel.tap_ctext);
+	break;
+      case NET_IDLE:
+	if (is_confirmable) {
+	  canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
+	  canvas.drawText("TAP!", 160, ystatus + 36, Easel.tap_ctext);
+	}
+	break;
     }
 
     // Gesture and spell text.
@@ -1252,26 +1257,22 @@ public class MainView extends View {
       }
     }
 
-    canvas.drawText(spell_text[0], 0, ystatus + 24 - 4, Easel.white_text);
-    canvas.drawText(spell_text[1], 320, ystatus + 24 - 4, Easel.white_rtext);
+    canvas.drawText(spell_text[0], 0, ystatus + 16, Easel.spell_text);
+    canvas.drawText(spell_text[1], 320, ystatus + 16, Easel.spell_rtext);
 
     // Spell choice row 1
     x = 0;
     y = ylower + 24;
-    if (!is_showing_modal) {
-      for (int h = 0; h < 2; h++) {
-	for (int i = 0; i < ready_spell_count[h]; i++) {
-	  if (i == spell_choice[h]) {
-	    canvas.drawRect(x, y, x + 50, y + 50, Easel.sel_paint);
-	  }
-	  canvas.drawBitmap(ready_spell[i][h].bitmap, x + 1, y + 1, Easel.paint);
-	  if (h == 0) x += 50;
-	  else x -= 50;
+    for (int h = 0; h < 2; h++) {
+      for (int i = 0; i < ready_spell_count[h]; i++) {
+	if (i == spell_choice[h]) {
+	  canvas.drawRect(x, y, x + 50, y + 50, Easel.sel_paint);
 	}
-	x = 320 - 50;
+	canvas.drawBitmap(ready_spell[i][h].bitmap, x + 1, y + 1, Easel.paint);
+	if (h == 0) x += 50;
+	else x -= 50;
       }
-    } else {
-      print("Opponent has moved. Tap to contnue.");
+      x = 320 - 50;
     }
 
     // Spell choice row 2
@@ -1350,13 +1351,13 @@ public class MainView extends View {
   public boolean onTouchEvent(MotionEvent event) {
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
-	if (is_showing_modal) {
-	  is_showing_modal = false;
+	if (NET_REPLY == net_state) {
+	  net_state = NET_IDLE;
 	  resolve();
 	  return false;
 	}
+	if (NET_WAIT == net_state) return false;
 	if (is_animating) return false;
-	if (is_waiting) return false;
 	x0 = event.getX();
 	y0 = event.getY();
 	if (y0 < ylower) {
@@ -1401,8 +1402,6 @@ public class MainView extends View {
 	}
 	return true;
       case MotionEvent.ACTION_UP:
-	if (is_animating) return false;
-	if (is_waiting) return false;
 	x1 = event.getX();
 	y1 = event.getY();
 	if (drag_i != -1) {
@@ -1551,6 +1550,11 @@ public class MainView extends View {
   // charmed_hand and choice[].
   static boolean opp_ready;
 
+  void wait_on_net() {
+    net_state = NET_WAIT;
+    invalidate();
+  }
+
   private void confirm_move() {
     if (!is_confirmable) return;
     if (STATE_ON_CONFIRM == main_state) run();
@@ -1570,7 +1574,7 @@ public class MainView extends View {
 	} else  {
 	  // In network games, network code eventually calls
 	  // note_charm_chosen().
-	  is_waiting = true;
+	  wait_on_net();
 	}
       }
       return;
@@ -1583,7 +1587,7 @@ public class MainView extends View {
 	if (opp_ready) {
 	  apply_charm();
 	} else  {
-	  is_waiting = true;
+	  wait_on_net();
 	  // Network code calls apply_charm().
 	}
 	return;
@@ -1600,7 +1604,6 @@ public class MainView extends View {
   }
 
   void get_opp_moves() {
-    arrow_view.setVisibility(View.GONE);
     hist.add(choice);
 
     opp_ready = true;
@@ -1611,7 +1614,7 @@ public class MainView extends View {
       return;
     }
     // Otherwise we wait for network code to call resolve().
-    is_waiting = true;
+    wait_on_net();
   }
 
   void note_charm_chosen() {
@@ -1620,8 +1623,6 @@ public class MainView extends View {
     invalidate();
     new_round2();
   }
-
-  static boolean is_waiting;
 
   // Insert spells by priority.
   private void insert_spell(SpellCast sc) {
@@ -1677,6 +1678,9 @@ public class MainView extends View {
     }
 
     clear_choices();
+    arrow_view.setVisibility(View.GONE);
+    invalidate();
+
     exec_cursor = 0;
     // TODO: Print message and delay if there are no spells.
     // Or maybe flash the screen and make a sound unconditionally to get
@@ -1788,7 +1792,6 @@ public class MainView extends View {
     invalidate();
 
     if (gameover) {
-      print("");
       spelltap.narrate(sid);
       // run() is called once the player has tapped through the
       // victory screen.
@@ -1836,7 +1839,7 @@ public class MainView extends View {
     being_list[0].heal_full();
     being_list[1].heal_full();
     set_main_state(STATE_NORMAL);
-    is_waiting = false;
+    net_state = NET_IDLE;
     tilt_state = TILT_AWAIT_UP;
   }
 
@@ -1849,7 +1852,7 @@ public class MainView extends View {
       if (!opp_ready) {
 	// Network game. Handler will call new_round_post_charm once
 	// a valid reply is received.
-	is_waiting = true;
+	wait_on_net();
 	return;
       }
     } else {
@@ -2483,10 +2486,17 @@ public class MainView extends View {
   static final int TILT_AWAIT_UP = 0;
   static final int TILT_AWAIT_DOWN = 1;
   static final int TILT_DISABLED = 2;
-  static boolean is_showing_modal;
   static boolean is_confirmable;
   static boolean is_help_arrow_on;
   static boolean is_symmetric_help_arrow;
   static float arr_x0, arr_y0, arr_x1, arr_y1, frame;
   static float arr_x2, arr_y2;
+  // For net game turns, net_state goes from IDLE to WAIT while waiting for
+  // the opponent's moves, and then REPLY when they are received so we can
+  // print a message and wait for a tap before animation. For spells such as
+  // charm, the state only goes between IDLE and WAIT.
+  static int net_state;
+  static final int NET_IDLE = 0;
+  static final int NET_WAIT = 1;
+  static final int NET_REPLY = 2;
 }
