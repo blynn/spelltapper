@@ -69,6 +69,7 @@ public class MainView extends View {
   static final int ystatus = ylower + 24 + 2 * 50;
   static final int yicon = 64 + 48 + 2 * 4;
   static String spell_text[];
+  static boolean spell_is_twohanded;
   static int ready_spell_count[];
   static Spell[][] ready_spell;
   static Spell[] spell_list;
@@ -1111,8 +1112,9 @@ public class MainView extends View {
     lastchoice = new int[2];
     hist = new History();
     opphist = new History();
-    ready_spell_count = new int[2];
-    ready_spell = new Spell[4][2];
+    ready_spell_count = new int[3];
+    ready_spell = new Spell[5][3];
+    spell_is_twohanded = false;
     spell_choice = new int[2];
     spell_choice[0] = spell_choice[1] = 0;
     spell_text = new String[2];
@@ -1392,13 +1394,25 @@ public class MainView extends View {
     spell_choice[h] = i;
     spell_target[h] = ready_spell[i][h].target;
 
-    if (-1 != spell_choice[h]) {
-      Spell sp = ready_spell[spell_choice[h]][h];
-      arrow_view.bmspell[h] = sp.bitmap;
-      spell_text[h] = sp.name;
-    } else {
-      arrow_view.bmspell[h] = null;
-    }
+    Spell sp = ready_spell[spell_choice[h]][h];
+    arrow_view.bmspell[h] = sp.bitmap;
+    spell_text[h] = sp.name;
+    invalidate();
+  }
+
+  private void choose_twohanded_spell(int i) {
+    spell_is_twohanded = true;
+    if (i == spell_choice[0]) return;
+    spell_choice[0] = i;
+    spell_choice[1] = i;
+    spell_target[0] = ready_spell[i][2].target;
+    spell_target[1] = ready_spell[i][2].target;
+
+    Spell sp = ready_spell[spell_choice[0]][2];
+    arrow_view.bmspell[0] = sp.bitmap;
+    arrow_view.bmspell[1] = sp.bitmap;
+    spell_text[0] = sp.name;
+    spell_text[1] = "(two-handed spell)";
     invalidate();
   }
 
@@ -2005,8 +2019,10 @@ public class MainView extends View {
   }
 
   private void spell_search(int h) {
+    spell_is_twohanded = false;
     ready_spell_count[h] = 0;
     spell_choice[h] = -1;
+    ready_spell_count[2] = 0;
     if (choice[h] == Gesture.KNIFE) {
       if (choice[1 - h] == Gesture.KNIFE) {
 	spell_text[h] = "(only one knife)";
@@ -2029,42 +2045,54 @@ public class MainView extends View {
 	  int k = g.length() - 1;
 	  if (k > hist.cur - hist.start[h]) continue;
 	  char ch = g.charAt(k);
+	  boolean twohanded = false;
+	  int hand = h;
 	  if (Character.isLowerCase(ch)) {
+	    twohanded = true;
 	    ch = Character.toUpperCase(ch);
-	    if (Gesture.NONE == choice[1 - h] ||
-		ch != gesture[choice[0]].abbr ||
-	        ch != gesture[choice[1]].abbr) continue;
+	    if (choice[0] != choice[1] ||
+		ch != gesture[choice[0]].abbr) continue;
 	    // TODO: Deselect other spells when 2-handed finishing
 	    // gesture is required.
 	  } else if (ch != gesture[choice[h]].abbr) continue;
-	  k--;
-	  int k2 = hist.cur - 1;
-	  while (k >= 0) {
-	    ch = g.charAt(k);
-	    if (Character.isLowerCase(ch)) {
-	      ch = Character.toUpperCase(ch);
-	      int old0 = hist.gest[k2][h];
-	      if (Gesture.NONE == old0) {
-		Log.e("MV", "Bug! Spell length check should prevent this.");
-		break;
+	  // Complicated logic: if the last gesture is two-handed we
+	  // need to search both histories for this spell. Otherwise we
+	  // only search the hand that changed.
+	  for(;;) {
+	    k = g.length() - 2;
+	    int k2 = hist.cur - 1;
+	    while (k >= 0) {
+	      ch = g.charAt(k);
+	      if (Character.isLowerCase(ch)) {
+		ch = Character.toUpperCase(ch);
+		int old0 = hist.gest[k2][0];
+		int old1 = hist.gest[k2][1];
+		if (old0 != old1 ||
+		    ch != gesture[old0].abbr) break;
+	      } else if (ch != gesture[hist.gest[k2][hand]].abbr) break;
+	      k2--;
+	      k--;
+	    }
+	    if (0 > k) {
+	      // At last we have a match.
+	      if (twohanded) {
+		add_ready_spell(2, sp);
+	      } else {
+		add_ready_spell(hand, sp);
 	      }
-	      int old1 = hist.gest[k2][1 - h];
-	      if (Gesture.NONE == old1) break;
-	      if (ch != gesture[old0].abbr ||
-	          ch != gesture[old1].abbr) break;
-	    } else if (ch != gesture[hist.gest[k2][h]].abbr) break;
-	    k2--;
-	    k--;
-	  }
-	  if (0 > k) {
-	    // At last we have a match.
-	    add_ready_spell(h, sp);
+	    }
+	    if (twohanded) {
+	      if (hand != h) break;
+	      hand = 1 - h;
+	    } else break;
 	  }
 	}
       }
     }
     if (ready_spell_count[h] > 0) {
       choose_spell(h, ready_spell_count[h] - 1);
+    } else if (ready_spell_count[2] > 0) {
+      choose_twohanded_spell(ready_spell_count[2] - 1);
     } else {
       arrow_view.bmspell[h] = null;
     }
@@ -2399,7 +2427,7 @@ public class MainView extends View {
 
   public class DiseaseSpell extends Spell {
     DiseaseSpell() {
-      init("Disease", "Fc", R.drawable.curelight, R.string.DSFFFcdesc, 1);
+      init("Disease", "Fc", R.drawable.disease, R.string.DSFFFcdesc, 1);
     }
     public void cast(int source, int target) {
       switch(state) {
