@@ -1037,12 +1037,14 @@ public class MainView extends View {
     choice[1] = choice[0] = Gesture.NONE;
     lastchoice[0] = lastchoice[1] = choice[0];
     ready_spell_count[0] = ready_spell_count[1] = 0;
+    ready_spell_count[2] = 0;
     spell_choice[0] = spell_choice[1] = -1;
     spell_text[0] = spell_text[1] = "";
     arrow_view.bmspell[0] = arrow_view.bmspell[1] = null;
     is_confirmable = false;
     freeze_gesture = false;
     charmed_hand = -1;
+    spell_is_twohanded = false;
   }
 
   class History {
@@ -1114,7 +1116,6 @@ public class MainView extends View {
     opphist = new History();
     ready_spell_count = new int[3];
     ready_spell = new Spell[5][3];
-    spell_is_twohanded = false;
     spell_choice = new int[2];
     spell_choice[0] = spell_choice[1] = 0;
     spell_text = new String[2];
@@ -1322,6 +1323,10 @@ public class MainView extends View {
     }
     for (int h = 0; h < 2; h++) {
       for (int i = 0; i < ready_spell_count[h]; i++) {
+	if (i == 3) {
+	  x = h == 0 ? 0 : 320 - 50;
+	  y += 50;
+	}
 	if (i == spell_choice[h]) {
 	  canvas.drawRect(x, y, x + 50, y + 50, Easel.sel_paint);
 	}
@@ -1333,10 +1338,15 @@ public class MainView extends View {
     }
 
     // Spell choice row 2
-    /*
     y += 50;
-    canvas.drawRect(0, y, 50 - 1, y + 50 - 1, Easel.paint);
-    */
+    x = 160 - 25;
+    for (int i = 0; i < ready_spell_count[2]; i++) {
+      if (i == spell_choice[0]) {
+	canvas.drawRect(x, y, x + 50, y + 50, Easel.sel_paint);
+      }
+      canvas.drawBitmap(ready_spell[i][2].bitmap, x + 1, y + 1, Easel.paint);
+      x += 50;
+    }
 
     if (is_help_arrow_on) {
       canvas.drawLine(arr_x0, arr_y0, arr_x2, arr_y2, Easel.arrow_paint);
@@ -1495,6 +1505,9 @@ public class MainView extends View {
 	    } else {
 	      spell_target[drag_i] = target;
 	      if (STATE_TARGET_TEACH == main_state && target > 1) run();
+	    }
+	    if (spell_is_twohanded) {
+	      spell_target[1 - drag_i] = spell_target[drag_i];
 	    }
 	  } else {
 	    Being b = being_list[drag_i];
@@ -1719,11 +1732,19 @@ public class MainView extends View {
 
     exec_queue_count = 0;
     // Insert player spells and targets into execution queue.
-    for (int h = 0; h < 2; h++) {
-      if (-1 == spell_choice[h]) continue;
-      SpellCast sc = new SpellCast(
-	  ready_spell[spell_choice[h]][h], 0, spell_target[h]);
-      insert_spell(sc);
+    if (spell_is_twohanded) {
+      if (-1 != spell_choice[0]) {
+	SpellCast sc = new SpellCast(
+	    ready_spell[spell_choice[0]][2], 0, spell_target[0]);
+	insert_spell(sc);
+      }
+    } else {
+      for (int h = 0; h < 2; h++) {
+	if (-1 == spell_choice[h]) continue;
+	SpellCast sc = new SpellCast(
+	    ready_spell[spell_choice[h]][h], 0, spell_target[h]);
+	insert_spell(sc);
+      }
     }
     // Insert opponent spells and targets.
     for (int h = 0; h < 2; h++) {
@@ -2427,7 +2448,7 @@ public class MainView extends View {
 
   public class DiseaseSpell extends Spell {
     DiseaseSpell() {
-      init("Disease", "Fc", R.drawable.disease, R.string.DSFFFcdesc, 1);
+      init("Disease", "DSFFFc", R.drawable.disease, R.string.DSFFFcdesc, 1);
     }
     public void cast(int source, int target) {
       switch(state) {
