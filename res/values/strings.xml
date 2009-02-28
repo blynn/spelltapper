@@ -132,7 +132,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="WWSdesc">Alternate sequence for Counter-spell</string>
 <string name="PDWPdesc">Removes all enchantments from target wizard. Removes target monster from game.</string>
 <string name="FFFdesc">Target monster cannot attack next turn. Freeze target hand of wizard: F, S, W become C, D, P respectively. If already paralyzed, the same hand is paralyzed again, otherwise the caster chooses the hand. Cancels with other psychological spells.</string>
-
+<string name="cDPWdesc">No other spells can be cast this turn. Unsummon all monsters, who still attack this round, and remove all enchantments. Shields target.</string>
 <string name="FPSFWdesc">Trolls can do 3 damage, and have 3 hit points.</string>
 <string name="WPFDdesc">3 magical damage to target. Ignores <i>Shield</i>.</string>
 <string name="DFPWdesc">Heal up to 2 health points. Cures disease.</string>
@@ -147,8 +147,8 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="oppmoved">Opponent has moved. Tap to continue.</string>
 
 <string name="about"><b>Spell Tap</b>\n<i>Ben Lynn</i>\n\n
-Adaption of <a href="http://www.mud.co.uk/richard/spellbnd.htm">Richard Bartle\'s <i>Spellbinder</i></a>, also known as <i>Waving Hands</i>
+Adaption of Richard Bartle\'s <i>Spellbinder</i>, also known as <i>Waving Hands</i>: http://www.mud.co.uk/richard/spellbnd.htm
 \n\n
-<a href="http://cs.stanford.edu/~blynn/spelltap/">Spell Tap homepage</a>.
+Spell Tap homepage: http://cs.stanford.edu/~blynn/spelltap/
 </string>
 </resources>

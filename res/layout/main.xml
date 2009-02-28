@@ -124,6 +124,7 @@
       android:background="#ffffffff"
       android:singleLine="false"
       android:padding="6dip"
+      android:autoLink="all"
       />
 </ScrollView>
 <LinearLayout

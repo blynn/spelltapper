@@ -1127,9 +1127,10 @@ public class MainView extends View {
     spell_text[0] = spell_text[1] = "";
     spell_list = new Spell[64];
     spell_list_count = 0;
+    spell_level = 0;
     stab_spell = new StabSpell();
     add_spell(stab_spell, 65);
-
+    spell_level = 1;
     add_spell(new ShieldSpell(), 8);
     add_spell(new MissileSpell(), 64);
     add_spell(new CauseLightWoundsSpell(), 63);
@@ -1138,7 +1139,7 @@ public class MainView extends View {
     add_spell(new SummonGoblinSpell(), 17);
     add_spell(new ProtectionSpell(), 7);
     add_spell(new CharmPersonSpell(), 31);
-
+    spell_level = 2;
     add_spell(new SummonOgreSpell(), 18);
     add_spell(new AmnesiaSpell(), 29);
     add_spell(new FearSpell(), 30);
@@ -1147,14 +1148,16 @@ public class MainView extends View {
     add_spell(new CounterSpellSpell(), 3);
     add_spell(new CounterSpellAltSpell(), 3);
     add_spell(new RemoveEnchantmentSpell(), 32);
-
+    spell_level = 3;
     add_spell(new SummonTrollSpell(), 19);
+    dispel_spell = new DispelMagicSpell();
+    add_spell(dispel_spell, 0);
     add_spell(new CauseHeavyWoundsSpell(), 62);
     add_spell(new CureHeavyWoundsSpell(), 129);
     add_spell(new DiseaseSpell(), 25);
-
+    spell_level = 4;
     add_spell(new SummonGiantSpell(), 20);
-
+    spell_level = 5;
     add_spell(new FingerOfDeathSpell(), 50);
 
     being_list = new Being[16];
@@ -1200,14 +1203,14 @@ public class MainView extends View {
   static String emptyleftmsg;
   static String emptyrightmsg;
 
+  static int spell_level;
   public void add_spell(Spell sp, int priority) {
     spell_list[spell_list_count] = sp;
     sp.index = spell_list_count;
     sp.priority = priority;
+    sp.level = spell_level;
     spell_list_count++;
   }
-
-  static StabSpell stab_spell;
 
   @Override
   public void onDraw(Canvas canvas) {
@@ -1829,12 +1832,23 @@ public class MainView extends View {
       }
       print(s);
       Log.i("MV", s);
-      if (-1 == sc.target) {
-	// Only Dispel Magic, Fire/Ice Storm/Elemental work.
+      if (sc.spell == dispel_spell) {
+	// Dispel Magic always works.
+	sc.spell.execute(sc.source, sc.target);
+      } else if (is_dispel_cast && sc.spell.level > 0) {
+	Log.i("MV", "Dispel Magic negates the spell.");
 	sc.spell.just_wait();
+      } else if (-1 == sc.target) {
+	if (sc.spell.is_global) {
+	  sc.spell.execute(sc.source, sc.target);
+	} else {
+	  sc.spell.just_wait();
+	}
       } else {
 	Being b = being_list[sc.target];
-	if (b.counterspell) {
+	if (b.dead) {
+	  Log.i("MV", "Target is dead. Nothing happens.");
+	} else if (b.counterspell) {
 	  sc.spell.fizzle(sc.target);
 	} else if (sc.spell.is_psych) {
 	  if (1 != b.psych) {
@@ -1858,6 +1872,7 @@ public class MainView extends View {
     boolean gameover = false;
     for(int i = being_list_count - 1; i >= 0; i--) {
       Being b = being_list[i];
+      b.counterspell = false;
       if (b.shield > 0) b.shield--;
       // TODO: Shield off animation.
       if (b.disease > 0) {
@@ -1870,7 +1885,7 @@ public class MainView extends View {
 	b.die();
       }
       if (b.unsummon) {
-	if (i < 2) Log.e("MV", "Unsummoned player!");
+	if (i < 2) Log.e("MV", "Bug! Cannot unsummon player!");
 	being_pos[b.index].being = null;
 	for(int j = being_list_count - 1; j > i; j--) {
 	  being_list[j - 1] = being_list[j];
@@ -1879,6 +1894,7 @@ public class MainView extends View {
 	// TODO: Unsummon animation.
       }
     }
+    is_dispel_cast = false;
 
     is_animating = false;
     tilt_state = TILT_AWAIT_UP;
@@ -1948,7 +1964,7 @@ public class MainView extends View {
     being_list[1].shield = 0;
     being_list[0].heal_full();
     being_list[1].heal_full();
-    for (int i = 0; i < 16; i++) being_pos[i].being = null;
+    reset_being_pos();
     set_main_state(STATE_NORMAL);
     net_state = NET_IDLE;
     tilt_state = TILT_AWAIT_UP;
@@ -2147,10 +2163,13 @@ public class MainView extends View {
       target = def_target;
       learned = false;
       is_psych = false;
+      is_global = false;
+      level = 0;
     }
 
     abstract public void cast(int init_source, int init_target);
     void set_is_psych() { is_psych = true; }
+    void set_is_global() { is_global = true; }
     Bitmap bitmap;
     String name;
     String gesture;
@@ -2161,6 +2180,7 @@ public class MainView extends View {
     SpannableString purty;
     boolean learned;
     boolean is_psych;
+    boolean is_global;
     boolean is_finished;  // Set this to true before calling last animation.
                           // Or call finish_spell() [it's slower].
     int cast_source, cast_target;
@@ -2203,6 +2223,7 @@ public class MainView extends View {
       }
     }
     int priority;
+    int level;
   }
 
   public class ShieldSpell extends Spell {
@@ -2579,10 +2600,7 @@ public class MainView extends View {
       switch(state) {
 	case 0:
 	  Being b = being_list[target];
-	  // Remove enchantments.
-	  b.disease = 0;
-	  b.shield = 0;
-	  b.status = Status.OK;
+	  b.remove_enchantments();
 	  if (target > 1) {
 	    // Destroy monster.
 	    b.unsummon = true;
@@ -2591,6 +2609,35 @@ public class MainView extends View {
 	  board.animate_spell(target, bitmap);
 	  return;
       }
+    }
+  }
+
+  public class DispelMagicSpell extends Spell {
+    DispelMagicSpell() {
+      init("Dispel Magic", "cDPW", R.drawable.protection, R.string.cDPWdesc, 0);
+      set_is_global();
+    }
+    public void cast(int source, int target) {
+      is_finished = true;
+      if (!is_dispel_cast) {
+	is_dispel_cast = true;
+	for (int i = 0; i < being_list_count; i++) {
+	  Being b = being_list[i];
+	  if (i < 2) {
+	    b.remove_enchantments();
+	  } else {
+	    b.unsummon = true;
+	  }
+	}
+      }
+      if (target != -1) {
+	Being b = being_list[target];
+	b.shield = 1;
+	board.animate_shield(target);
+      } else {
+	board.animate_delay();
+      }
+      return;
     }
   }
 
@@ -2615,7 +2662,7 @@ public class MainView extends View {
   public class MonsterAttack extends Spell {
     MonsterAttack(int n) {
       init("", "", R.drawable.goblin, R.string.bug, 1);
-      level = n;
+      power = n;
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -2625,7 +2672,7 @@ public class MainView extends View {
 	case 1:
 	  Being b = being_list[target];
 	  if (0 == b.shield) {
-	    b.get_hurt(level);
+	    b.get_hurt(power);
 	    board.animate_move_damage(target, 1);
 	  } else {
 	    Log.i("TODO", "block animation");
@@ -2638,7 +2685,7 @@ public class MainView extends View {
 	  return;
       }
     }
-    int level;
+    int power;
   }
 
   static public class Status {
@@ -2740,12 +2787,20 @@ public class MainView extends View {
     void die() {
       dead = true;
       lifeline = "Dead";
+      remove_enchantments();
     }
     boolean contains(float xf, float yf) {
       int x0 = (int) xf;
       int y0 = (int) yf;
       return x0 + SLOP >= x && x0 < x + w + SLOP &&
 	  y0 + SLOP >= y && y0 < y + h + SLOP;
+    }
+
+    void remove_enchantments() {
+      // Remove enchantments.
+      disease = 0;
+      shield = 0;
+      status = Status.OK;
     }
 
     Bitmap bitmap;
@@ -2843,4 +2898,7 @@ public class MainView extends View {
   static final int NET_IDLE = 0;
   static final int NET_WAIT = 1;
   static final int NET_REPLY = 2;
+  static boolean is_dispel_cast;
+  static StabSpell stab_spell;
+  static DispelMagicSpell dispel_spell;
 }
