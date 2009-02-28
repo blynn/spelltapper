@@ -242,6 +242,7 @@ Log.i("MV", "Pause");
     static public final int UP_TO_DSF = 4;
     static public final int UP_TO_DFW = 5;
     static final int ALL_LEVEL_1 = 6;
+    static final int ALL_LEVEL_2 = 16;
     static final int ALL_SPELLS = 128;
 
     static final int NONE = -1;
@@ -390,9 +391,16 @@ Log.i("MV", "Pause");
       school.set_state_generic_advice();
       dojo.set_state_dummy(5);
       break;
+    case 16:
+      set_spell_knowledge(Wisdom.ALL_LEVEL_2);
+      pit.set_state_closed();
+      school.set_state_generic_advice();
+      dojo.set_state_dummy(8);
+      break;
     case 128:
       set_spell_knowledge(Wisdom.ALL_SPELLS);
-      pit.set_state_closed();
+      set_gesture_knowledge(Wisdom.ALL_GESTURES);
+      pit.set_state_duel(Agent.getBloodyRipper());
       school.set_state_generic_advice();
       dojo.set_state_dummy(50);
       break;

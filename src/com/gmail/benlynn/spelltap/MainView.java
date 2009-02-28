@@ -5,6 +5,18 @@
 // Stop handlers on init.
 // Hide spells on end of turn?
 // Clean up setVisibility calls.
+// Handle more than 3 spells on the same hand.
+
+// Spell precedence:
+//
+//   Dispel Magic
+//   Shield, Protection From Evil, Counter-Spell, Magic Mirror
+//   Summon
+//   Enchantments
+//   Remove Enchantment
+//   Damaging spells, attacks
+//   Cures, Raise Dead
+
 package com.gmail.benlynn.spelltap;
 
 import android.content.Context;
@@ -184,6 +196,13 @@ public class MainView extends View {
     for (int i = 0; i < spell_list_count; i++) spell_list[i].learned = false;
     // Exploits fall-through.
     switch(level) {
+      case Wisdom.ALL_LEVEL_2:
+        learn(spellAtGesture("SWD"));
+        learn(spellAtGesture("DPP"));
+        learn(spellAtGesture("WPP"));
+        learn(spellAtGesture("WWS"));
+        learn(spellAtGesture("FFF"));
+        learn(spellAtGesture("PDWP"));
       case Wisdom.ALL_LEVEL_1:
         learn(spellAtGesture("WWP"));
         learn(spellAtGesture("PSDF"));
@@ -602,8 +621,6 @@ public class MainView extends View {
 	  state = 1;
 	  return;
 	case 1:
-	  // Restore life in case player has been messing around.
-	  being_list[0].start_life(5);
 	  being_list[1].start_life(5);
 	  reset_game();
 	  clear_choices();
@@ -868,7 +885,6 @@ public class MainView extends View {
 
   void net_set_charm(int hand, int gesture) {
     opp_ready = false;
-    print("Informing server...");
     invalidate();
     handler_state = HANDLER_CHARM_CHOSEN;
     Tubes.send_set_charm(hand, gesture);
@@ -876,7 +892,6 @@ public class MainView extends View {
 
   int net_get_charm_hand() {
     opp_ready = false;
-    print("Waiting for opponent to choose charmed hand...");
     invalidate();
     handler_state = HANDLER_GET_CHARM_HAND;
     Tubes.send_get_charm_hand();
@@ -885,7 +900,6 @@ public class MainView extends View {
 
   int net_get_charm_gesture() {
     opp_ready = false;
-    print("Waiting for server...");
     invalidate();
     handler_state = HANDLER_GET_CHARM_GESTURE;
     Tubes.send_get_charm_gesture();
@@ -1116,13 +1130,19 @@ public class MainView extends View {
     add_spell(new SummonGoblinSpell(), 17);
     add_spell(new ProtectionSpell(), 7);
     add_spell(new CharmPersonSpell(), 31);
-    add_spell(new AntiSpellSpell(), 27);
 
+    add_spell(new SummonOgreSpell(), 18);
     add_spell(new AmnesiaSpell(), 29);
     add_spell(new FearSpell(), 30);
-    add_spell(new SummonOgreSpell(), 18);
+    add_spell(new AntiSpellSpell(), 27);
+    add_spell(new CounterSpellSpell(), 3);
+    add_spell(new CounterSpellAltSpell(), 3);
+    add_spell(new RemoveEnchantmentSpell(), 32);
 
     add_spell(new SummonTrollSpell(), 19);
+    add_spell(new CauseHeavyWoundsSpell(), 62);
+    add_spell(new CureHeavyWoundsSpell(), 129);
+    add_spell(new DiseaseSpell(), 25);
 
     add_spell(new SummonGiantSpell(), 20);
 
@@ -1232,9 +1252,23 @@ public class MainView extends View {
 	  if (choosing_charm) {
 	    canvas.drawRect(0, ystatus, 320, 480, Easel.charm_text);
 	    canvas.drawText("CHARM!", 160, ystatus + 36, Easel.tap_ctext);
-	  } else {
-	    canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
-	    canvas.drawText("TAP!", 160, ystatus + 36, Easel.tap_ctext);
+	  } else switch(being_list[0].status) {
+	    case Status.CHARMED:
+	      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
+	      canvas.drawText("CHARMED!", 160, ystatus + 36, Easel.tap_ctext);
+	      break;
+	    case Status.CONFUSED:
+	      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
+	      canvas.drawText("CONFUSED!", 160, ystatus + 36, Easel.tap_ctext);
+	      break;
+	    case Status.AMNESIA:
+	      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
+	      canvas.drawText("AMNESIA!", 160, ystatus + 36, Easel.tap_ctext);
+	      break;
+	    default:
+	      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
+	      canvas.drawText("TAP!", 160, ystatus + 36, Easel.tap_ctext);
+	      break;
 	  }
 	}
 	break;
@@ -1406,7 +1440,6 @@ public class MainView extends View {
 	    }
 	  }
 	  if (-1 != drag_i) {
-	    print("Drag to target.");
 	    // TODO: Only invalidate status bar.
 	    invalidate();
 	    return true;
@@ -1488,7 +1521,12 @@ public class MainView extends View {
 	    }
 	  }
 	} else {
-	  if (STATE_ON_CONFIRM == main_state) return false;
+	  if (STATE_ON_CONFIRM == main_state ||
+	      freeze_gesture ||
+	      TILT_AWAIT_DOWN == tilt_state ||
+	      STATE_TARGET_TEACH == main_state) {
+	    return false;
+	  }
 	  int dirx, diry;
 	  int h;
 	  dirx = dx > 0 ? 1 : -1;
@@ -1504,12 +1542,7 @@ public class MainView extends View {
 	    h = 1;
 	    dirx *= -1;
 	  }
-	  if (h == charmed_hand ||
-	      freeze_gesture ||
-	      TILT_AWAIT_DOWN == tilt_state ||
-	      STATE_TARGET_TEACH == main_state) {
-	    return true;
-	  }
+	  if (h == charmed_hand) return false;
 	  choice[h] = Gesture.flattenxy(dirx, diry);
 	  if (null == gesture[choice[h]] || !gesture[choice[h]].learned) {
 	    choice[h] = Gesture.NONE;
@@ -1619,7 +1652,6 @@ public class MainView extends View {
   void apply_charm() {
     handle_new_choice(charmed_hand);
     freeze_gesture = true;
-    print("Charm takes effect. Confirm spells and targets.");
   }
 
   void get_opp_moves() {
@@ -1759,16 +1791,20 @@ public class MainView extends View {
       if (-1 == sc.target) {
 	// Only Dispel Magic, Fire/Ice Storm/Elemental work.
 	sc.spell.just_wait();
-      } else if (sc.spell.is_psych) {
+      } else {
 	Being b = being_list[sc.target];
-	if (1 != b.psych) {
-	  Log.i("MV", "Psych spell conflict.");
-	  sc.spell.psych_fizzle(sc.target);
+	if (b.counterspell) {
+	  sc.spell.fizzle(sc.target);
+	} else if (sc.spell.is_psych) {
+	  if (1 != b.psych) {
+	    Log.i("MV", "Psych spell conflict.");
+	    sc.spell.fizzle(sc.target);
+	  } else {
+	    sc.spell.execute(sc.source, sc.target);
+	  }
 	} else {
 	  sc.spell.execute(sc.source, sc.target);
 	}
-      } else {
-	sc.spell.execute(sc.source, sc.target);
       }
       exec_cursor++;
     } else {
@@ -1783,9 +1819,23 @@ public class MainView extends View {
       Being b = being_list[i];
       if (b.shield > 0) b.shield--;
       // TODO: Shield off animation.
-      if (b.life <= 0) {
+      if (b.disease > 0) {
+	b.disease++;
+	if (b.disease > 6) b.die();
+      }
+      if (b.life <= 0 || b.doomed) {
+	b.doomed = false;
 	if (i >= 2) b.bitmap = bmcorpse;
 	b.die();
+      }
+      if (b.unsummon) {
+	if (i < 2) Log.e("MV", "Unsummoned player!");
+	being_pos[b.index].being = null;
+	for(int j = being_list_count - 1; j > i; j--) {
+	  being_list[j - 1] = being_list[j];
+	}
+	being_list_count--;
+	// TODO: Unsummon animation.
       }
     }
 
@@ -1846,24 +1896,6 @@ public class MainView extends View {
     return Status.CHARMED == being_list[1].status;
   }
 
-  // Start new round.
-  void new_round() {
-    // Thus begins the Charm Person spaghetti. The most complex case is
-    // when Charm Person has simultaneously been cast on both players. Then:
-    //  1. I pick a hand and gesture for my opponent.
-    //  2. I ask which hand of mine was chosen by my opponent.
-    //  3. I choose a gesture with my other hand.
-    //  4. I ask which gesture the opponent chose for my charmed hand.
-    //  5. I choose spells and targets from the results.
-    // Non-blocking network communication complicates the code further.
-    if (opp_charmed()) {
-      choosing_charm = true;
-      print("Charm: Pick gesture for opponent.");
-      return;
-    }
-    new_round2();
-  }
-
   void reset_game() {
     clear_choices();
     hist.reset();
@@ -1875,9 +1907,28 @@ public class MainView extends View {
     being_list[1].shield = 0;
     being_list[0].heal_full();
     being_list[1].heal_full();
+    for (int i = 0; i < 16; i++) being_pos[i].being = null;
     set_main_state(STATE_NORMAL);
     net_state = NET_IDLE;
     tilt_state = TILT_AWAIT_UP;
+  }
+
+  // Start new round.
+  void new_round() {
+    // Thus begins the Charm Person spaghetti. The most complex case is
+    // when Charm Person has simultaneously been cast on both players. Then:
+    //  1. I pick a hand and gesture for my opponent.
+    //  2. I ask which hand of mine was chosen by my opponent.
+    //  3. I choose a gesture with my other hand. I can also choose
+    //  spells and targets and confirm.
+    //  4. I ask which gesture the opponent chose for my charmed hand.
+    //  5. I finalize spells and targets and confirm.
+    // Non-blocking network communication complicates the code further.
+    if (opp_charmed()) {
+      choosing_charm = true;
+      return;
+    }
+    new_round2();
   }
 
   void new_round2() {
@@ -1908,11 +1959,13 @@ public class MainView extends View {
       freeze_gesture = true;
     }
 
-    // Handle confused monsters.
+    // Handle confused and paralyzed monsters.
     for (int i = 2; i < being_list_count; i++) {
       Being b = being_list[i];
       if (Status.CONFUSED == b.status) {
 	b.target = b.controller;
+      } else if (Status.PARALYZED == b.status) {
+	b.target = -1;
       }
     }
     invalidate();
@@ -1959,7 +2012,7 @@ public class MainView extends View {
 	spell_text[h] = "(only one knife)";
       } else {
 	add_ready_spell(h, stab_spell);
-	spell_text[h] = "";
+	spell_text[h] = "(no spell)";
       }
     } else {
       if (lastchoice[h] == Gesture.KNIFE && choice[1 - h] == Gesture.KNIFE) {
@@ -1973,16 +2026,33 @@ public class MainView extends View {
 	  Spell sp = spell_list[i];
 	  if (!sp.learned) continue;
 	  String g = sp.gesture;
-	  int k = g.length();
-	  if (k > hist.cur - hist.start[h] + 1) continue;
-	  k--;
-	  if (g.charAt(k) != gesture[choice[h]].abbr) continue;
+	  int k = g.length() - 1;
+	  if (k > hist.cur - hist.start[h]) continue;
+	  char ch = g.charAt(k);
+	  if (Character.isLowerCase(ch)) {
+	    ch = Character.toUpperCase(ch);
+	    if (Gesture.NONE == choice[1 - h] ||
+		ch != gesture[choice[0]].abbr ||
+	        ch != gesture[choice[1]].abbr) continue;
+	    // TODO: Deselect other spells when 2-handed finishing
+	    // gesture is required.
+	  } else if (ch != gesture[choice[h]].abbr) continue;
 	  k--;
 	  int k2 = hist.cur - 1;
 	  while (k >= 0) {
-	    if (g.charAt(k) != gesture[hist.gest[k2][h]].abbr) {
-	      break;
-	    }
+	    ch = g.charAt(k);
+	    if (Character.isLowerCase(ch)) {
+	      ch = Character.toUpperCase(ch);
+	      int old0 = hist.gest[k2][h];
+	      if (Gesture.NONE == old0) {
+		Log.e("MV", "Bug! Spell length check should prevent this.");
+		break;
+	      }
+	      int old1 = hist.gest[k2][1 - h];
+	      if (Gesture.NONE == old1) break;
+	      if (ch != gesture[old0].abbr ||
+	          ch != gesture[old1].abbr) break;
+	    } else if (ch != gesture[hist.gest[k2][h]].abbr) break;
 	    k2--;
 	    k--;
 	  }
@@ -2040,7 +2110,7 @@ public class MainView extends View {
                           // Or call finish_spell() [it's slower].
     int cast_source, cast_target;
 
-    public void psych_fizzle(int init_target) {
+    public void fizzle(int init_target) {
       state = 0;
       is_finished = true;
       board.set_notify_me(done_handler);
@@ -2095,6 +2165,32 @@ public class MainView extends View {
 	  finish_spell();
 	  return;
       }
+    }
+  }
+
+  public class CounterSpellSpell extends Spell {
+    CounterSpellSpell() {
+      init("Counter-spell", "WPP", R.drawable.shield, R.string.WPPdesc, 0);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  board.animate_shield(target);
+	  return;
+	case 1:
+	  Being b = being_list[target];
+	  if (0 == b.shield) b.shield = 1;
+	  b.counterspell = true;
+	  finish_spell();
+	  return;
+      }
+    }
+  }
+
+  // Alternate gesture sequence for counter-spell.
+  public class CounterSpellAltSpell extends CounterSpellSpell {
+    CounterSpellAltSpell() {
+      init("Counter-spell", "WWS", R.drawable.shield, R.string.WWSdesc, 0);
     }
   }
 
@@ -2169,6 +2265,25 @@ public class MainView extends View {
     }
   }
 
+  public class CauseHeavyWoundsSpell extends Spell {
+    CauseHeavyWoundsSpell() {
+      init("Cause Heavy Wounds", "WPFD", R.drawable.wound, R.string.WPFDdesc, 1);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  board.animate_spell(target, bitmap);
+	  return;
+	case 1:
+	  is_finished = true;
+	  being_list[target].get_hurt(3);
+	  print("Cause Heavy Wounds deals 3 damage.");
+	  board.animate_damage(target, 3);
+	  return;
+      }
+    }
+  }
+
   public class FingerOfDeathSpell extends Spell {
     FingerOfDeathSpell() {
       init("Finger of Death", "PWPFSSSD", R.drawable.wound, R.string.PWPFSSSDdesc, 1);
@@ -2178,7 +2293,7 @@ public class MainView extends View {
 	case 0:
 	  is_finished = true;
 	  board.animate_spell(target, bitmap);
-	  being_list[target].dead = true;
+	  being_list[target].doomed = true;
 	  return;
 	/* TODO: Ominous animation.
 	case 0:
@@ -2186,9 +2301,7 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  is_finished = true;
-	  if (-1 != target) {
-	    being_list[target].dead = true;
-	  }
+	  being_list[target].doomed = true;
 	  board.animate_damage(target, 2);
 	  return;
 	  */
@@ -2267,6 +2380,39 @@ public class MainView extends View {
     }
   }
 
+  public class CureHeavyWoundsSpell extends Spell {
+    CureHeavyWoundsSpell() {
+      init("Cure Heavy Wounds", "DFW", R.drawable.curelight, R.string.DFPWdesc, 0);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  Being b = being_list[target];
+	  b.heal(2);
+	  b.disease = 0;
+	  board.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
+  public class DiseaseSpell extends Spell {
+    DiseaseSpell() {
+      init("Disease", "Fc", R.drawable.curelight, R.string.DSFFFcdesc, 1);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  Being b = being_list[target];
+	  if (0 == b.disease) b.disease = 1;
+	  board.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
   public class ConfusionSpell extends Spell {
     ConfusionSpell() {
       init("Confusion", "DSF", R.drawable.confusion, R.string.DSFdesc, 1);
@@ -2337,6 +2483,22 @@ public class MainView extends View {
     }
   }
 
+  public class ParalysisSpell extends Spell {
+    ParalysisSpell() {
+      init("Paralysis", "FFF", R.drawable.confusion, R.string.FFFdesc, 1);
+      set_is_psych();
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  being_list[target].status = Status.PARALYZED;
+	  board.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
   public class AntiSpellSpell extends Spell {
     AntiSpellSpell() {
       init("Anti-spell", "SPFP", R.drawable.confusion, R.string.SPFPdesc, 1);
@@ -2348,6 +2510,29 @@ public class MainView extends View {
 	  // Only affects humans.
 	  if (target == 1) opphist.fast_forward();
 	  else hist.fast_forward();
+	  board.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
+  public class RemoveEnchantmentSpell extends Spell {
+    RemoveEnchantmentSpell() {
+      init("Remove Enchantment", "PDWP", R.drawable.shield, R.string.PDWPdesc, 0);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  Being b = being_list[target];
+	  // Remove enchantments.
+	  b.disease = 0;
+	  b.shield = 0;
+	  b.status = Status.OK;
+	  if (target > 1) {
+	    // Destroy monster.
+	    b.unsummon = true;
+	  }
+	  is_finished = true;
 	  board.animate_spell(target, bitmap);
 	  return;
       }
@@ -2407,6 +2592,7 @@ public class MainView extends View {
     static public final int CHARMED = 2;
     static public final int FEAR = 3;
     static public final int AMNESIA = 4;
+    static public final int PARALYZED = 5;
   }
 
   static int[] summon_count;
@@ -2453,7 +2639,10 @@ public class MainView extends View {
 	summon_count[controller]++;
       }
       status = Status.OK;
+      unsummon = false;
       shield = 0;
+      disease = 0;
+      counterspell = false;
       dead = false;
       setup(init_name, bitmapid, 0);
     }
@@ -2489,6 +2678,7 @@ public class MainView extends View {
     }
     void heal_full() {
       dead = false;
+      doomed = false;
       life = life_max;
       lifeline = Integer.toString(life) + "/" + Integer.toString(life);
     }
@@ -2506,7 +2696,7 @@ public class MainView extends View {
     Bitmap bitmap;
     String name;
     String lifeline;
-    int index;
+    int index;  // Index into being_pos.
     int x, y;
     int life;
     int life_max;
@@ -2520,9 +2710,11 @@ public class MainView extends View {
     // could represent the source of a Charm Person spell. For now we know
     // it must be the other player.
     short controller;
-    boolean dead;
+    boolean dead, doomed, unsummon;
+    boolean counterspell;  // If counter-spell has been cast on this being.
     int psych;  // Detects psychological spell conflicts.
     int id;  // ID of monster consistent amongst all players in a net game.
+    int disease;
   }
 
   class BeingPosition {

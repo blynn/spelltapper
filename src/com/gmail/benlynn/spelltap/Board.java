@@ -48,6 +48,12 @@ public class Board extends View {
     shield_paint[2] = new Paint(shield_paint[0]);
     shield_paint[2].setARGB(191, 127, 255, 127);
     shield_paint[3] = new Paint(shield_paint[2]);
+    spot_x[0] = 3; spot_y[0] = -10;
+    spot_x[1] = 20; spot_y[1] = 18;
+    spot_x[2] = -5; spot_y[2] = 9;
+    spot_x[3] = -16; spot_y[3] = 13;
+    spot_x[4] = -17; spot_y[4] = -17;
+    spot_x[5] = 19; spot_y[5] = -10;
   }
 
   static int source, target;
@@ -240,23 +246,26 @@ public class Board extends View {
   void set_notify_me(Handler h) { notify_me = h; }
 
   public void drawBeing(int i, int mx, int my, Canvas canvas) {
-      Being b = MainView.being_list[i];
-      canvas.drawBitmap(b.bitmap, mx, my, paint);
-      if (b.shield > 0) {
-	int n = b.shield - 1;
-	if (n > 3) n = 3;
-	canvas.drawCircle(mx + b.midw, my + b.midh, b.midw + 5, shield_paint[n]);
+    Being b = MainView.being_list[i];
+    canvas.drawBitmap(b.bitmap, mx, my, paint);
+    if (b.shield > 0) {
+      int n = b.shield - 1;
+      if (n > 3) n = 3;
+      canvas.drawCircle(mx + b.midw, my + b.midh, b.midw + 5, shield_paint[n]);
+    }
+    switch(b.status) {
+      case Status.CONFUSED:
+	canvas.drawText("?", mx + b.w - 8, my + 16 - 4, Easel.octarine);
+	break;
+    }
+    if (b.dead) {
+      canvas.drawText(b.lifeline, mx, my + 16 - 4, Easel.red_paint);
+    } else {
+      canvas.drawText(b.lifeline, mx, my + 16 - 4, Easel.green_paint);
+      for (int k = 0; k < b.disease - 1; k++) {
+	canvas.drawCircle(mx + b.midw + spot_x[k], my + b.midh + spot_y[k], 3, Easel.red_paint);
       }
-      switch(b.status) {
-	case Status.CONFUSED:
-	  canvas.drawText("?", mx + b.w - 8, my + 16 - 4, Easel.octarine);
-	  break;
-      }
-      if (b.dead) {
-	canvas.drawText(b.lifeline, mx, my + 16 - 4, Easel.red_paint);
-      } else {
-	canvas.drawText(b.lifeline, mx, my + 16 - 4, Easel.green_paint);
-      }
+    }
   }
 
   @Override
@@ -330,4 +339,8 @@ public class Board extends View {
     frame = 0;
     anim = ANIM_NONE;
   }
+
+  // Spots to signify disease.
+  static final int spot_x[] = new int[6];
+  static final int spot_y[] = new int[6];
 }

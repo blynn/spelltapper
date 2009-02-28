@@ -123,10 +123,20 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="DSFdesc">Target spellcaster must select same gesture for both hands. Target monster attacks its controller. Cancels with other psychological spells.</string>
 <string name="PSDFdesc">Control target spellcaster's hand next turn. No effect on monsters. Cancels with other psychological spells.</string>
 <string name="WWPdesc">4-turn Shield.</string>
-<string name="SWDdesc">Target can only gesture P K or W next turn. Cancels with other psychological spells.</string>
-<string name="DPPdesc">Target wizard must repeat same gesture. Target monster attacks same target. Cancels with other psychological spells.</string>
+
 <string name="PSFWdesc">Ogres can do 2 damage, and have 2 hit points.</string>
+<string name="SWDdesc">Target can only gesture P K or W next turn. Cancels with other psychological spells.</string>
+<string name="DPPdesc">Target wizard must repeat gestures. Target monster attacks same target. Cancels with other psychological spells.</string>
+<string name="WPPdesc">Target is immune to all spells except Dispel Magic and Finger of Death.</string>
+<string name="WWSdesc">Alternate sequence for Counter-spell</string>
+<string name="PDWPdesc">Removes all enchantments from target wizard. Removes target monster from game.</string>
+<string name="FFFdesc">Target monster cannot attack next turn. Freeze target hand of wizard: F, S, W become C, D, P respectively. If already paralyzed, the same hand is paralyzed again, otherwise the caster chooses the hand. Cancels with other psychological spells.</string>
+
 <string name="FPSFWdesc">Trolls can do 3 damage, and have 3 hit points.</string>
+<string name="WPFDdesc">3 magical damage to target. Ignores <i>Shield</i>.</string>
+<string name="DFPWdesc">Heal up to 2 health points. Cures disease.</string>
+<string name="DSFFFcdesc">Target dies within 6 turns from disease. Can be cured with <i>Remove Enchantment</i>, <i>Cure Heavy Wounds</i> or <i>Dispel Magic</i>.</string>
+
 <string name="WFPSFWdesc">Giants can do 4 damage, and have 4 hit points.</string>
 <string name="SPFPdesc">Interrupt spell combo. Starting next turn, target wizard must start spells anew.</string>
 <string name="PWPFSSSDdesc">Target dies, even if protected by Counter-spell. Ignores Shield.</string>
