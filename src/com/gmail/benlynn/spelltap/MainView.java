@@ -2219,7 +2219,7 @@ public class MainView extends View {
 
   public class CounterSpellSpell extends Spell {
     CounterSpellSpell() {
-      init("Counter-spell", "WPP", R.drawable.shield, R.string.WPPdesc, 0);
+      init("Counter-spell", "WPP", R.drawable.counter, R.string.WPPdesc, 0);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -2239,7 +2239,7 @@ public class MainView extends View {
   // Alternate gesture sequence for counter-spell.
   public class CounterSpellAltSpell extends CounterSpellSpell {
     CounterSpellAltSpell() {
-      init("Counter-spell", "WWS", R.drawable.shield, R.string.WWSdesc, 0);
+      init("Counter-spell", "WWS", R.drawable.counter, R.string.WWSdesc, 0);
     }
   }
 
@@ -2431,7 +2431,7 @@ public class MainView extends View {
 
   public class CureHeavyWoundsSpell extends Spell {
     CureHeavyWoundsSpell() {
-      init("Cure Heavy Wounds", "DFW", R.drawable.curelight, R.string.DFPWdesc, 0);
+      init("Cure Heavy Wounds", "DFPW", R.drawable.cureheavy, R.string.DFPWdesc, 0);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -2518,7 +2518,7 @@ public class MainView extends View {
 
   public class AmnesiaSpell extends Spell {
     AmnesiaSpell() {
-      init("Amnesia", "DPP", R.drawable.confusion, R.string.DPPdesc, 1);
+      init("Amnesia", "DPP", R.drawable.amnesia, R.string.DPPdesc, 1);
       set_is_psych();
     }
     public void cast(int source, int target) {
@@ -2590,7 +2590,7 @@ public class MainView extends View {
 
   public class ProtectionSpell extends Spell {
     ProtectionSpell() {
-      init("Protection From Evil", "WWP", R.drawable.shield, R.string.WWPdesc, 0);
+      init("Protection From Evil", "WWP", R.drawable.protection, R.string.WWPdesc, 0);
     }
     public void cast(int source, int target) {
       switch(state) {
