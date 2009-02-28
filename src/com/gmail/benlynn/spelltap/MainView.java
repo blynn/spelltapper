@@ -849,7 +849,12 @@ public class MainView extends View {
     s += (char) (choice[0] + '0');
     s += (char) (choice[1] + '0');
     // Encode spells and targets.
-    for (int h = 0; h < 2; h++) {
+    if (spell_is_twohanded) {
+      s += (char) (ready_spell[spell_choice[0]][2].index + 'A');
+      s += encode_target(spell_target[0]);
+      s += (char) ('A' - 1);
+      s += (char) ('A' - 1);
+    } else for (int h = 0; h < 2; h++) {
       if (-1 != spell_choice[h]) {
 	s += (char) (ready_spell[spell_choice[h]][h].index + 'A');
 	s += encode_target(spell_target[h]);
@@ -1137,6 +1142,7 @@ public class MainView extends View {
     add_spell(new SummonOgreSpell(), 18);
     add_spell(new AmnesiaSpell(), 29);
     add_spell(new FearSpell(), 30);
+    add_spell(new ParalysisSpell(), 30);
     add_spell(new AntiSpellSpell(), 27);
     add_spell(new CounterSpellSpell(), 3);
     add_spell(new CounterSpellAltSpell(), 3);
@@ -2499,7 +2505,7 @@ public class MainView extends View {
 
   public class FearSpell extends Spell {
     FearSpell() {
-      init("Fear", "SWD", R.drawable.confusion, R.string.SWDdesc, 1);
+      init("Fear", "SWD", R.drawable.fear, R.string.SWDdesc, 1);
       set_is_psych();
     }
     public void cast(int source, int target) {
