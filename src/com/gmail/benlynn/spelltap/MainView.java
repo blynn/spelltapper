@@ -303,6 +303,8 @@ public class MainView extends View {
 	  return;
 	case 5:
 	  if (choice[0] == Gesture.KNIFE) {
+	    choice[1] = Gesture.NONE;
+	    handle_new_choice(1);
 	    help_arrow_off();
 	    jack_says(R.string.howtoknifepass3);
 	    state = 6;
@@ -489,6 +491,7 @@ public class MainView extends View {
     PalmTutorial() {
       state = 0;
       count = 0;
+      last_hand = -1;
     }
     void run() {
       for(;;) switch(state) {
@@ -510,14 +513,16 @@ public class MainView extends View {
 	  state = 2;
 	  return;
 	case 2:
-	  if (choice[0] == Gesture.PALM || choice[1] == Gesture.PALM) {
-	    if (choice[0] == Gesture.PALM) {
-	      choice[1] = Gesture.NONE;
-	      handle_new_choice(1);
-	    } else {
-	      choice[0] = Gesture.NONE;
-	      handle_new_choice(0);
-	    }
+	  if (choice[0] == Gesture.PALM) {
+	    if (choice[1] == Gesture.PALM) {
+	      choice[last_hand] = Gesture.NONE;
+	      handle_new_choice(last_hand);
+	      last_hand = 1 - last_hand;
+	    } else last_hand = 0;
+	  } else if (choice[1] == Gesture.PALM) {
+	    last_hand = 1;
+	  }
+	  if (last_hand >= 0) {
 	    count++;
 	    switch(count) {
 	    case 3:
@@ -551,6 +556,7 @@ public class MainView extends View {
     }
     int state;
     int count;
+    int last_hand;
   }
 
   static int dummyhp;
@@ -1151,9 +1157,7 @@ public class MainView extends View {
 
     being_list[0] = new Being("Player", R.drawable.wiz, -1);
     being_list[0].start_life(5);
-    init_opponent(Agent.getDummy());
-    being_list[1].start_life(3);
-    being_list_count = 2;
+    being_list_count = 1;
 
     spell_target = new int[2];
     exec_queue = new SpellCast[16];
