@@ -172,10 +172,12 @@ Log.i("MV", "Pause");
   }
 
   static final int MENU_SPELLBOOK = 1;
+  static final int MENU_ABOUT = 2;
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     super.onCreateOptionsMenu(menu);
-    menu.add(0, MENU_SPELLBOOK, 0, R.string.menu_spells);
+    menu.add(Menu.NONE, MENU_SPELLBOOK, Menu.NONE, R.string.menu_spells);
+    menu.add(Menu.NONE, MENU_ABOUT, Menu.NONE, R.string.menu_about);
     return true;
   }
 
@@ -184,6 +186,9 @@ Log.i("MV", "Pause");
     switch (item.getItemId()) {
       case MENU_SPELLBOOK:
 	open_spellbook();
+	return true;
+      case MENU_ABOUT:
+	open_about();
 	return true;
     }
     return false;
@@ -455,6 +460,16 @@ Log.i("MV", "Pause");
     narrator.setVisibility(View.GONE);
     hog.setVisibility(View.GONE);
     curmach.run();
+  }
+
+  void open_about() {
+    spellbook.setText(getText(R.string.about));
+    spellbook.setVisibility(View.VISIBLE);
+    spellbookv.setVisibility(View.VISIBLE);
+    butv.setVisibility(View.VISIBLE);
+    butclo.setOnClickListener(new SpellBookCloser());
+    hog.blockInput();
+    spellbook_is_open = true;
   }
 
   void open_spellbook() {

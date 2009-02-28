@@ -105,6 +105,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="surrenderdraw">You both surrender.</string>
 
 <string name="menu_spells">Spells</string>
+<string name="menu_about">About</string>
 
 <string name="empty_left_hand">[Left Hand]</string>
 <string name="empty_right_hand">[Right Hand]</string>
@@ -144,4 +145,10 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="servererror">Cannot connect to server :(</string>
 
 <string name="oppmoved">Opponent has moved. Tap to continue.</string>
+
+<string name="about"><b>Spell Tap</b>\n<i>Ben Lynn</i>\n\n
+Adaption of <a href="http://www.mud.co.uk/richard/spellbnd.htm">Richard Bartle\'s <i>Spellbinder</i></a>, also known as <i>Waving Hands</i>
+\n\n
+<a href="http://cs.stanford.edu/~blynn/spelltap/">Spell Tap homepage</a>.
+</string>
 </resources>
