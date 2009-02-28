@@ -10,8 +10,10 @@
 // Spell precedence:
 //
 //   Dispel Magic
-//   Shield, Protection From Evil, Counter-Spell, Magic Mirror
-//   Summon
+//   Counter-Spell, Magic Mirror
+//   Summon (cannot cast on future monsters)
+//   Counter-Spell, Magic Mirror on fresh monsters.
+//   Shield, Protection From Evil
 //   Enchantments
 //   Remove Enchantment
 //   Damaging spells, attacks
@@ -423,10 +425,12 @@ public class MainView extends View {
 	  if (Gesture.KNIFE == choice[0]) {
 	    h = 0;
 	    arr_x0 = 24;
+	    spell_target[0] = -1;
 	  }
 	  else if (Gesture.KNIFE == choice[1]) {
 	    h = 1;
 	    arr_x0 = 320 - 24;
+	    spell_target[1] = -1;
 	  }
 	  if (-1 == h) return;
 	  jack_tip_off();
@@ -1097,6 +1101,7 @@ public class MainView extends View {
     being_list[1] = new Being(a.name(), a.bitmap_id(), -2);
     being_list[1].start_life(a.life());
     agent = a;
+    a.reset();
   }
 
   // Constructor.
@@ -1133,13 +1138,13 @@ public class MainView extends View {
     add_spell(new SummonOgreSpell(), 18);
     add_spell(new AmnesiaSpell(), 29);
     add_spell(new FearSpell(), 30);
-    add_spell(new ParalysisSpell(), 30);
     add_spell(new AntiSpellSpell(), 27);
     add_spell(new CounterSpellSpell(), 3);
     add_spell(new CounterSpellAltSpell(), 3);
     add_spell(new RemoveEnchantmentSpell(), 32);
     spell_level = 3;
     add_spell(new SummonTrollSpell(), 19);
+    add_spell(new ParalysisSpell(), 30);
     dispel_spell = new DispelMagicSpell();
     add_spell(dispel_spell, 0);
     add_spell(new CauseHeavyWoundsSpell(), 62);

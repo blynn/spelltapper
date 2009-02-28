@@ -16,8 +16,8 @@ abstract public class Agent {
       turn.spell_target[h] = -1;
     }
   }
-  void set_charm(int hand, int gesture) {
-  }
+  void set_charm(int hand, int gesture) {}
+  void reset() {}
   int get_charm_hand() {
     return 0;
   }
@@ -42,9 +42,8 @@ abstract public class Agent {
 
   // Opponent with 5 hit points that stabs every turn.
   static class Stabatha extends Agent {
-    Stabatha() {
-      hand = 0;
-    }
+    Stabatha() {}
+    void reset() { hand = 0; }
     void move(SpellTapMove turn) {
       super.move(turn);
       turn.gest[hand] = Gesture.KNIFE;
@@ -61,9 +60,8 @@ abstract public class Agent {
 
   // An opponent gesturing P and K every turn.
   static class BloodyRipper extends Agent {
-    BloodyRipper() {
-      hand = 0;
-    }
+    BloodyRipper() {}
+    void reset() { hand = 0; }
     void move(SpellTapMove turn) {
       turn.gest[hand] = Gesture.KNIFE;
       turn.spell[hand] = indexOfSpell("Stab");
@@ -89,10 +87,8 @@ abstract public class Agent {
 
   // An opponent who bets the game on WFP.
   static class Sendin extends Agent {
-    Sendin() {
-      hand = 0;
-      count = 0;
-    }
+    Sendin() {}
+    void reset() { hand = 0; count = 0; }
     void move(SpellTapMove turn) {
       switch(count) {
 	case 0:
@@ -106,7 +102,7 @@ abstract public class Agent {
 	case 1:
 	  turn.gest[0] = Gesture.PALM;
 	  turn.spell[0] = indexOfSpellGesture("P");
-	  turn.spell_target[0] = 0;
+	  turn.spell_target[0] = 1;
 	  turn.gest[1] = Gesture.FINGERS;
 	  turn.spell[1] = -1;
 	  turn.spell_target[1] = -1;
@@ -157,10 +153,8 @@ abstract public class Agent {
 
   // Level 1 boss.
   static class AlTeffor extends Agent {
-    AlTeffor() {
-      hand = 0;
-      count = 0;
-    }
+    AlTeffor() {}
+    void reset() { hand = 0; count = 0; }
     void move(SpellTapMove turn) {
       switch(count) {
 	case 0:
@@ -174,7 +168,7 @@ abstract public class Agent {
 	case 1:
 	  turn.gest[0] = Gesture.PALM;
 	  turn.spell[0] = indexOfSpellGesture("P");
-	  turn.spell_target[0] = 0;
+	  turn.spell_target[0] = 1;
 	  turn.gest[1] = Gesture.FINGERS;
 	  turn.spell[1] = -1;
 	  turn.spell_target[1] = -1;
