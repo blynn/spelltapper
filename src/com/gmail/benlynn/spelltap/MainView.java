@@ -156,10 +156,22 @@ public class MainView extends View {
     else if (STATE_ON_CONFIRM == main_state) is_confirmable = true;
   }
 
+  void new_game_solo() {
+    clear_choices();
+    board.setVisibility(View.GONE);
+    arrow_view.setVisibility(View.GONE);
+  }
+
+  void new_game(Agent a) {
+    init_opponent(a);
+    reset_game();
+    board.setVisibility(View.VISIBLE);
+    arrow_view.setVisibility(View.VISIBLE);
+  }
+
   abstract class Tutorial {
     abstract void run();
   }
-
   void set_gesture_knowledge(int level) {
     for (int i = 0; i < 9; i++) {
       Gesture g = gesture[i];
@@ -233,11 +245,9 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
 	case 0:
-	  clear_choices();
 	  set_gesture_knowledge(Wisdom.KNIFE_ONLY);
 	  set_spell_knowledge(Wisdom.STAB);
-	  board.setVisibility(View.GONE);
-	  arrow_view.setVisibility(View.GONE);
+	  new_game_solo();
 	  jack_says(R.string.welcome);
 	  state = 100;
 	  return;
@@ -320,13 +330,9 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-        init_opponent(Agent.getDummy());
+        new_game(Agent.getDummy());
 	being_list[1].start_life(3);
-	reset_game();
 	jack_says(R.string.dummytut);
-	board.setVisibility(View.VISIBLE);
-	arrow_view.setVisibility(View.VISIBLE);
-	invalidate();
 	state = 1;
         return;
       case 1:
@@ -392,9 +398,8 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-        init_opponent(Agent.getDummy());
+        new_game(Agent.getDummy());
 	being_list[1].start_life(3);
-	reset_game();
 	// Two goblins.
 	being_list[2] = new Being("Porsap", R.drawable.goblin, 1);
 	being_list[2].start_life(1);
@@ -404,9 +409,6 @@ public class MainView extends View {
 	being_list[3].start_life(1);
 	being_list[3].target = 0;
 	being_list_count = 4;
-
-	board.setVisibility(View.VISIBLE);
-	arrow_view.setVisibility(View.VISIBLE);
 
 	jack_tip(R.string.targettut);
 	set_main_state(STATE_GESTURE_TEACH);
@@ -493,9 +495,7 @@ public class MainView extends View {
 	case 0:
 	  set_gesture_knowledge(Wisdom.KNIFE_AND_PALM);
 	  set_spell_knowledge(Wisdom.STABNSHIELD);
-	  reset_game();
-	  board.setVisibility(View.GONE);
-	  arrow_view.setVisibility(View.GONE);
+	  new_game_solo();
 	  jack_says(R.string.palmtut);
 	  state = 1;
 	  return;
@@ -562,13 +562,8 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
 	case 0:
-	  init_opponent(Agent.getDummy());
-	  being_list[1].start_life(dummyhp);
-	  reset_game();
+	  new_game(Agent.getDummy());
 	  state = 1;
-	  board.setVisibility(View.VISIBLE);
-	  arrow_view.setVisibility(View.VISIBLE);
-	  invalidate();
 	  return;
 	case 1:
 	  state = 0;
@@ -588,11 +583,7 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
       case 0:
-	init_opponent(agent);
-	reset_game();
-	board.setVisibility(View.VISIBLE);
-	arrow_view.setVisibility(View.VISIBLE);
-	invalidate();
+	new_game(agent);
 	state = 1;
 	return;
       case 1:
@@ -615,16 +606,12 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  set_gesture_knowledge(Wisdom.KPS);
-	  init_opponent(Agent.getDummy());
-	  board.setVisibility(View.VISIBLE);
-	  arrow_view.setVisibility(View.VISIBLE);
+	  new_game(Agent.getDummy());
+	  being_list[1].start_life(5);
 	  jack_says(R.string.SDtut0);
 	  state = 1;
 	  return;
 	case 1:
-	  being_list[1].start_life(5);
-	  reset_game();
-	  clear_choices();
 	  jack_says(R.string.SDtut1);
 	  state = 2;
 	  return;
@@ -711,11 +698,8 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  set_gesture_knowledge(Wisdom.ALL_BUT_FC);
-	  init_opponent(Agent.getDummy());
+	  new_game(Agent.getDummy());
 	  being_list[1].start_life(4);
-	  reset_game();
-	  board.setVisibility(View.VISIBLE);
-	  arrow_view.setVisibility(View.VISIBLE);
 	  jack_says(R.string.wavetut);
 	  state = 1;
 	  return;
