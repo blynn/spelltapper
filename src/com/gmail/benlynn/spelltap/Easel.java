@@ -52,6 +52,10 @@ class Easel {
     history_rtext = new Paint(grey_rtext);
     history_text.setTextSize(16);
     history_rtext.setTextSize(16);
+    para_text = new Paint(history_text);
+    para_rtext = new Paint(history_rtext);
+    para_text.setARGB(255, 63, 159, 63);
+    para_rtext.setARGB(255, 63, 159, 63);
 
     octarine = new Paint();
     octarine.setARGB(255, 63, 0, 63);
@@ -91,4 +95,6 @@ class Easel {
   static Paint wait_paint, reply_paint;
   static Paint surrender_paint;
   static Paint tiny_rtext;
+  static Paint para_text;
+  static Paint para_rtext;
 }

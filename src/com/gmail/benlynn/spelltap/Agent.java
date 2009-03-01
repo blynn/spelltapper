@@ -78,7 +78,7 @@ abstract public class Agent {
       turn.spell[hand] = indexOfSpell("Shield");
       turn.spell_target[hand] = 1;
     }
-    String name() { return "Bloody Ripper"; }
+    String name() { return "Ripper"; }
     String name_full() { return "Bloody Ripper"; }
     int life() { return 5; }
     int bitmap_id() { return R.drawable.ripper; }

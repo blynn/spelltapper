@@ -25,6 +25,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -96,8 +97,10 @@ public class MainView extends View {
   void go_back() {
     // TODO: Confirm player wants to leave.
     // TODO: Clean up, e.g. stop network retry.
-    help_arrow_off();
-    spelltap.goto_town();
+    if (!is_animating) {
+      help_arrow_off();
+      spelltap.goto_town();
+    }
   }
 
   void set_state_dummytutorial() {
@@ -409,7 +412,7 @@ public class MainView extends View {
 	being_list[2].start_life(1);
 	being_list[2].target = 0;
 
-	being_list[3] = new Being("Dedmeet", R.drawable.goblin, 1);
+	being_list[3] = new Being("Dedmit", R.drawable.goblin, 1);
 	being_list[3].start_life(1);
 	being_list[3].target = 0;
 	being_list_count = 4;
@@ -1194,11 +1197,15 @@ public class MainView extends View {
     put_gest("Palm", 0, 1);
     put_gest("Fingers", 1, 1);
 
+    net_handler = new NetHandler();
     arrow_view = null;
     tilt_state = TILT_AWAIT_UP;
     charmed_hand = -1;
+    para_source = new int[2];
+    para_target = new int[2];
+    para_count = 0;
+    choosing_para = false;
     choosing_charm = false;
-    net_handler = new NetHandler();
     is_help_arrow_on = false;
   }
   static String emptyleftmsg;
@@ -1221,17 +1228,25 @@ public class MainView extends View {
     // Board class handles avatars and status line.
 
     // Opponent history.
-    y = 16 - 4;
+    y = 16;
     String s = "";
     for (int i = opphist.start[0]; i < opphist.cur; i++) {
       s += " " + gesture[opphist.gest[i][0]].abbr;
     }
-    canvas.drawText(s, 0, y, Easel.grey_text);
+    Paint pa;
+    if (Status.PARALYZED == being_list[1].status &&
+        0 == being_list[1].para_hand) pa = Easel.para_text;
+    else pa = Easel.history_text;
+
+    canvas.drawText(s, 0, y, pa);
     s = "";
     for (int i = opphist.start[1]; i < opphist.cur; i++) {
-      s += " " + gesture[opphist.gest[i][1]].abbr;
+      s += gesture[opphist.gest[i][1]].abbr + " ";
     }
-    canvas.drawText(s, 320, y, Easel.grey_rtext);
+    if (Status.PARALYZED == being_list[1].status &&
+        1 == being_list[1].para_hand) pa = Easel.para_rtext;
+    else pa = Easel.history_rtext;
+    canvas.drawText(s, 320, y, pa);
 
     // Player history.
     y = ylower - 2;
@@ -1239,12 +1254,18 @@ public class MainView extends View {
     for (int i = hist.start[0]; i < hist.cur; i++) {
       s += " " + gesture[hist.gest[i][0]].abbr;
     }
-    canvas.drawText(s, 0, y, Easel.history_text);
+    if (Status.PARALYZED == being_list[0].status &&
+        0 == being_list[0].para_hand) pa = Easel.para_text;
+    else pa = Easel.history_text;
+    canvas.drawText(s, 0, y, pa);
     s = "";
     for (int i = hist.start[1]; i < hist.cur; i++) {
       s += gesture[hist.gest[i][1]].abbr + " ";
     }
-    canvas.drawText(s, 320, y, Easel.history_rtext);
+    if (Status.PARALYZED == being_list[0].status &&
+        1 == being_list[0].para_hand) pa = Easel.para_rtext;
+    else pa = Easel.history_rtext;
+    canvas.drawText(s, 320, y, pa);
 
     // Gesture area.
     y = ylower;
@@ -1264,7 +1285,7 @@ public class MainView extends View {
 	if (is_confirmable) {
 	  if (choosing_charm) {
 	    canvas.drawRect(0, ystatus, 320, 480, Easel.charm_text);
-	    canvas.drawText("CHARM!", 160, ystatus + 36, Easel.tap_ctext);
+	    canvas.drawText("Charm", 160, ystatus + 36, Easel.tap_ctext);
 	  } else if (Gesture.PALM == choice[0] && Gesture.PALM == choice[1]) {
 	    canvas.drawRect(0, ystatus, 320, 480, Easel.surrender_paint);
 	    canvas.drawText("SURRENDER!", 160, ystatus + 36, Easel.tap_ctext);
@@ -1276,6 +1297,10 @@ public class MainView extends View {
 	    case Status.CONFUSED:
 	      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
 	      canvas.drawText("CONFUSED!", 160, ystatus + 36, Easel.tap_ctext);
+	      break;
+	    case Status.PARALYZED:
+	      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
+	      canvas.drawText("PARALYZED!", 160, ystatus + 36, Easel.tap_ctext);
 	      break;
 	    case Status.AMNESIA:
 	      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
@@ -1559,6 +1584,7 @@ public class MainView extends View {
 	  if (STATE_ON_CONFIRM == main_state) return false;
 	  if (y1 >= ylower + 24 && y1 < ylower + 24 + 50) {
 	    // Could be choosing a ready spell.
+	    // TODO: Handle row 2 spells (two-handed spells, overflow).
 	    for (int h = 0; h < 2; h++) {
 	      int i;
 	      if (h == 1) {
@@ -1595,7 +1621,9 @@ public class MainView extends View {
 	    h = 1;
 	    dirx *= -1;
 	  }
-	  if (h == charmed_hand) return false;
+	  if (h == charmed_hand) return true;
+	  if (Status.PARALYZED == being_list[0].status &&
+	      h == being_list[0].para_hand) return true;
 	  choice[h] = Gesture.flattenxy(dirx, diry);
 	  if (null == gesture[choice[h]] || !gesture[choice[h]].learned) {
 	    choice[h] = Gesture.NONE;
@@ -1754,6 +1782,7 @@ public class MainView extends View {
   private void resolve() {
     is_animating = true;
     for (int i = 0; i < 4; i++) comments[i] = null;
+    para_count = 0;
     opphist.add(oppmove.gest);
 
     // Expire status effects.
@@ -2017,6 +2046,7 @@ public class MainView extends View {
   }
 
   void new_round2() {
+    if (choosing_charm) Log.e("MV", "Bug! Should have chosen charm by now");
     // Handle charm on player.
     if (player_charmed()) {
       // Get charmed hand from opponent.
@@ -2035,6 +2065,32 @@ public class MainView extends View {
   }
 
   void new_round_post_charm() {
+    // Handle paralyzed wizards.
+    while (0 < para_count) {
+      para_count--;
+      if (0 == para_source[para_count]) {
+	Being b = being_list[para_target[para_count]];
+	if (-1 == b.para_hand) {
+	  b.para_hand = 0;  // TODO: Choose hand and notify opponent.
+	}
+      } else {
+	Being b = being_list[para_target[para_count]];
+	if (-1 == b.para_hand) {
+	  b.para_hand = 0;  // TODO: Get hand from opponent.
+	}
+      }
+    }
+    if (Status.PARALYZED != being_list[1].status) being_list[1].para_hand = -1;
+    if (Status.PARALYZED != being_list[0].status) being_list[0].para_hand = -1;
+    else {
+      int h = being_list[0].para_hand;
+      int lastg = hist.last_gesture(h);
+      if (Gesture.FINGERS == lastg) choice[h] = Gesture.CLAP;
+      else if (Gesture.SNAP == lastg) choice[h] = Gesture.DIGIT;
+      else if (Gesture.WAVE == lastg) choice[h] = Gesture.PALM;
+      else choice[h] = lastg;
+    }
+
     // Handle amnesia.
     if (Status.AMNESIA == being_list[0].status) {
       choice[0] = hist.last_gesture(0);
@@ -2362,7 +2418,6 @@ public class MainView extends View {
 	case 1:
 	  is_finished = true;
 	  being_list[target].get_hurt(2);
-	  print("Cause Light Wounds deals 2 damage.");
 	  board.animate_damage(target, 2);
 	  return;
       }
@@ -2381,7 +2436,6 @@ public class MainView extends View {
 	case 1:
 	  is_finished = true;
 	  being_list[target].get_hurt(3);
-	  print("Cause Heavy Wounds deals 3 damage.");
 	  board.animate_damage(target, 3);
 	  return;
       }
@@ -2400,7 +2454,6 @@ public class MainView extends View {
 	case 1:
 	  is_finished = true;
 	  being_list[target].get_hurt(5);
-	  print("Lightning deals 5 damage");
 	  board.animate_damage(target, 5);
 	  return;
       }
@@ -2453,7 +2506,6 @@ public class MainView extends View {
 	  being_list_count++;
 	  b.start_life(level);
 	  b.target = 1 - k;
-	  Log.i("CASTHAND", "" + cast_hand);
 	  board.animate_summon(cast_hand, b);
 	  return;
       }
@@ -2619,6 +2671,11 @@ public class MainView extends View {
 	case 0:
 	  is_finished = true;
 	  being_list[target].status = Status.PARALYZED;
+	  if (0 == target || 1 == target) {
+	    para_source[para_count] = source;
+	    para_target[para_count] = target;
+	    para_count++;
+	  }
 	  board.animate_spell(target, bitmap);
 	  return;
       }
@@ -2792,8 +2849,7 @@ public class MainView extends View {
       }
       status = Status.OK;
       unsummon = false;
-      shield = 0;
-      disease = 0;
+      remove_enchantments();
       counterspell = false;
       dead = false;
       setup(init_name, bitmapid, 0);
@@ -2847,9 +2903,9 @@ public class MainView extends View {
     }
 
     void remove_enchantments() {
-      // Remove enchantments.
       disease = 0;
       shield = 0;
+      para_hand = -1;
       status = Status.OK;
     }
 
@@ -2872,6 +2928,7 @@ public class MainView extends View {
     short controller;
     boolean dead, doomed, unsummon;
     boolean counterspell;  // If counter-spell has been cast on this being.
+    int para_hand;
     int psych;  // Detects psychological spell conflicts.
     int id;  // ID of monster consistent amongst all players in a net game.
     int disease;
@@ -2929,6 +2986,9 @@ public class MainView extends View {
   static int charmed_hand;
   static boolean freeze_gesture;
   static boolean choosing_charm;
+  static boolean choosing_para;
+  static int[] para_source, para_target;
+  static int para_count;
   static final int SLOP = 4;
   static final int BUFFERZONE = 32;
   static Agent agent;

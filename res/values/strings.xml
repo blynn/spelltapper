@@ -94,7 +94,7 @@
 <string name="graduate2">Pick fights with other wizards at the Tavern, and
 earn experience by casting spells in duels. Then gain levels and learn new spells.</string>
 <string name="graduate3">No doubt you found yourself disadvantaged whenever you failed to select a gesture for one or both hands.</string>
-<string name="graduate4">From now on, the interface will help you by only allowing move confirmation only when you have a gesture in each hand.</string>
+<string name="graduate4">From now on, this game will help you by insisting you have a gesture in each hand.</string>
 
 <string name="bug">Oops! You\'ve uncovered a bug!</string>
 <string name="win">You win!</string>
@@ -130,7 +130,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="DPPdesc">Target wizard must repeat gestures. Target monster attacks same target. Cancels with other psychological spells.</string>
 <string name="WPPdesc">Target is immune to all spells except Dispel Magic and Finger of Death.</string>
 <string name="WWSdesc">Alternate sequence for Counter-spell</string>
-<string name="PDWPdesc">Removes all enchantments from target wizard. Removes target monster from game.</string>
+<string name="PDWPdesc">Removes all enchantments from target wizard. Unsummon target monster, who can still attack this round.</string>
 <string name="DFFDDdesc">5 electrical damage. Ignores Shield.</string>
 <string name="FFFdesc">Target monster cannot attack next turn. Freeze target hand of wizard: F, S, W become C, D, P respectively. If already paralyzed, the same hand is paralyzed again, otherwise the caster chooses the hand. Cancels with other psychological spells.</string>
 <string name="FPSFWdesc">Trolls can do 3 damage, and have 3 hit points.</string>
