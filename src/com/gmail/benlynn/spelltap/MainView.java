@@ -1151,6 +1151,8 @@ public class MainView extends View {
     add_spell(new LightningSpell(), 61);
     spell_level = 3;
     add_spell(new SummonTrollSpell(), 4);
+    magic_mirror_spell = new MagicMirrorSpell();
+    add_spell(magic_mirror_spell, 2);
     add_spell(new ParalysisSpell(), 30);
     dispel_spell = new DispelMagicSpell();
     add_spell(dispel_spell, 0);
@@ -1361,7 +1363,7 @@ public class MainView extends View {
       int i = comment_i;
       do {
 	if (null != comments[i]) {
-	  canvas.drawText(comments[i], x, y, Easel.white_text);
+	  canvas.drawText(comments[i], x, y, Easel.comment_text);
 	  y += 25;
 	}
 	i++;
@@ -1783,10 +1785,6 @@ public class MainView extends View {
     }
     exec_queue[i] = sc;
     exec_queue_count++;
-    if (sc.spell.is_psych) {
-      Being b = being_list[sc.target];
-      b.psych++;
-    }
   }
 
   private void resolve() {
@@ -1860,16 +1858,26 @@ public class MainView extends View {
   }
 
   static int exec_cursor;
+  static SpellCast mirror_sc;
   public void next_spell() {
-    if (exec_cursor < exec_queue_count) {
-      SpellCast sc = exec_queue[exec_cursor];
+    SpellCast sc = null;
+    // Magic Mirror interrupts standard order of spells.
+    if (null != mirror_sc) {
+      sc = mirror_sc;
+    } else if (exec_cursor < exec_queue_count) {
+      sc = exec_queue[exec_cursor];
+    }
+
+    if (null != sc) {
       String s = "";
       String srcname = being_list[sc.source].name;
       String tgtname = null;
       if (sc.target != -1) {
 	tgtname = being_list[sc.target].name;
       }
-      if (sc.source >= 2) {
+      if (mirror_sc == sc) {
+	s += "Mirror reflects " + sc.spell.name + " at ";
+      } else if (sc.source >= 2) {
 	s += srcname + " attacks ";
       } else if (sc.spell == stab_spell) {
 	if (0 == sc.source) {
@@ -1917,9 +1925,26 @@ public class MainView extends View {
 	} else if (b.counterspell) {
 	  print("Counter-spell blocks the spell.");
 	  sc.spell.fizzle(sc.target);
+	} else if (b.mirror && sc.source != sc.target && sc.spell.level > 0) {
+	  if (sc.spell == magic_mirror_spell) {
+	    sc.run();
+	  } else if (null != mirror_sc) {
+	    print("The spell bounces between the mirrors and dissipates."); 
+	    sc.spell.fizzle(sc.target);
+	  } else {
+	    mirror_sc = new SpellCast(sc.hand, sc.spell, sc.target, sc.source);
+	    sc.spell.fizzle(sc.target);
+	    // Complicated logic: after creating a new SpellCast representing
+	    // the mirrored spell, we return to avoid incrementing exec_cursor.
+	    return;
+	  }
 	} else if (sc.spell.is_psych) {
-	  if (1 != b.psych) {
+	  // Must compute psychological conflicts on the fly because of
+	  // mirrored spells.
+	  b.psych++;
+	  if (1 < b.psych) {
 	    print("Psychological spell conflict.");
+	    b.status = Status.OK;
 	    sc.spell.fizzle(sc.target);
 	  } else {
 	    sc.run();
@@ -1928,6 +1953,7 @@ public class MainView extends View {
 	  sc.run();
 	}
       }
+      if (null != mirror_sc) mirror_sc = null;
       exec_cursor++;
     } else {
       end_round();
@@ -1940,6 +1966,7 @@ public class MainView extends View {
     for(int i = being_list_count - 1; i >= 0; i--) {
       Being b = being_list[i];
       b.counterspell = false;
+      b.mirror = false;
       if (b.shield > 0) b.shield--;
       // TODO: Shield off animation.
       if (b.disease > 0) {
@@ -2238,6 +2265,13 @@ public class MainView extends View {
   }
 
   public void add_ready_spell(int h, Spell sp) {
+    if (h == 2) {
+      // Ignore duplicates. This can happen if both hands gesture
+      // DSFFFC for example.
+      for (int i = 0; i < ready_spell_count[2]; i++) {
+	if (ready_spell[i][2] == sp) return;
+      }
+    }
     ready_spell[ready_spell_count[h]][h] = sp;
     ready_spell_count[h]++;
   }
@@ -2758,6 +2792,20 @@ public class MainView extends View {
     }
   }
 
+  public class MagicMirrorSpell extends Spell {
+    MagicMirrorSpell() {
+      init("Magic Mirror", "cw", R.drawable.protection, R.string.cwdesc, 0);
+    }
+    public void cast(int source, int target) {
+      is_finished = true;
+      if (being_list[target].mirror) {
+	print("Magic Mirror merges with existing mirror.");
+      }
+      being_list[target].mirror = true;
+      board.animate_shield(target);
+    }
+  }
+
   public class ProtectionSpell extends Spell {
     ProtectionSpell() {
       init("Protection From Evil", "WWP", R.drawable.protection, R.string.WWPdesc, 0);
@@ -2861,6 +2909,7 @@ public class MainView extends View {
       unsummon = false;
       remove_enchantments();
       counterspell = false;
+      mirror = false;
       dead = false;
       setup(init_name, bitmapid, 0);
     }
@@ -2937,7 +2986,8 @@ public class MainView extends View {
     // it must be the other player.
     short controller;
     boolean dead, doomed, unsummon;
-    boolean counterspell;  // If counter-spell has been cast on this being.
+    boolean counterspell;  // True if protected by counter-spell.
+    boolean mirror;  // True if protected by mirror.
     int para_hand;
     int psych;  // Detects psychological spell conflicts.
     int id;  // ID of monster consistent amongst all players in a net game.
@@ -3021,6 +3071,7 @@ public class MainView extends View {
   static boolean is_dispel_cast;
   static StabSpell stab_spell;
   static DispelMagicSpell dispel_spell;
+  static MagicMirrorSpell magic_mirror_spell;
   static int cast_hand;
   static String comments[];
   static int comment_i;

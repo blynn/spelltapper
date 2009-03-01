@@ -78,6 +78,9 @@ class Easel {
 
     tiny_rtext = new Paint(white_rtext);
     tiny_rtext.setTextSize(12);
+
+    comment_text = new Paint(white_text);
+    comment_text.setTextSize(16);
   }
 
   static Paint paint;
@@ -99,4 +102,5 @@ class Easel {
   static Paint tiny_rtext;
   static Paint para_text, para_rtext;
   static Paint dark_red_paint;
+  static Paint comment_text;
 }

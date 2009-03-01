@@ -138,6 +138,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="WPFDdesc">3 magical damage to target. Ignores <i>Shield</i>.</string>
 <string name="DFPWdesc">Heal up to 2 health points. Cures disease.</string>
 <string name="DSFFFcdesc">Target dies within 6 turns from disease. Can be cured with <i>Remove Enchantment</i>, <i>Cure Heavy Wounds</i> or <i>Dispel Magic</i>.</string>
+<string name="cwdesc">Spells cast at target are reflected back at caster.</string>
 
 <string name="WFPSFWdesc">Giants can do 4 damage, and have 4 hit points.</string>
 <string name="SPFPdesc">Interrupt spell combo. Starting next turn, target wizard must start spells anew.</string>
