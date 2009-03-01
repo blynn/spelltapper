@@ -1,11 +1,7 @@
 // TODO: Log, character sheet.
-// Turn UI pink on charm, to make it obvious why we need to wait for network?
 // Victory/defeat screen with stats.
 // Resize event.
 // Stop handlers on init.
-// Hide spells on end of turn?
-// Clean up setVisibility calls.
-// Handle more than 3 spells on the same hand.
 
 // Spell precedence:
 //
@@ -68,7 +64,8 @@ public class MainView extends View {
   static int lastchoice[];
   static History hist, opphist;
   static final int ylower = 128 + 144 + 4 * 4;
-  static final int ystatus = ylower + 24 + 2 * 50;
+  static final int yspellrow = ylower + 24;
+  static final int ystatus = yspellrow + 2 * 50;
   static final int yicon = 64 + 48 + 2 * 4;
   static String spell_text[];
   static boolean spell_is_twohanded;
@@ -1269,7 +1266,11 @@ public class MainView extends View {
 
     // Gesture area.
     y = ylower;
-    canvas.drawRect(0, y, 320, 480, Easel.octarine);
+    if (Gesture.PALM == choice[0] && Gesture.PALM == choice[1]) {
+      canvas.drawRect(0, y, 320, 480, Easel.dark_red_paint);
+    } else {
+      canvas.drawRect(0, y, 320, 480, Easel.octarine);
+    }
 
     // Bottom line.
     switch(net_state) {
@@ -1316,7 +1317,7 @@ public class MainView extends View {
     }
 
     // Gesture and spell text.
-    y = ylower + 24 - 8;
+    y = yspellrow - 8;
     if (0 == charmed_hand) {
       if (freeze_gesture) {
 	Gesture g = gesture[choice[0]];
@@ -1353,7 +1354,7 @@ public class MainView extends View {
 
     // Spell choice row 1
     x = 0;
-    y = ylower + 24;
+    y = yspellrow;
 
     if (is_animating) {
       y += 25 - 6;
@@ -1390,7 +1391,7 @@ public class MainView extends View {
 
     // Spell choice row 2
     y += 50;
-    x = 160 - 25;
+    x = 160 - 50;
     for (int i = 0; i < ready_spell_count[2]; i++) {
       if (i == spell_choice[0]) {
 	canvas.drawRect(x, y, x + 50, y + 50, Easel.sel_paint);
@@ -1525,9 +1526,6 @@ public class MainView extends View {
 	  okstate = true;
 	  return true;
 	}
-	if (x0 >= 160 - BUFFERZONE && x0 < 160 + BUFFERZONE) {
-	  return false;
-	}
 	return true;
       case MotionEvent.ACTION_UP:
 	x1 = event.getX();
@@ -1582,23 +1580,35 @@ public class MainView extends View {
 	    return true;
 	  }
 	  if (STATE_ON_CONFIRM == main_state) return false;
-	  if (y1 >= ylower + 24 && y1 < ylower + 24 + 50) {
+	  if (y1 >= yspellrow && y1 < yspellrow + 2 * 50) {
+	    Log.i("MV", "coord " + x1 + " " + y1);
 	    // Could be choosing a ready spell.
-	    // TODO: Handle row 2 spells (two-handed spells, overflow).
-	    for (int h = 0; h < 2; h++) {
-	      int i;
-	      if (h == 1) {
-		if (x1 < 160) break;
-		i = (320 - (int) x1) / 50;
-	      } else {
-		i = ((int) x1) / 50;
-	      }
-	      if (i >= 0 && i < ready_spell_count[h]) {
-		choose_spell(h, i);
+	    int i = 0, h = 0;  // Initial values suppress bogus warnings.
+	    if (y1 > yspellrow + 50) {
+	      // Handle up to two-handed spells.
+	      if (x1 >= 160 - 50 && x1 < 160 + 50) {
+		i = x1 < 160 ? 0 : 1;
+		if (i < ready_spell_count[2]) choose_twohanded_spell(i);
 		return true;
+	      } else {
+		i = 3;
 	      }
 	    }
+	    // Handle one-handed spells.
+	    if (x1 < 3 * 50) {
+	      i += ((int) x1) / 50;
+	      h = 0;
+	    } else if (x1 > 320 - 3 * 50) {
+	      i += (320 - (int) x1) / 50;
+	      h = 1;
+	    }
+	    if (i < ready_spell_count[h]) {
+	      choose_spell(h, i);
+	      return true;
+	    }
 	  }
+	} else if (x0 >= 160 - BUFFERZONE && x0 < 160 + BUFFERZONE) {
+	  return false;
 	} else {
 	  if (STATE_ON_CONFIRM == main_state ||
 	      freeze_gesture ||

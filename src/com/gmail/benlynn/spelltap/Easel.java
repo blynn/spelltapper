@@ -18,6 +18,8 @@ class Easel {
 
     red_paint = new Paint();
     red_paint.setARGB(255, 255, 63, 63);
+    dark_red_paint = new Paint(red_paint);
+    dark_red_paint.setARGB(255, 95, 0, 0);
 
     white_text = new Paint();
     white_text.setARGB(255, 255, 255, 255);
@@ -95,6 +97,6 @@ class Easel {
   static Paint wait_paint, reply_paint;
   static Paint surrender_paint;
   static Paint tiny_rtext;
-  static Paint para_text;
-  static Paint para_rtext;
+  static Paint para_text, para_rtext;
+  static Paint dark_red_paint;
 }

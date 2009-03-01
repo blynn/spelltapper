@@ -134,7 +134,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="DFFDDdesc">5 electrical damage. Ignores Shield.</string>
 <string name="FFFdesc">Target monster cannot attack next turn. Freeze target hand of wizard: F, S, W become C, D, P respectively. If already paralyzed, the same hand is paralyzed again, otherwise the caster chooses the hand. Cancels with other psychological spells.</string>
 <string name="FPSFWdesc">Trolls can do 3 damage, and have 3 hit points.</string>
-<string name="cDPWdesc">No other spells can be cast this turn. Unsummon all monsters, who still attack this round, and remove all enchantments. Shields target.</string>
+<string name="cDPWdesc">No other spells can be cast this turn. Unsummon all monsters, who still attack this round, and remove all enchantments. Global effect: works even when aimed at nothing. Shields target if valid.</string>
 <string name="WPFDdesc">3 magical damage to target. Ignores <i>Shield</i>.</string>
 <string name="DFPWdesc">Heal up to 2 health points. Cures disease.</string>
 <string name="DSFFFcdesc">Target dies within 6 turns from disease. Can be cured with <i>Remove Enchantment</i>, <i>Cure Heavy Wounds</i> or <i>Dispel Magic</i>.</string>
@@ -148,8 +148,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="oppmoved">Opponent has moved. Tap to continue.</string>
 
 <string name="about"><b>Spell Tap</b>\n<i>Ben Lynn</i>\n\n
-Adaption of Richard Bartle\'s <i>Spellbinder</i>, also known as <i>Waving Hands</i>: http://www.mud.co.uk/richard/spellbnd.htm
-\n\n
-Spell Tap homepage: http://cs.stanford.edu/~blynn/spelltap/
+http://cs.stanford.edu/~blynn/spelltap/
+\n\nAdaption of Richard Bartle\'s <i>Spellbinder</i>, aka <i>Waving Hands</i>: http://www.mud.co.uk/richard/spellbnd.htm
 </string>
 </resources>
