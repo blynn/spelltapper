@@ -282,16 +282,16 @@ public class Board extends View {
     }
     switch(b.status) {
       case Status.AMNESIA:
-	canvas.drawText("Amn.", mx + b.w - 8, my + 16 - 4, Easel.octarine);
+	canvas.drawText("Amn", mx + b.w, my + 16 - 4, Easel.tiny_rtext);
 	break;
       case Status.CONFUSED:
-	canvas.drawText("Conf.", mx + b.w - 8, my + 16 - 4, Easel.octarine);
+	canvas.drawText("Conf", mx + b.w, my + 16 - 4, Easel.tiny_rtext);
 	break;
       case Status.FEAR:
-	canvas.drawText("Fear.", mx + b.w - 8, my + 16 - 4, Easel.octarine);
+	canvas.drawText("Fear", mx + b.w, my + 16 - 4, Easel.tiny_rtext);
 	break;
       case Status.PARALYZED:
-	canvas.drawText("Para.", mx + b.w - 8, my + 16 - 4, Easel.octarine);
+	canvas.drawText("Para", mx + b.w, my + 16 - 4, Easel.tiny_rtext);
 	break;
     }
     if (b.dead) {

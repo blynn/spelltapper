@@ -1330,6 +1330,19 @@ public class MainView extends View {
     x = 0;
     y = ylower + 24;
 
+    if (is_animating) {
+      y += 25 - 6;
+      int i = comment_i;
+      do {
+	if (null != comments[i]) {
+	  canvas.drawText(comments[i], x, y, Easel.white_text);
+	  y += 25;
+	}
+	i++;
+	if (i == 4) i = 0;
+      } while (i != comment_i);
+    }
+
     if (choosing_charm) {
       canvas.drawText("Charm Person: Choose gesture...",
           x, y + 50, Easel.white_text);
@@ -1740,6 +1753,7 @@ public class MainView extends View {
 
   private void resolve() {
     is_animating = true;
+    for (int i = 0; i < 4; i++) comments[i] = null;
     opphist.add(oppmove.gest);
 
     // Expire status effects.
@@ -1792,11 +1806,12 @@ public class MainView extends View {
     invalidate();
 
     exec_cursor = 0;
-    // TODO: Print message and delay if there are no spells.
-    // Or maybe flash the screen and make a sound unconditionally to get
-    // attention; in multiplayer, there can be a delay while waiting for
-    // opponent.
-    next_spell();
+    if (exec_queue_count == 0) {
+      // TODO: Delay?
+      end_round();
+    } else {
+      next_spell();
+    }
   }
 
   public void print(String s) {
@@ -1848,7 +1863,7 @@ public class MainView extends View {
 	// Dispel Magic always works.
 	sc.run();
       } else if (is_dispel_cast && sc.spell.level > 0) {
-	Log.i("MV", "Dispel Magic negates the spell.");
+	print("Dispel Magic negates the spell.");
 	sc.spell.just_wait();
       } else if (-1 == sc.target) {
 	if (sc.spell.is_global) {
@@ -1859,12 +1874,13 @@ public class MainView extends View {
       } else {
 	Being b = being_list[sc.target];
 	if (b.dead) {
-	  Log.i("MV", "Target is dead. Nothing happens.");
+	  print("Dead target. Nothing happens.");
 	} else if (b.counterspell) {
+	  print("Counter-spell blocks the spell.");
 	  sc.spell.fizzle(sc.target);
 	} else if (sc.spell.is_psych) {
 	  if (1 != b.psych) {
-	    Log.i("MV", "Psych spell conflict.");
+	    print("Psychological spell conflict.");
 	    sc.spell.fizzle(sc.target);
 	  } else {
 	    sc.run();

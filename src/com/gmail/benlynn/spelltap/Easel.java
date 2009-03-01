@@ -69,6 +69,9 @@ class Easel {
     wait_paint.setARGB(255, 127, 0, 0);
     reply_paint = new Paint();
     reply_paint.setARGB(255, 0, 0, 170);
+
+    tiny_rtext = new Paint(white_rtext);
+    tiny_rtext.setTextSize(12);
   }
 
   static Paint paint;
@@ -87,4 +90,5 @@ class Easel {
   static Paint spell_text, spell_rtext;
   static Paint wait_paint, reply_paint;
   static Paint surrender_paint;
+  static Paint tiny_rtext;
 }
