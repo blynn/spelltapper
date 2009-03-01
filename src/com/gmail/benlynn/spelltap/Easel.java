@@ -8,7 +8,7 @@ class Easel {
     // Translucent green rounded lines for arrows.
     arrow_paint = new Paint();
     arrow_paint.setARGB(191, 127, 255, 127);
-    arrow_paint.setStrokeWidth(4);
+    arrow_paint.setStrokeWidth(3);
     arrow_paint.setStrokeCap(Paint.Cap.ROUND);
     weird_arrow_paint = new Paint(arrow_paint);
     weird_arrow_paint.setARGB(191, 255, 127, 255);
@@ -59,6 +59,9 @@ class Easel {
     status_paint = new Paint();
     status_paint.setARGB(255, 95, 63, 95);
 
+    surrender_paint = new Paint();
+    surrender_paint.setARGB(255, 127, 0, 0);
+
     sel_paint = new Paint();
     sel_paint.setARGB(255, 127, 255, 127);
 
@@ -83,4 +86,5 @@ class Easel {
   static Paint history_text, history_rtext;
   static Paint spell_text, spell_rtext;
   static Paint wait_paint, reply_paint;
+  static Paint surrender_paint;
 }

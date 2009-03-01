@@ -59,8 +59,11 @@ public class Board extends View {
   static int source, target;
   static int x, y;
   static Bitmap bitmap;
+  static Bitmap bmsumcirc;
   static int x1, y1;
   static int xdelta, ydelta;
+  static Being star;
+  static int hand;
   static int frame;
   static int anim;
   static final int ANIM_TILT = -2;
@@ -78,6 +81,7 @@ public class Board extends View {
   static final int ANIM_DAMAGE = 5;
   static final int ANIM_SPELL = 6;
   static final int ANIM_SHIELD = 7;
+  static final int ANIM_SUMMON = 8;
   static int delay = 24; // 32
   static int frame_max = 24;
   static Paint fade_paint, white_paint, big_white_text, black_stroke_paint;
@@ -94,6 +98,10 @@ public class Board extends View {
       case ANIM_MOVE:
 	x += xdelta;
 	y += ydelta;
+	break;
+      case ANIM_SUMMON:
+	star.x += xdelta;
+	star.y += ydelta;
 	break;
       case ANIM_MOVE_DAMAGE:
       case ANIM_DAMAGE:
@@ -127,6 +135,10 @@ public class Board extends View {
       alphadelta = -alphadelta;
       anim_handler.sleep(delay);
     } else {
+      if (ANIM_SUMMON == anim) {
+	star.x = x1;
+	star.y = y1;
+      }
       anim = ANIM_NONE;
       if (null != notify_me) notify_me.sendEmptyMessage(0);
     }
@@ -213,6 +225,21 @@ public class Board extends View {
     anim_handler.sleep(delay);
   }
 
+  public void animate_summon(int i_hand, Being b) {
+    anim = ANIM_SUMMON;
+    hand = i_hand;
+    star = b;
+    // TODO: Fade in monster first.
+    x1 = star.x;
+    y1 = star.y;
+    if (hand == 0) star.x = 160 - 32  - 2 * 48 - 2 * 10;
+    else star.x = 160 + 32 + 48 + 2 * 10;
+    star.y = MainView.ylower - 64 - 48 - 4;
+    ydelta = (y1 - star.y) / frame_max;
+    xdelta = (x1 - star.x) / frame_max;
+    anim_handler.sleep(delay);
+  }
+
   public void animate_spell(int init_target, Bitmap init_bitmap) {
     anim = ANIM_SPELL;
     target = init_target;
@@ -254,8 +281,17 @@ public class Board extends View {
       canvas.drawCircle(mx + b.midw, my + b.midh, b.midw + 5, shield_paint[n]);
     }
     switch(b.status) {
+      case Status.AMNESIA:
+	canvas.drawText("Amn.", mx + b.w - 8, my + 16 - 4, Easel.octarine);
+	break;
       case Status.CONFUSED:
-	canvas.drawText("?", mx + b.w - 8, my + 16 - 4, Easel.octarine);
+	canvas.drawText("Conf.", mx + b.w - 8, my + 16 - 4, Easel.octarine);
+	break;
+      case Status.FEAR:
+	canvas.drawText("Fear.", mx + b.w - 8, my + 16 - 4, Easel.octarine);
+	break;
+      case Status.PARALYZED:
+	canvas.drawText("Para.", mx + b.w - 8, my + 16 - 4, Easel.octarine);
 	break;
     }
     if (b.dead) {
@@ -272,6 +308,17 @@ public class Board extends View {
   public void onDraw(Canvas canvas) {
     super.onDraw(canvas);
     if (null == MainView.being_list) return;
+
+    if (ANIM_SUMMON == anim) {
+      if (hand == 0) {
+	canvas.drawBitmap(bmsumcirc, 160 - 32  - 2 * 48 - 2 * 10,
+	    MainView.ylower - 64 - 48 - 4, paint);
+      } else {
+	canvas.drawBitmap(bmsumcirc, 160 + 32 + 48 + 2 * 10,
+	    MainView.ylower - 64 - 48 - 4, paint);
+      }
+    }
+
     // Avatars.
     for (int i = 0; i < MainView.being_list_count; i++) {
       if (anim == ANIM_MOVE || anim == ANIM_MOVE_BACK || anim == ANIM_MOVE_DAMAGE) {
@@ -283,8 +330,6 @@ public class Board extends View {
       drawBeing(i, b.x, b.y, canvas);
     }
 
-    // Status line.
-    //canvas.drawText(MainView.msg, 0, MainView.ystatus + 16 - 4, white_paint);
 
     switch(anim) {
       case ANIM_MOVE:

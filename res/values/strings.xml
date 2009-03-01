@@ -35,8 +35,8 @@
 
     <string name="palmtut"><b>Palm</b> is a simple but powerful magical gesture.</string>
     <string name="palmtut1">Drag your finger downwards ( &#x2193; ) in the lower part of the screen to make the <b>Palm</b> gesture (<b>P</b>). </string>
-    <string name="palmtutpass1">Good. In a duel, you could cast <i><i>Shield</i></i> now. Try <b>P</b> again.</string>
-    <string name="palmtutpass2">Great! <i>Shield</i> protects you from all physical attacks. Do one more <b>P</b>.</string>
+    <string name="palmtutpass1">Good. In a duel, you could cast <i><i>Shield</i></i> now. Try <b>P</b> on other side.</string>
+    <string name="palmtutpass2">Great! <i>Shield</i> protects you from all physical attacks. Do one more <b>P</b>. Switch hands again.</string>
     <string name="palmtutpass3">Excellent! But beware! Gesturing <b>P</b> with both hands means you surrender!</string>
     <string name="palmtutpass4">Double <b>P</b> loses, unless your opponent dies.</string>
     <string name="palmtutpass5">Your first opponent awaits you at the Arena. See me once you\'ve won.</string>
@@ -131,9 +131,10 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="WPPdesc">Target is immune to all spells except Dispel Magic and Finger of Death.</string>
 <string name="WWSdesc">Alternate sequence for Counter-spell</string>
 <string name="PDWPdesc">Removes all enchantments from target wizard. Removes target monster from game.</string>
+<string name="DFFDDdesc">5 electrical damage. Ignores Shield.</string>
 <string name="FFFdesc">Target monster cannot attack next turn. Freeze target hand of wizard: F, S, W become C, D, P respectively. If already paralyzed, the same hand is paralyzed again, otherwise the caster chooses the hand. Cancels with other psychological spells.</string>
-<string name="cDPWdesc">No other spells can be cast this turn. Unsummon all monsters, who still attack this round, and remove all enchantments. Shields target.</string>
 <string name="FPSFWdesc">Trolls can do 3 damage, and have 3 hit points.</string>
+<string name="cDPWdesc">No other spells can be cast this turn. Unsummon all monsters, who still attack this round, and remove all enchantments. Shields target.</string>
 <string name="WPFDdesc">3 magical damage to target. Ignores <i>Shield</i>.</string>
 <string name="DFPWdesc">Heal up to 2 health points. Cures disease.</string>
 <string name="DSFFFcdesc">Target dies within 6 turns from disease. Can be cured with <i>Remove Enchantment</i>, <i>Cure Heavy Wounds</i> or <i>Dispel Magic</i>.</string>

@@ -10,9 +10,9 @@
 // Spell precedence:
 //
 //   Dispel Magic
-//   Counter-Spell, Magic Mirror
+//   Counter-spell, Magic Mirror
 //   Summon (cannot cast on future monsters)
-//   Counter-Spell, Magic Mirror on fresh monsters.
+//   Counter-spell, Magic Mirror on fresh monsters.
 //   Shield, Protection From Evil
 //   Enchantments
 //   Remove Enchantment
@@ -42,7 +42,6 @@ import com.gmail.benlynn.spelltap.SpellTap.Wisdom;
 
 public class MainView extends View {
   static Gesture[] gesture;
-  static String msg;
   static float x0, y0, x1, y1;
   static Tutorial tut;
   static int main_state;
@@ -85,8 +84,9 @@ public class MainView extends View {
 
   static Board board;
   static ArrowView arrow_view;
-  void set_board(Board a) {
-    board = a;
+  void set_board(Board i_board) {
+    board = i_board;
+    board.bmsumcirc = get_bitmap(R.drawable.summoncircle);
   }
   void set_arrow_view(ArrowView a) {
     arrow_view = a;
@@ -517,14 +517,19 @@ public class MainView extends View {
 	  state = 2;
 	  return;
 	case 2:
+	  // Yuck!
 	  if (choice[0] == Gesture.PALM) {
 	    if (choice[1] == Gesture.PALM) {
 	      choice[last_hand] = Gesture.NONE;
 	      handle_new_choice(last_hand);
 	      last_hand = 1 - last_hand;
-	    } else last_hand = 0;
+	    } else {
+	      if (-1 == last_hand) last_hand = 0;
+	      else return;
+	    }
 	  } else if (choice[1] == Gesture.PALM) {
-	    last_hand = 1;
+	    if (-1 == last_hand) last_hand = 1;
+	    else return;
 	  }
 	  if (last_hand >= 0) {
 	    count++;
@@ -573,6 +578,7 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  new_game(Agent.getDummy());
+	  being_list[1].start_life(dummyhp);
 	  state = 1;
 	  return;
 	case 1:
@@ -1131,19 +1137,20 @@ public class MainView extends View {
     add_spell(new CauseLightWoundsSpell(), 63);
     add_spell(new ConfusionSpell(), 28);
     add_spell(new CureLightWoundsSpell(), 128);
-    add_spell(new SummonGoblinSpell(), 17);
+    add_spell(new SummonGoblinSpell(), 6);
     add_spell(new ProtectionSpell(), 7);
     add_spell(new CharmPersonSpell(), 31);
     spell_level = 2;
-    add_spell(new SummonOgreSpell(), 18);
+    add_spell(new SummonOgreSpell(), 5);
     add_spell(new AmnesiaSpell(), 29);
     add_spell(new FearSpell(), 30);
     add_spell(new AntiSpellSpell(), 27);
-    add_spell(new CounterSpellSpell(), 3);
-    add_spell(new CounterSpellAltSpell(), 3);
+    add_spell(new CounterSpellSpell(), 2);
+    add_spell(new CounterSpellAltSpell(), 2);
     add_spell(new RemoveEnchantmentSpell(), 32);
+    add_spell(new LightningSpell(), 61);
     spell_level = 3;
-    add_spell(new SummonTrollSpell(), 19);
+    add_spell(new SummonTrollSpell(), 4);
     add_spell(new ParalysisSpell(), 30);
     dispel_spell = new DispelMagicSpell();
     add_spell(dispel_spell, 0);
@@ -1151,7 +1158,7 @@ public class MainView extends View {
     add_spell(new CureHeavyWoundsSpell(), 129);
     add_spell(new DiseaseSpell(), 25);
     spell_level = 4;
-    add_spell(new SummonGiantSpell(), 20);
+    add_spell(new SummonGiantSpell(), 3);
     spell_level = 5;
     add_spell(new FingerOfDeathSpell(), 50);
 
@@ -1173,7 +1180,8 @@ public class MainView extends View {
       monatt[i].priority = 66;
     }
 
-    msg = "";
+    comment_i = 0;
+    comments = new String[4];
     bmcorpse = get_bitmap(R.drawable.corpse);
     oppmove = new SpellTapMove();
 
@@ -1257,6 +1265,9 @@ public class MainView extends View {
 	  if (choosing_charm) {
 	    canvas.drawRect(0, ystatus, 320, 480, Easel.charm_text);
 	    canvas.drawText("CHARM!", 160, ystatus + 36, Easel.tap_ctext);
+	  } else if (Gesture.PALM == choice[0] && Gesture.PALM == choice[1]) {
+	    canvas.drawRect(0, ystatus, 320, 480, Easel.surrender_paint);
+	    canvas.drawText("SURRENDER!", 160, ystatus + 36, Easel.tap_ctext);
 	  } else switch(being_list[0].status) {
 	    case Status.CHARMED:
 	      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
@@ -1615,11 +1626,17 @@ public class MainView extends View {
   }
 
   class SpellCast {
-    SpellCast(Spell init_spell, int init_source, int init_target) {
-      spell = init_spell;
-      source = init_source;
-      target = init_target;
+    SpellCast(int i_hand, Spell i_spell, int i_source, int i_target) {
+      hand = i_hand;
+      spell = i_spell;
+      source = i_source;
+      target = i_target;
     }
+    void run() {
+      cast_hand = hand;
+      spell.execute(source, target);
+    }
+    int hand;
     Spell spell;
     int target;
     int source;
@@ -1737,14 +1754,14 @@ public class MainView extends View {
     if (spell_is_twohanded) {
       if (-1 != spell_choice[0]) {
 	SpellCast sc = new SpellCast(
-	    ready_spell[spell_choice[0]][2], 0, spell_target[0]);
+	    0, ready_spell[spell_choice[0]][2], 0, spell_target[0]);
 	insert_spell(sc);
       }
     } else {
       for (int h = 0; h < 2; h++) {
 	if (-1 == spell_choice[h]) continue;
 	SpellCast sc = new SpellCast(
-	    ready_spell[spell_choice[h]][h], 0, spell_target[h]);
+	    h, ready_spell[spell_choice[h]][h], 0, spell_target[h]);
 	insert_spell(sc);
       }
     }
@@ -1752,7 +1769,7 @@ public class MainView extends View {
     for (int h = 0; h < 2; h++) {
       if (-1 == oppmove.spell[h]) continue;
       Spell sp = spell_list[oppmove.spell[h]];
-      SpellCast sc = new SpellCast(sp, 1, oppmove.spell_target[h]);
+      SpellCast sc = new SpellCast(h, sp, 1, oppmove.spell_target[h]);
       insert_spell(sc);
     }
     // Retarget monsters controlled by oppponent.
@@ -1765,7 +1782,7 @@ public class MainView extends View {
       Being b = being_list[i];
       if (b.dead) continue;
       if (-1 != b.target) {
-	SpellCast sc = new SpellCast(monatt[b.life_max], i, b.target);
+	SpellCast sc = new SpellCast(-1, monatt[b.life_max], i, b.target);
 	insert_spell(sc);
       }
     }
@@ -1783,7 +1800,9 @@ public class MainView extends View {
   }
 
   public void print(String s) {
-    msg = s;
+    comments[comment_i] = s;
+    comment_i++;
+    if (comment_i == 4) comment_i = 0;
   }
 
   static int exec_cursor;
@@ -1827,13 +1846,13 @@ public class MainView extends View {
       Log.i("MV", s);
       if (sc.spell == dispel_spell) {
 	// Dispel Magic always works.
-	sc.spell.execute(sc.source, sc.target);
+	sc.run();
       } else if (is_dispel_cast && sc.spell.level > 0) {
 	Log.i("MV", "Dispel Magic negates the spell.");
 	sc.spell.just_wait();
       } else if (-1 == sc.target) {
 	if (sc.spell.is_global) {
-	  sc.spell.execute(sc.source, sc.target);
+	  sc.run();
 	} else {
 	  sc.spell.just_wait();
 	}
@@ -1848,10 +1867,10 @@ public class MainView extends View {
 	    Log.i("MV", "Psych spell conflict.");
 	    sc.spell.fizzle(sc.target);
 	  } else {
-	    sc.spell.execute(sc.source, sc.target);
+	    sc.run();
 	  }
 	} else {
-	  sc.spell.execute(sc.source, sc.target);
+	  sc.run();
 	}
       }
       exec_cursor++;
@@ -2225,14 +2244,14 @@ public class MainView extends View {
     }
     public void cast(int source, int target) {
       switch(state) {
-	case 0:
-	  board.animate_shield(target);
-	  return;
-	case 1:
-	  Being b = being_list[target];
-	  if (0 == b.shield) b.shield = 1;
-	  finish_spell();
-	  return;
+        case 0:
+          board.animate_shield(target);
+          return;
+        case 1:
+          Being b = being_list[target];
+          if (0 == b.shield) b.shield = 1;
+          finish_spell();
+          return;
       }
     }
   }
@@ -2243,15 +2262,15 @@ public class MainView extends View {
     }
     public void cast(int source, int target) {
       switch(state) {
-	case 0:
-	  board.animate_shield(target);
-	  return;
-	case 1:
-	  Being b = being_list[target];
-	  if (0 == b.shield) b.shield = 1;
+        case 0:
+          board.animate_shield(target);
+          return;
+        case 1:
+          Being b = being_list[target];
+          if (0 == b.shield) b.shield = 1;
 	  b.counterspell = true;
-	  finish_spell();
-	  return;
+          finish_spell();
+          return;
       }
     }
   }
@@ -2353,6 +2372,25 @@ public class MainView extends View {
     }
   }
 
+  public class LightningSpell extends Spell {
+    LightningSpell() {
+      init("Lightning", "DFFDD", R.drawable.wound, R.string.DFFDDdesc, 1);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  board.animate_spell(target, bitmap);
+	  return;
+	case 1:
+	  is_finished = true;
+	  being_list[target].get_hurt(5);
+	  print("Lightning deals 5 damage");
+	  board.animate_damage(target, 5);
+	  return;
+      }
+    }
+  }
+
   public class FingerOfDeathSpell extends Spell {
     FingerOfDeathSpell() {
       init("Finger of Death", "PWPFSSSD", R.drawable.wound, R.string.PWPFSSSDdesc, 1);
@@ -2389,6 +2427,9 @@ public class MainView extends View {
     public void cast(int source, int target) {
       switch(state) {
 	case 0:
+	  board.animate_spell(target, bitmap);
+	  return;
+	case 1:
 	  is_finished = true;
 	  int k = being_list[target].controller;
 	  Being b = being_list[being_list_count] =
@@ -2396,8 +2437,8 @@ public class MainView extends View {
 	  being_list_count++;
 	  b.start_life(level);
 	  b.target = 1 - k;
-	  Log.i("TODO", "fade in monster_bitmap");
-	  board.animate_spell(target, bitmap);
+	  Log.i("CASTHAND", "" + cast_hand);
+	  board.animate_summon(cast_hand, b);
 	  return;
       }
     }
@@ -2894,4 +2935,7 @@ public class MainView extends View {
   static boolean is_dispel_cast;
   static StabSpell stab_spell;
   static DispelMagicSpell dispel_spell;
+  static int cast_hand;
+  static String comments[];
+  static int comment_i;
 }
