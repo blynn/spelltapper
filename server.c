@@ -13,17 +13,18 @@ void handle(char *input) {
   static int sent[2];
   static int charm_gesture[2] = { -1, -1 };
   static int charm_hand[2] = { -1, -1 };
-  int i = 0;
+  static int para_hand[2][2] = {{ -1, -1 } , { -1, -1 }};
+  int index = 0;
   void add_char(char c) {
-    reply[i] = c;
-    i++;
+    reply[index] = c;
+    index++;
   }
   void add_nchar(char *cp, int n) {
-    strncpy(reply + i, cp, n);
-    i += n;
+    strncpy(reply + index, cp, n);
+    index += n;
   }
   void fin() {
-    reply[i] = '\0';
+    reply[index] = '\0';
   }
 
   switch(*s) {
@@ -63,6 +64,32 @@ void handle(char *input) {
 	  }
 	  fin();
 	  break;
+	case 'P':  // Paralyzed hand check-in.
+	{
+printf("d-: %d %d %d %d\n", para_hand[0][0], para_hand[0][1], para_hand[1][0], para_hand[1][1]);
+	  int i = s[1] - '0';
+	  if (i != 0 && i != 1) i = 0;  // TODO: Should not happen!
+	  para_hand[j][i] = s[2] - '0';
+	  add_char('0');
+printf("d0: %d %d %d %d\n", para_hand[0][0], para_hand[0][1], para_hand[1][0], para_hand[1][1]);
+	  fin();
+	  break;
+	}
+	case 'Q':  // Paralyzed hand query.
+	{
+printf("d1: %d %d %d %d\n", para_hand[0][0], para_hand[0][1], para_hand[1][0], para_hand[1][1]);
+	  int i = s[1] - '0';
+	  if (i != 0 && i != 1) i = 0;  // TODO: Should not happen!
+	  if (-1 == para_hand[1 - j][i]) {
+	    add_char('-');
+	  } else {
+	    add_char('0' + para_hand[1 - j][i]);
+	    para_hand[1 - j][i] = -1;
+	  }
+printf("d2: %d %d %d %d\n", para_hand[0][0], para_hand[0][1], para_hand[1][0], para_hand[1][1]);
+	  fin();
+	  break;
+	}
 	case 'M':  // Move check-in.
 	  if (!gotmove[j]) {
 	    gotmove[j] = 1;

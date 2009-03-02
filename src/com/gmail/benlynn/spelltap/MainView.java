@@ -888,6 +888,22 @@ public class MainView extends View {
   static final int HANDLER_CHARM_CHOSEN = 1;
   static final int HANDLER_GET_CHARM_HAND = 2;
   static final int HANDLER_GET_CHARM_GESTURE = 3;
+  static final int HANDLER_SET_PARA = 4;
+  static final int HANDLER_GET_PARA = 5;
+
+  void net_set_para(int target, int hand) {
+    opp_ready = false;
+    invalidate();
+    handler_state = HANDLER_SET_PARA;
+    Tubes.send_set_para(target, hand);
+  }
+
+  void net_get_para(int target) {
+    opp_ready = false;
+    invalidate();
+    handler_state = HANDLER_GET_PARA;
+    Tubes.send_get_para(1 - target);
+  }
 
   void net_set_charm(int hand, int gesture) {
     opp_ready = false;
@@ -960,6 +976,27 @@ public class MainView extends View {
 	    apply_charm();
 	    break;
 	  }
+	case HANDLER_SET_PARA:
+	  opp_ready = true;
+	  net_state = NET_IDLE;
+	  note_para_chosen();
+	  break;
+	case HANDLER_GET_PARA:
+	  switch(Tubes.reply.charAt(0)) {
+	    case '0':
+	      agent.reply_hand = 0;
+	      break;
+	    case '1':
+	      agent.reply_hand = 1;
+	      break;
+	  }
+	  if (-1 == agent.reply_hand) {
+	    Log.e("TODO", "Handle bad messages");
+	  }
+	  opp_ready = true;
+	  net_state = NET_IDLE;
+	  set_para_hand();
+	  break;
       }
     }
   }
@@ -994,6 +1031,12 @@ public class MainView extends View {
     int bitmap_id() { return R.drawable.wiz; }
     void move(SpellTapMove turn) {
       net_move(turn);
+    }
+    void set_para(int target, int hand) {
+      net_set_para(target, hand);
+    }
+    void get_para(int target) {
+      net_get_para(target);
     }
     void set_charm(int hand, int gesture) {
       net_set_charm(hand, gesture);
@@ -1227,25 +1270,27 @@ public class MainView extends View {
     // Board class handles avatars and status line.
 
     // Opponent history.
-    y = 16;
     String s = "";
-    for (int i = opphist.start[0]; i < opphist.cur; i++) {
-      s += " " + gesture[opphist.gest[i][0]].abbr;
-    }
     Paint pa;
-    if (Status.PARALYZED == being_list[1].status &&
-        0 == being_list[1].para_hand) pa = Easel.para_text;
-    else pa = Easel.history_text;
+    if (being_list_count > 1) {
+      y = 16;
+      for (int i = opphist.start[0]; i < opphist.cur; i++) {
+	s += " " + gesture[opphist.gest[i][0]].abbr;
+      }
+      if (Status.PARALYZED == being_list[1].status &&
+	  0 == being_list[1].para_hand) pa = Easel.para_text;
+      else pa = Easel.history_text;
 
-    canvas.drawText(s, 0, y, pa);
-    s = "";
-    for (int i = opphist.start[1]; i < opphist.cur; i++) {
-      s += gesture[opphist.gest[i][1]].abbr + " ";
+      canvas.drawText(s, 0, y, pa);
+      s = "";
+      for (int i = opphist.start[1]; i < opphist.cur; i++) {
+	s += gesture[opphist.gest[i][1]].abbr + " ";
+      }
+      if (Status.PARALYZED == being_list[1].status &&
+	  1 == being_list[1].para_hand) pa = Easel.para_rtext;
+      else pa = Easel.history_rtext;
+      canvas.drawText(s, 320, y, pa);
     }
-    if (Status.PARALYZED == being_list[1].status &&
-        1 == being_list[1].para_hand) pa = Easel.para_rtext;
-    else pa = Easel.history_rtext;
-    canvas.drawText(s, 320, y, pa);
 
     // Player history.
     y = ylower - 2;
@@ -1298,7 +1343,9 @@ public class MainView extends View {
 	  } else switch(being_list[0].status) {
 	    case Status.CHARMED:
 	      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
-	      canvas.drawText("CHARMED!", 160, ystatus + 36, Easel.tap_ctext);
+	      canvas.drawText(
+		  (freeze_gesture ? "CHARMED! (2)" : "CHARMED! (1)"),
+		  160, ystatus + 36, Easel.tap_ctext);
 	      break;
 	    case Status.CONFUSED:
 	      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
@@ -1472,7 +1519,18 @@ public class MainView extends View {
     is_help_arrow_on = false;
   }
 
+  // Choose spell with one-handed finishing gesture.
   private void choose_spell(int h, int i) {
+    if (spell_is_twohanded) {
+      spell_is_twohanded = false;
+      if (0 == ready_spell_count[1 - h]) {
+	spell_choice[1 - h] = -1;
+	spell_text[1 - h] = "";
+	arrow_view.bmspell[1 - h] = null;
+      } else {
+	choose_spell(1 - h, ready_spell_count[1 - h] - 1);
+      }
+    }
     // Assumes i is a valid choice for hand h.
     if (i == spell_choice[h]) return;
     spell_choice[h] = i;
@@ -1484,6 +1542,7 @@ public class MainView extends View {
     invalidate();
   }
 
+  // Choose spell with two-handed finishing gesture.
   private void choose_twohanded_spell(int i) {
     spell_is_twohanded = true;
     if (i == spell_choice[0]) return;
@@ -1653,18 +1712,21 @@ public class MainView extends View {
 	    h = 1;
 	    dirx *= -1;
 	  }
-	  if (h == charmed_hand) return true;
-	  if (Status.PARALYZED == being_list[0].status &&
-	      h == being_list[0].para_hand) return true;
+	  if (!choosing_para && !choosing_charm) {
+	    if (h == charmed_hand) return true;
+	    if (Status.PARALYZED == being_list[0].status &&
+		h == being_list[0].para_hand) return true;
+	  }
 	  choice[h] = Gesture.flattenxy(dirx, diry);
 	  if (null == gesture[choice[h]] || !gesture[choice[h]].learned) {
 	    choice[h] = Gesture.NONE;
 	  }
-	  if (Status.FEAR == being_list[0].status &&
-	      choice[h] != Gesture.PALM &&
-	      choice[h] != Gesture.WAVE &&
-	      choice[h] != Gesture.KNIFE) choice[h] = Gesture.NONE;
-
+	  if (!choosing_para && !choosing_charm) {
+	    if (Status.FEAR == being_list[0].status &&
+		choice[h] != Gesture.PALM &&
+		choice[h] != Gesture.WAVE &&
+		choice[h] != Gesture.KNIFE) choice[h] = Gesture.NONE;
+	  }
 	  if (choice[h] != lastchoice[h]) {
 	    handle_new_choice(h);
 	  }
@@ -1717,9 +1779,10 @@ public class MainView extends View {
   static int exec_queue_count;
   static SpellCast[] exec_queue;
 
-  // TODO: Move to Agent class. Also, introduce charm_hand and charm_gesture
-  // variables there, so network code in this class can avoid touching
-  // charmed_hand and choice[].
+  // TODO: Use boolean return values instead of opp_ready flag?
+  // TODO: Add charm_gesture int in Agent (maybe call it reply_gesture,
+  // or reuse reply_hand), so network code in this class can avoid touching
+  // choice[].
   static boolean opp_ready;
 
   void wait_on_net() {
@@ -2138,9 +2201,10 @@ public class MainView extends View {
 	// Network game. Handler will call new_round_post_charm() once
 	// a valid reply is received.
 	wait_on_net();
-	return;
+      } else {
+	new_round_post_charm();
       }
-      new_round_post_charm();
+      return;
     } else {
       charmed_hand = -1;
     }
@@ -2164,7 +2228,9 @@ public class MainView extends View {
     if (para_i < para_count) {
       if (0 == para_source[para_i]) {
 	Being b = being_list[para_target[para_i]];
-	if (-1 == b.para_hand) {
+	// Psychological conflicts mean that we could have canceled spells
+	// on the para_target and para_source arrays.
+	if (Status.PARALYZED == b.status && -1 == b.para_hand) {
 	  choosing_para = true;
 	  return;
 	}
@@ -2183,21 +2249,29 @@ public class MainView extends View {
     if (para_i < para_count) {
       if (1 == para_source[para_i]) {
 	Being b = being_list[para_target[para_i]];
-	if (-1 == b.para_hand) {
+	// Psychological conflicts mean that we could have canceled spells
+	// on the para_target and para_source arrays.
+	if (Status.PARALYZED == b.status && -1 == b.para_hand) {
 	  // Get paralyzed hand from opponent.
 	  opp_ready = true;
 	  agent.get_para(para_target[para_i]);
 	  if (!opp_ready) {
-	    // Network game. Handler will call new_round_para1() once
+	    // Network game. Handler will call set_para_hand() once
 	    // a valid reply is received.
 	    wait_on_net();
-	    return;
+	  } else {
+	    set_para_hand();
 	  }
-	  b.para_hand = agent.reply_hand;
+	  return;
 	}
       }
       new_round_para2();
     } else new_round_post_para();
+  }
+
+  void set_para_hand() {
+    being_list[para_target[para_i]].para_hand = agent.reply_hand;
+    new_round_para2();
   }
 
   void new_round_post_para() {
@@ -2310,8 +2384,6 @@ public class MainView extends View {
 	    ch = Character.toUpperCase(ch);
 	    if (choice[0] != choice[1] ||
 		ch != gesture[choice[0]].abbr) continue;
-	    // TODO: Deselect other spells when 2-handed finishing
-	    // gesture is required.
 	  } else if (ch != gesture[choice[h]].abbr) continue;
 	  // Complicated logic: if the last gesture is two-handed we
 	  // need to search both histories for this spell. Otherwise we
