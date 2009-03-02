@@ -16,11 +16,11 @@ abstract public class Agent {
       turn.spell_target[h] = -1;
     }
   }
+  void set_para(int target, int hand) {}
+  void get_para(int target) { reply_hand = 0; }
   void set_charm(int hand, int gesture) {}
   void reset() {}
-  int get_charm_hand() {
-    return 0;
-  }
+  void get_charm_hand() { reply_hand = 0; }
   int get_charm_gesture() {
     return Gesture.PALM;
   }
@@ -222,4 +222,6 @@ abstract public class Agent {
   static Agent getBloodyRipper() { return new BloodyRipper(); }
   static Agent getSendin() { return new Sendin(); }
   static Agent getAlTeffor() { return new AlTeffor(); }
+
+  int reply_hand;
 }

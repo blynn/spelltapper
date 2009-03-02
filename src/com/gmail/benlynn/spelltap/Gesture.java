@@ -58,6 +58,13 @@ class Gesture {
     return (x + 1) + (y + 1) * 3;
   }
 
+  static final int paralyze(int g) {
+    if (FINGERS == g) return CLAP;
+    if (SNAP == g) return DIGIT;
+    if (WAVE == g) return PALM;
+    return g;
+  }
+
   static final int SNAP = flattenxy(-1, -1);
   static final int KNIFE = flattenxy(0, -1);
   static final int DIGIT = flattenxy(1, -1);

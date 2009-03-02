@@ -62,7 +62,7 @@ public class MainView extends View {
 
   static int choice[];  // Gesture choice.
   static int lastchoice[];
-  static History hist, opphist;
+  static History hist, opphist, history[];
   static final int ylower = 128 + 144 + 4 * 4;
   static final int yspellrow = ylower + 24;
   static final int ystatus = yspellrow + 2 * 50;
@@ -896,12 +896,11 @@ public class MainView extends View {
     Tubes.send_set_charm(hand, gesture);
   }
 
-  int net_get_charm_hand() {
+  void net_get_charm_hand() {
     opp_ready = false;
     invalidate();
     handler_state = HANDLER_GET_CHARM_HAND;
     Tubes.send_get_charm_hand();
-    return -1;
   }
 
   int net_get_charm_gesture() {
@@ -934,13 +933,13 @@ public class MainView extends View {
 	case HANDLER_GET_CHARM_HAND:
 	  switch(Tubes.reply.charAt(0)) {
 	    case '0':
-	      charmed_hand = 0;
+	      agent.reply_hand = 0;
 	      break;
 	    case '1':
-	      charmed_hand = 1;
+	      agent.reply_hand = 1;
 	      break;
 	  }
-	  if (-1 == charmed_hand) {
+	  if (-1 == agent.reply_hand) {
 	    Log.e("TODO", "Handle bad messages");
 	  }
 	  opp_ready = true;
@@ -999,8 +998,8 @@ public class MainView extends View {
     void set_charm(int hand, int gesture) {
       net_set_charm(hand, gesture);
     }
-    int get_charm_hand() {
-      return net_get_charm_hand();
+    void get_charm_hand() {
+      net_get_charm_hand();
     }
     int get_charm_gesture() {
       return net_get_charm_gesture();
@@ -1118,8 +1117,9 @@ public class MainView extends View {
     is_animating = false;
     choice = new int[2];
     lastchoice = new int[2];
-    hist = new History();
-    opphist = new History();
+    history = new History[2];
+    history[0] = hist = new History();
+    history[1] = opphist = new History();
     ready_spell_count = new int[3];
     ready_spell = new Spell[5][3];
     spell_choice = new int[2];
@@ -1289,6 +1289,9 @@ public class MainView extends View {
 	  if (choosing_charm) {
 	    canvas.drawRect(0, ystatus, 320, 480, Easel.charm_text);
 	    canvas.drawText("Charm", 160, ystatus + 36, Easel.tap_ctext);
+	  } else if (choosing_para) {
+	    canvas.drawRect(0, ystatus, 320, 480, Easel.charm_text);
+	    canvas.drawText("Paralyze", 160, ystatus + 36, Easel.tap_ctext);
 	  } else if (Gesture.PALM == choice[0] && Gesture.PALM == choice[1]) {
 	    canvas.drawRect(0, ystatus, 320, 480, Easel.surrender_paint);
 	    canvas.drawText("SURRENDER!", 160, ystatus + 36, Easel.tap_ctext);
@@ -1320,34 +1323,47 @@ public class MainView extends View {
 
     // Gesture and spell text.
     y = yspellrow - 8;
-    if (0 == charmed_hand) {
-      if (freeze_gesture) {
+    if (choosing_para) {
+      int h;
+      for (h = 0; h < 2 && Gesture.NONE == choice[h]; h++);
+      if (h < 2) {
+	int g = Gesture.paralyze(
+	    history[para_target[para_i]].last_gesture(h));
+	canvas.drawText("Paralyze: " +
+	    (Gesture.NONE == g ? "(empty)" : gesture[g].abbr),
+	    h == 0 ? 0 : 320, y,
+	    h == 0 ? Easel.charm_text : Easel.charm_rtext);
+      }
+    } else {
+      if (0 == charmed_hand) {
+	if (freeze_gesture) {
+	  Gesture g = gesture[choice[0]];
+	  canvas.drawText(g.statusname, 0, y, Easel.charm_text);
+	} else {
+	  canvas.drawText("[Charmed]", 0, y, Easel.charm_text);
+	}
+      } else {
 	Gesture g = gesture[choice[0]];
-	canvas.drawText(g.statusname, 0, y, Easel.charm_text);
-      } else {
-	canvas.drawText("[Charmed]", 0, y, Easel.charm_text);
+	if (null == g) {
+	  canvas.drawText(emptyleftmsg, 0, y, Easel.grey_text);
+	} else {
+	  canvas.drawText(g.statusname, 0, y, Easel.white_text);
+	}
       }
-    } else {
-      Gesture g = gesture[choice[0]];
-      if (null == g) {
-	canvas.drawText(emptyleftmsg, 0, y, Easel.grey_text);
+      if (1 == charmed_hand) {
+	if (freeze_gesture) {
+	  Gesture g = gesture[choice[1]];
+	  canvas.drawText(g.statusname, 320, y, Easel.charm_rtext);
+	} else {
+	  canvas.drawText("[Charmed]", 320, y, Easel.charm_rtext);
+	}
       } else {
-	canvas.drawText(g.statusname, 0, y, Easel.white_text);
-      }
-    }
-    if (1 == charmed_hand) {
-      if (freeze_gesture) {
 	Gesture g = gesture[choice[1]];
-	canvas.drawText(g.statusname, 320, y, Easel.charm_rtext);
-      } else {
-	canvas.drawText("[Charmed]", 320, y, Easel.charm_rtext);
-      }
-    } else {
-      Gesture g = gesture[choice[1]];
-      if (null == g) {
-	canvas.drawText(emptyrightmsg, 320, y, Easel.grey_rtext);
-      } else {
-	canvas.drawText(g.statusname, 320, y, Easel.white_rtext);
+	if (null == g) {
+	  canvas.drawText(emptyrightmsg, 320, y, Easel.grey_rtext);
+	} else {
+	  canvas.drawText(g.statusname, 320, y, Easel.white_rtext);
+	}
       }
     }
 
@@ -1374,6 +1390,10 @@ public class MainView extends View {
     if (choosing_charm) {
       canvas.drawText("Charm Person: Choose gesture...",
           x, y + 50, Easel.white_text);
+    } else if (choosing_para) {
+      canvas.drawText("Paralyze " +
+	  (para_target[para_i] == 0 ? "yourself" : "opponent") +
+	  ": Choose side...", x, y + 50, Easel.white_text);
     }
     for (int h = 0; h < 2; h++) {
       for (int i = 0; i < ready_spell_count[h]; i++) {
@@ -1712,9 +1732,26 @@ public class MainView extends View {
     if (STATE_ON_CONFIRM == main_state) run();
     tilt_state = TILT_DISABLED;
     board.animation_reset();  // Stop tilt animation if it's still going.
-    // If Charm Person has been cast on opponent, must first send
-    // chosen gesture before normal turn.
-    if (choosing_charm) {
+    if (choosing_para) {
+      tilt_state = TILT_AWAIT_UP;
+      int h;
+      for (h = 0; h < 2 && Gesture.NONE == choice[h]; h++);
+      if (h < 2) {
+	being_list[para_target[para_i]].para_hand = h;
+	opp_ready = true;
+	agent.set_para(para_target[para_i], h);
+	if (opp_ready) {
+	  note_para_chosen();
+	} else  {
+	  // In network games, network code eventually calls
+	  // note_para_chosen().
+	  wait_on_net();
+	}
+      }
+      return;
+    } else if (choosing_charm) {
+      // If Charm Person has been cast on opponent, must first send
+      // chosen gesture before normal turn.
       tilt_state = TILT_AWAIT_UP;
       int h;
       for (h = 0; h < 2 && Gesture.NONE == choice[h]; h++);
@@ -1767,11 +1804,18 @@ public class MainView extends View {
     wait_on_net();
   }
 
+  void note_para_chosen() {
+    choosing_para = false;
+    clear_choices();
+    invalidate();
+    new_round_para1();
+  }
+
   void note_charm_chosen() {
     choosing_charm = false;
     clear_choices();
     invalidate();
-    new_round2();
+    new_round_charm2();
   }
 
   // Insert spells by priority.
@@ -2079,53 +2123,91 @@ public class MainView extends View {
       choosing_charm = true;
       return;
     }
-    new_round2();
+    para_i = -1;
+    new_round_charm2();
   }
 
-  void new_round2() {
-    if (choosing_charm) Log.e("MV", "Bug! Should have chosen charm by now");
+  void new_round_charm2() {
+    if (choosing_charm) Log.e("MV", "Bug! Should have chosen charm by now.");
     // Handle charm on player.
     if (player_charmed()) {
       // Get charmed hand from opponent.
       opp_ready = true;
-      charmed_hand = agent.get_charm_hand();
+      agent.get_charm_hand();
       if (!opp_ready) {
-	// Network game. Handler will call new_round_post_charm once
+	// Network game. Handler will call new_round_post_charm() once
 	// a valid reply is received.
 	wait_on_net();
 	return;
       }
+      new_round_post_charm();
     } else {
       charmed_hand = -1;
     }
-    new_round_post_charm();
+    new_round_para1();
   }
 
   void new_round_post_charm() {
-    // Handle paralyzed wizards.
-    while (0 < para_count) {
-      para_count--;
-      if (0 == para_source[para_count]) {
-	Being b = being_list[para_target[para_count]];
+    charmed_hand = agent.reply_hand;
+    new_round_para1();
+  }
+
+  static int para_i;
+  void new_round_para1() {
+    // Now the paralyze spaghetti. When cast on wizards, the caster
+    // chooses the side to be paralyzed if the victim is not already
+    // paralyzed. Complications arise because one could cast paralyze on
+    // the opponent as well as oneself.
+    //
+    // Handle player Paralyze spells cast at wizards.
+    para_i++;
+    if (para_i < para_count) {
+      if (0 == para_source[para_i]) {
+	Being b = being_list[para_target[para_i]];
 	if (-1 == b.para_hand) {
-	  b.para_hand = 0;  // TODO: Choose hand and notify opponent.
-	}
-      } else {
-	Being b = being_list[para_target[para_count]];
-	if (-1 == b.para_hand) {
-	  b.para_hand = 0;  // TODO: Get hand from opponent.
+	  choosing_para = true;
+	  return;
 	}
       }
+      new_round_para1();
+    } else {
+      para_i = -1;
+      new_round_para2();
     }
+  }
+
+  void new_round_para2() {
+    if (choosing_para) Log.e("MV", "Bug! Should have chosen para by now.");
+    // Handle opponent Paralyze spells cast at wizards.
+    para_i++;
+    if (para_i < para_count) {
+      if (1 == para_source[para_i]) {
+	Being b = being_list[para_target[para_i]];
+	if (-1 == b.para_hand) {
+	  // Get paralyzed hand from opponent.
+	  opp_ready = true;
+	  agent.get_para(para_target[para_i]);
+	  if (!opp_ready) {
+	    // Network game. Handler will call new_round_para1() once
+	    // a valid reply is received.
+	    wait_on_net();
+	    return;
+	  }
+	  b.para_hand = agent.reply_hand;
+	}
+      }
+      new_round_para2();
+    } else new_round_post_para();
+  }
+
+  void new_round_post_para() {
     if (Status.PARALYZED != being_list[1].status) being_list[1].para_hand = -1;
     if (Status.PARALYZED != being_list[0].status) being_list[0].para_hand = -1;
     else {
       int h = being_list[0].para_hand;
+      if (-1 == h) Log.e("MV", "Bug! Paralyzed hand not chosen!");
       int lastg = hist.last_gesture(h);
-      if (Gesture.FINGERS == lastg) choice[h] = Gesture.CLAP;
-      else if (Gesture.SNAP == lastg) choice[h] = Gesture.DIGIT;
-      else if (Gesture.WAVE == lastg) choice[h] = Gesture.PALM;
-      else choice[h] = lastg;
+      choice[h] = Gesture.paralyze(lastg);
     }
 
     // Handle amnesia.
@@ -2155,6 +2237,18 @@ public class MainView extends View {
 	choice[1 - h] = Gesture.NONE;
 	spell_text[1 - h] = "";
 	spell_text[h] = "(charm opponent)";
+	is_confirmable = true;
+      } else if (Gesture.NONE == choice[1 - h]) {
+	spell_text[h] = "";
+	is_confirmable = false;
+      }
+      invalidate();
+      return;
+    } else if (choosing_para) {
+      if (Gesture.NONE != choice[h]) {
+	choice[1 - h] = Gesture.NONE;
+	spell_text[1 - h] = "";
+	spell_text[h] = "(paralyze)";
 	is_confirmable = true;
       } else if (Gesture.NONE == choice[1 - h]) {
 	spell_text[h] = "";
