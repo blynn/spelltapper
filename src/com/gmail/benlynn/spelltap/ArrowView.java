@@ -65,9 +65,13 @@ public class ArrowView extends View {
 	canvas.drawBitmap(bmspell[h], x, y, Easel.paint);
 	int i = MainView.spell_target[h];
 	if (-1 != i) {
-	  Being b = MainView.being_list[i];
-	  canvas.drawLine(x + 24, y + 24,
-	      b.x + b.midw, b.y + b.midh, Easel.arrow_paint);
+	  compute_xytgt(i);
+	  if (i < -1)  {
+	    ptgt = Easel.fut_arrow_paint;
+	  } else {
+	    ptgt = Easel.arrow_paint;
+	  }
+	  canvas.drawLine(x + 24, y + 24, xtgt, ytgt, ptgt);
 	}
       }
       x = 320 - 48 - 1;

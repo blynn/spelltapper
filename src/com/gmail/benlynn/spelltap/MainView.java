@@ -1092,6 +1092,8 @@ public class MainView extends View {
     choice[1] = choice[0] = Gesture.NONE;
     lastchoice[0] = lastchoice[1] = choice[0];
     fut_choice[0] = fut_choice[1] = -1;
+    fresh_monster[0][0] = fresh_monster[0][1] = -1;
+    fresh_monster[1][0] = fresh_monster[1][1] = -1;
     ready_spell_count[0] = ready_spell_count[1] = 0;
     ready_spell_count[2] = 0;
     spell_choice[0] = spell_choice[1] = -1;
@@ -2016,8 +2018,6 @@ public class MainView extends View {
     exec_cursor = 0;
     mirror_sc = null;
     cur_sc = null;
-    fresh_monster[0][0] = fresh_monster[0][1] = -1;
-    fresh_monster[1][0] = fresh_monster[1][1] = -1;
     if (exec_queue_count == 0) {
       // TODO: Delay?
       end_round();
@@ -2064,8 +2064,10 @@ public class MainView extends View {
     if (monster_resolve == cur_sc) {
       for (int i = 2; i < being_list_count; i++) {
 	Being b = being_list[i];
-	insert_spell(new SpellCast(-1, monatt[b.life_max],
-	    i, map_target(b.target)));
+	b.target = map_target(b.target);
+	if (!b.dead) {
+	  insert_spell(new SpellCast(-1, monatt[b.life_max], i, b.target));
+	}
       }
       exec_cursor++;
       next_spell();
@@ -2192,6 +2194,15 @@ public class MainView extends View {
       }
     }
     is_dispel_cast = false;
+
+    // For player convenience, retarget attacks on dead targets if possible.
+    for (int i = 2; i < being_list_count; i++) {
+      Being b = being_list[i];
+      if (Status.OK == b.status && -1 != b.target &&
+   	  being_list[b.target].dead && 0 == being_list[b.target].controller) {
+	b.target = 1;
+      }
+    }
 
     is_animating = false;
     tilt_state = TILT_AWAIT_UP;
