@@ -12,6 +12,8 @@ class Easel {
     arrow_paint.setStrokeCap(Paint.Cap.ROUND);
     weird_arrow_paint = new Paint(arrow_paint);
     weird_arrow_paint.setARGB(191, 255, 127, 255);
+    fut_arrow_paint = new Paint(arrow_paint);
+    fut_arrow_paint.setARGB(127, 63, 127, 63);
 
     green_paint = new Paint();
     green_paint.setARGB(255, 127, 255, 125);
@@ -85,6 +87,7 @@ class Easel {
 
   static Paint paint;
   static Paint arrow_paint, weird_arrow_paint;
+  static Paint fut_arrow_paint;
   static Paint grey_text, grey_rtext;
   static Paint tap_ctext;
   static Paint white_text, white_rtext;

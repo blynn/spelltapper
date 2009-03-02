@@ -66,5 +66,18 @@ public class ArrowView extends View {
 	}
       }
     }
+
+    // Future attacks
+    if (!MainView.is_simplified()) {
+      for (int h = 0; h < 2; h++) {
+	int n = MainView.fut_choice[h];
+	if (-1 != n) {
+	  Being b2 = MainView.being_list[n];
+	  canvas.drawLine(
+	      MainView.xsumcirc[h] + 24, MainView.ysumcirc[0] + 24,
+	      b2.x + b2.midw, b2.y + b2.midh, Easel.fut_arrow_paint);
+	}
+      }
+    }
   }
 }

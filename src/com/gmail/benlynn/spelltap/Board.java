@@ -309,14 +309,20 @@ public class Board extends View {
     super.onDraw(canvas);
     if (null == MainView.being_list) return;
 
+    if (!MainView.is_simplified()) {
+      canvas.drawBitmap(bmsumcirc,
+	  MainView.xsumcirc[0], MainView.ysumcirc[0], paint);
+      canvas.drawBitmap(bmsumcirc,
+	  MainView.xsumcirc[1], MainView.ysumcirc[0], paint);
+      canvas.drawBitmap(bmsumcirc,
+	  MainView.xsumcirc[0], MainView.ysumcirc[1], paint);
+      canvas.drawBitmap(bmsumcirc,
+	  MainView.xsumcirc[1], MainView.ysumcirc[1], paint);
+    }
+
     if (ANIM_SUMMON == anim) {
-      if (hand == 0) {
-	canvas.drawBitmap(bmsumcirc, 160 - 32  - 2 * 48 - 2 * 10,
-	    MainView.ylower - 64 - 48 - 4, paint);
-      } else {
-	canvas.drawBitmap(bmsumcirc, 160 + 32 + 48 + 2 * 10,
-	    MainView.ylower - 64 - 48 - 4, paint);
-      }
+      canvas.drawBitmap(bmsumcirc, MainView.xsumcirc[hand],
+	  MainView.ysumcirc[0], paint);
     }
 
     // Avatars.
@@ -329,7 +335,6 @@ public class Board extends View {
       Being b = MainView.being_list[i];
       drawBeing(i, b.x, b.y, canvas);
     }
-
 
     switch(anim) {
       case ANIM_MOVE:

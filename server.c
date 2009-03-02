@@ -66,18 +66,15 @@ void handle(char *input) {
 	  break;
 	case 'P':  // Paralyzed hand check-in.
 	{
-printf("d-: %d %d %d %d\n", para_hand[0][0], para_hand[0][1], para_hand[1][0], para_hand[1][1]);
 	  int i = s[1] - '0';
 	  if (i != 0 && i != 1) i = 0;  // TODO: Should not happen!
 	  para_hand[j][i] = s[2] - '0';
 	  add_char('0');
-printf("d0: %d %d %d %d\n", para_hand[0][0], para_hand[0][1], para_hand[1][0], para_hand[1][1]);
 	  fin();
 	  break;
 	}
 	case 'Q':  // Paralyzed hand query.
 	{
-printf("d1: %d %d %d %d\n", para_hand[0][0], para_hand[0][1], para_hand[1][0], para_hand[1][1]);
 	  int i = s[1] - '0';
 	  if (i != 0 && i != 1) i = 0;  // TODO: Should not happen!
 	  if (-1 == para_hand[1 - j][i]) {
@@ -86,7 +83,6 @@ printf("d1: %d %d %d %d\n", para_hand[0][0], para_hand[0][1], para_hand[1][0], p
 	    add_char('0' + para_hand[1 - j][i]);
 	    para_hand[1 - j][i] = -1;
 	  }
-printf("d2: %d %d %d %d\n", para_hand[0][0], para_hand[0][1], para_hand[1][0], para_hand[1][1]);
 	  fin();
 	  break;
 	}

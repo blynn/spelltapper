@@ -2,6 +2,7 @@
 // Victory/defeat screen with stats.
 // Resize event.
 // Stop handlers on init.
+// Drag highlights.
 
 // Spell precedence:
 //
@@ -56,7 +57,7 @@ public class MainView extends View {
   // Special states for tutorials.
   static final int STATE_GESTURE_TEACH = 1;
   static final int STATE_TARGET_TEACH = 2;
-  // TODO: Use freeze_gesture flag instead of checking for the following state.
+  // TODO: Use freeze_gesture flag instead of checking for the following state?
   static final int STATE_ON_CONFIRM = 3;
   static final int STATE_ON_END_ROUND = 4;
 
@@ -75,6 +76,8 @@ public class MainView extends View {
   static int spell_list_count;
   static int spell_choice[];
   static int spell_target[];
+  static int fut_choice[];  // Orders for future/charmed/raised monsters.
+
   static int being_list_count;
   static Being being_list[];
   static int winner;
@@ -99,6 +102,11 @@ public class MainView extends View {
       spelltap.goto_town();
     }
   }
+
+  static boolean is_simplified() {
+    return false;
+  }
+  static boolean has_circles;
 
   void set_state_dummytutorial() {
     tut = new DummyTutorial();
@@ -126,7 +134,7 @@ public class MainView extends View {
     tut = new NetDuel();
   }
 
-  static SpellTapMove oppmove;
+  static SpellTapMove oppturn;
   static class SpellTapMove {
     SpellTapMove() {
       gest = new int[2];
@@ -939,7 +947,7 @@ public class MainView extends View {
       Log.i("Reply", Tubes.reply);
       switch(handler_state) {
 	case HANDLER_DECODE:
-	  decode_move(oppmove, Tubes.reply);
+	  decode_move(oppturn, Tubes.reply);
 	  break;
 	case HANDLER_CHARM_CHOSEN:
 	  opp_ready = true;
@@ -1083,6 +1091,7 @@ public class MainView extends View {
   void clear_choices() {
     choice[1] = choice[0] = Gesture.NONE;
     lastchoice[0] = lastchoice[1] = choice[0];
+    fut_choice[0] = fut_choice[1] = -1;
     ready_spell_count[0] = ready_spell_count[1] = 0;
     ready_spell_count[2] = 0;
     spell_choice[0] = spell_choice[1] = -1;
@@ -1160,6 +1169,7 @@ public class MainView extends View {
     is_animating = false;
     choice = new int[2];
     lastchoice = new int[2];
+    fut_choice = new int[2];
     history = new History[2];
     history[0] = hist = new History();
     history[1] = opphist = new History();
@@ -1228,7 +1238,7 @@ public class MainView extends View {
     comment_i = 0;
     comments = new String[4];
     bmcorpse = get_bitmap(R.drawable.corpse);
-    oppmove = new SpellTapMove();
+    oppturn = new SpellTapMove();
 
     gesture = new Gesture[9];
     put_gest("Snap", -1, -1);
@@ -1249,6 +1259,13 @@ public class MainView extends View {
     choosing_para = false;
     choosing_charm = false;
     is_help_arrow_on = false;
+    has_circles = true;
+    xsumcirc = new int[2];
+    ysumcirc = new int[2];
+    xsumcirc[0] = 160 - 32  - 2 * 48 - 2 * 10;
+    xsumcirc[1] = 160 + 32 + 48 + 2 * 10;
+    ysumcirc[0] = MainView.ylower - 64 - 48 - 4;
+    ysumcirc[1] = 64 + 4;
   }
   static String emptyleftmsg;
   static String emptyrightmsg;
@@ -1534,9 +1551,17 @@ public class MainView extends View {
     // Assumes i is a valid choice for hand h.
     if (i == spell_choice[h]) return;
     spell_choice[h] = i;
-    spell_target[h] = ready_spell[i][h].target;
+    Spell sp = ready_spell[i][h];
+    spell_target[h] = sp.target;
 
-    Spell sp = ready_spell[spell_choice[h]][h];
+    if (!is_simplified()) {
+      if (sp.is_monstrous) {
+	fut_choice[h] = 1;
+      } else {
+	fut_choice[h] = -1;
+      }
+    }
+
     arrow_view.bmspell[h] = sp.bitmap;
     spell_text[h] = sp.name;
     invalidate();
@@ -1595,10 +1620,19 @@ public class MainView extends View {
 		break;
 	      }
 	    }
+	    if (-1 == drag_i && !is_simplified()) {
+	      // Check for summon circle retarget.
+	      if (y0 >= ysumcirc[0] && y0 <= ysumcirc[0] + 48) {
+		if (x0 >= xsumcirc[0] && x0 <= xsumcirc[0] + 48) {
+		  drag_i = -2;
+		}
+		else if (x0 >= xsumcirc[1] && x0 <= xsumcirc[1] + 48) {
+		  drag_i = -3;
+		}
+	      }
+	    }
 	  }
 	  if (-1 != drag_i) {
-	    // TODO: Only invalidate status bar.
-	    invalidate();
 	    return true;
 	  }
 	  return false;
@@ -1617,8 +1651,30 @@ public class MainView extends View {
 	    Being b = being_list[target];
 	    if (b.contains(x1, y1)) break;
 	  }
-	  // drag_i = 0, 1 means player is targeting spell.
-	  if (drag_i <= 1) {
+	  if (!is_simplified()) {
+	    // Check for summon circle retarget.
+	    if (y1 >= ysumcirc[0] && y1 <= ysumcirc[0] + 48) {
+	      if (x1 >= xsumcirc[0] && x1 <= xsumcirc[0] + 48) {
+		target = -2;
+	      }
+	      else if (x1 >= xsumcirc[1] && x1 <= xsumcirc[1] + 48) {
+		target = -3;
+	      }
+	    }
+	    if (y1 >= ysumcirc[1] && y1 <= ysumcirc[1] + 48) {
+	      if (x1 >= xsumcirc[0] && x1 <= xsumcirc[0] + 48) {
+		target = -4;
+	      }
+	      else if (x1 >= xsumcirc[1] && x1 <= xsumcirc[1] + 48) {
+		target = -5;
+	      }
+	    }
+	  }
+	  if (drag_i < -1) {
+	    // Summon circle retarget.
+	    fut_choice[-2 - drag_i] = target;
+	  } else if (drag_i <= 1) {
+	    // drag_i = 0, 1 means player is targeting spell.
 	    if (target == -1) {
 	      // Doesn't count if still in spell icon.
 	      if (y1 >= yicon - SLOP && y1 < yicon + 48 + SLOP) {
@@ -1768,13 +1824,13 @@ public class MainView extends View {
       target = i_target;
     }
     void run() {
-      cast_hand = hand;
       spell.execute(source, target);
     }
     int hand;
     Spell spell;
     int target;
     int source;
+    int monster_target;
   }
   static int exec_queue_count;
   static SpellCast[] exec_queue;
@@ -1857,7 +1913,7 @@ public class MainView extends View {
     hist.add(choice);
 
     opp_ready = true;
-    agent.move(oppmove);
+    agent.move(oppturn);
     // In local duels, opp_ready should still be true.
     if (opp_ready) {
       resolve();
@@ -1898,7 +1954,7 @@ public class MainView extends View {
     is_animating = true;
     for (int i = 0; i < 4; i++) comments[i] = null;
     para_count = 0;
-    opphist.add(oppmove.gest);
+    opphist.add(oppturn.gest);
 
     // Expire status effects.
     for (int i = 0; i < being_list_count; i++) {
@@ -1913,6 +1969,7 @@ public class MainView extends View {
       if (-1 != spell_choice[0]) {
 	SpellCast sc = new SpellCast(
 	    0, ready_spell[spell_choice[0]][2], 0, spell_target[0]);
+	sc.monster_target = fut_choice[0];
 	insert_spell(sc);
       }
     } else {
@@ -1920,20 +1977,21 @@ public class MainView extends View {
 	if (-1 == spell_choice[h]) continue;
 	SpellCast sc = new SpellCast(
 	    h, ready_spell[spell_choice[h]][h], 0, spell_target[h]);
+	sc.monster_target = fut_choice[h];
 	insert_spell(sc);
       }
     }
     // Insert opponent spells and targets.
     for (int h = 0; h < 2; h++) {
-      if (-1 == oppmove.spell[h]) continue;
-      Spell sp = spell_list[oppmove.spell[h]];
-      SpellCast sc = new SpellCast(h, sp, 1, oppmove.spell_target[h]);
+      if (-1 == oppturn.spell[h]) continue;
+      Spell sp = spell_list[oppturn.spell[h]];
+      SpellCast sc = new SpellCast(h, sp, 1, oppturn.spell_target[h]);
       insert_spell(sc);
     }
     // Retarget monsters controlled by oppponent.
-    for (int i = 0; i < oppmove.attack_count; i++) {
-      Being b = being_list[oppmove.attack_source[i]];
-      b.target = oppmove.attack_target[i];
+    for (int i = 0; i < oppturn.attack_count; i++) {
+      Being b = being_list[oppturn.attack_source[i]];
+      b.target = oppturn.attack_target[i];
     }
     // Insert monster attacks.
     for (int i = 2; i < being_list_count; i++) {
@@ -1950,6 +2008,9 @@ public class MainView extends View {
     invalidate();
 
     exec_cursor = 0;
+    mirror_sc = null;
+    cur_sc = null;
+    last_monster = -1;
     if (exec_queue_count == 0) {
       // TODO: Delay?
       end_round();
@@ -1965,106 +2026,120 @@ public class MainView extends View {
   }
 
   static int exec_cursor;
-  static SpellCast mirror_sc;
+  static SpellCast mirror_sc, cur_sc;
+  int cur_cast_hand() {
+    return cur_sc.hand;
+  }
   public void next_spell() {
-    SpellCast sc = null;
+    if (-1 != last_monster && !is_simplified()) {
+      Being b = being_list[last_monster];
+      b.target = cur_sc.monster_target;
+      // Requires monster attack priorities are lower than monstrous spells.
+      // TODO: Eventually must generate all monster attacks on the fly,
+      // as Blindness and Invisibility kill them before they can attack,
+      // and also the Charm Monster rules.
+      insert_spell(new SpellCast(-1, monatt[b.life_max],
+	  last_monster, b.target));
+      last_monster = -1;
+    }
     // Magic Mirror interrupts standard order of spells.
     if (null != mirror_sc) {
-      sc = mirror_sc;
+      cur_sc = mirror_sc;
     } else if (exec_cursor < exec_queue_count) {
-      sc = exec_queue[exec_cursor];
-    }
-
-    if (null != sc) {
-      String s = "";
-      String srcname = being_list[sc.source].name;
-      String tgtname = null;
-      if (sc.target != -1) {
-	tgtname = being_list[sc.target].name;
-      }
-      if (mirror_sc == sc) {
-	s += "Mirror reflects " + sc.spell.name + " at ";
-      } else if (sc.source >= 2) {
-	s += srcname + " attacks ";
-      } else if (sc.spell == stab_spell) {
-	if (0 == sc.source) {
-	  s += "You stab ";
-	} else {
-	  s += srcname + " stabs ";
-	}
-      } else {
-	if (0 == sc.source) {
-	  s += "You cast ";
-	} else {
-	  s += srcname + " casts ";
-	}
-	s += sc.spell.name + " on ";
-      }
-      if (0 == sc.target) {
-	if (0 == sc.source) {
-	  s += "yourself.";
-	} else {
-	  s += "you.";
-	}
-      } else if (-1 == sc.target) {
-	s += "thin air!";
-      } else {
-	s += tgtname + ".";
-      }
-      print(s);
-      Log.i("MV", s);
-      if (sc.spell == dispel_spell) {
-	// Dispel Magic always works.
-	sc.run();
-      } else if (is_dispel_cast && sc.spell.level > 0) {
-	print("Dispel Magic negates the spell.");
-	sc.spell.just_wait();
-      } else if (-1 == sc.target) {
-	if (sc.spell.is_global) {
-	  sc.run();
-	} else {
-	  sc.spell.just_wait();
-	}
-      } else {
-	Being b = being_list[sc.target];
-	if (b.dead) {
-	  print("Dead target. Nothing happens.");
-	} else if (b.counterspell) {
-	  print("Counter-spell blocks the spell.");
-	  sc.spell.fizzle(sc.target);
-	} else if (b.mirror && sc.source != sc.target && sc.spell.level > 0) {
-	  if (sc.spell == magic_mirror_spell) {
-	    sc.run();
-	  } else if (null != mirror_sc) {
-	    print("The spell bounces between the mirrors and dissipates."); 
-	    sc.spell.fizzle(sc.target);
-	  } else {
-	    mirror_sc = new SpellCast(sc.hand, sc.spell, sc.target, sc.source);
-	    sc.spell.fizzle(sc.target);
-	    // Complicated logic: after creating a new SpellCast representing
-	    // the mirrored spell, we return to avoid incrementing exec_cursor.
-	    return;
-	  }
-	} else if (sc.spell.is_psych) {
-	  // Must compute psychological conflicts on the fly because of
-	  // mirrored spells.
-	  b.psych++;
-	  if (1 < b.psych) {
-	    print("Psychological spell conflict.");
-	    b.status = Status.OK;
-	    sc.spell.fizzle(sc.target);
-	  } else {
-	    sc.run();
-	  }
-	} else {
-	  sc.run();
-	}
-      }
-      if (null != mirror_sc) mirror_sc = null;
-      exec_cursor++;
+      cur_sc = exec_queue[exec_cursor];
     } else {
       end_round();
+      return;
     }
+
+    SpellCast sc = cur_sc;
+
+    String s = "";
+    String srcname = being_list[sc.source].name;
+    String tgtname = null;
+    if (sc.target != -1) {
+      tgtname = being_list[sc.target].name;
+    }
+    if (mirror_sc == sc) {
+      s += "Mirror reflects " + sc.spell.name + " at ";
+    } else if (sc.source >= 2) {
+      s += srcname + " attacks ";
+    } else if (sc.spell == stab_spell) {
+      if (0 == sc.source) {
+	s += "You stab ";
+      } else {
+	s += srcname + " stabs ";
+      }
+    } else {
+      if (0 == sc.source) {
+	s += "You cast ";
+      } else {
+	s += srcname + " casts ";
+      }
+      s += sc.spell.name + " on ";
+    }
+    if (0 == sc.target) {
+      if (0 == sc.source) {
+	s += "yourself.";
+      } else {
+	s += "you.";
+      }
+    } else if (-1 == sc.target) {
+      s += "thin air!";
+    } else {
+      s += tgtname + ".";
+    }
+    print(s);
+    Log.i("MV", s);
+    if (sc.spell == dispel_spell) {
+      // Dispel Magic always works.
+      sc.run();
+    } else if (is_dispel_cast && sc.spell.level > 0) {
+      print("Dispel Magic negates the spell.");
+      sc.spell.just_wait();
+    } else if (-1 == sc.target) {
+      if (sc.spell.is_global) {
+	sc.run();
+      } else {
+	sc.spell.just_wait();
+      }
+    } else {
+      Being b = being_list[sc.target];
+      if (b.dead) {
+	print("Dead target. Nothing happens.");
+      } else if (b.counterspell) {
+	print("Counter-spell blocks the spell.");
+	sc.spell.fizzle(sc.target);
+      } else if (b.mirror && sc.source != sc.target && sc.spell.level > 0) {
+	if (sc.spell == magic_mirror_spell) {
+	  sc.run();
+	} else if (null != mirror_sc) {
+	  print("The spell bounces between the mirrors and dissipates."); 
+	  sc.spell.fizzle(sc.target);
+	} else {
+	  mirror_sc = new SpellCast(sc.hand, sc.spell, sc.target, sc.source);
+	  sc.spell.fizzle(sc.target);
+	  // Complicated logic: after creating a new SpellCast representing
+	  // the mirrored spell, we return to avoid incrementing exec_cursor.
+	  return;
+	}
+      } else if (sc.spell.is_psych) {
+	// Must compute psychological conflicts on the fly because of
+	// mirrored spells.
+	b.psych++;
+	if (1 < b.psych) {
+	  print("Psychological spell conflict.");
+	  b.status = Status.OK;
+	  sc.spell.fizzle(sc.target);
+	} else {
+	  sc.run();
+	}
+      } else {
+	sc.run();
+      }
+    }
+    if (null != mirror_sc) mirror_sc = null;
+    exec_cursor++;
   }
 
   // End of round. Check for death, shield expiration, etc.
@@ -2173,6 +2248,7 @@ public class MainView extends View {
 
   // Start new round.
   void new_round() {
+    fut_choice[0] = fut_choice[1] = -1;
     // Thus begins the Charm Person spaghetti. The most complex case is
     // when Charm Person has simultaneously been cast on both players. Then:
     //  1. I pick a hand and gesture for my opponent.
@@ -2458,26 +2534,14 @@ public class MainView extends View {
       learned = false;
       is_psych = false;
       is_global = false;
+      is_monstrous = false;
       level = 0;
     }
 
     abstract public void cast(int init_source, int init_target);
     void set_is_psych() { is_psych = true; }
     void set_is_global() { is_global = true; }
-    Bitmap bitmap;
-    String name;
-    String gesture;
-    int index;
-    int target;
-    int state;
-    int description;
-    SpannableString purty;
-    boolean learned;
-    boolean is_psych;
-    boolean is_global;
-    boolean is_finished;  // Set this to true before calling last animation.
-                          // Or call finish_spell() [it's slower].
-    int cast_source, cast_target;
+    void set_is_monstrous() { is_monstrous = true; }
 
     public void fizzle(int init_target) {
       state = 0;
@@ -2518,6 +2582,25 @@ public class MainView extends View {
     }
     int priority;
     int level;
+    Bitmap bitmap;
+    String name;
+    String gesture;
+    int index;
+    int target;
+    int state;
+    int description;
+    SpannableString purty;
+    boolean learned;
+    boolean is_psych;
+    boolean is_global;
+    boolean is_finished;  // Set this to true before calling last animation.
+                          // Or call finish_spell() [it's slower].
+    int cast_source, cast_target;
+
+    // True if implies another monster will be under player's control on
+    // successful casting of the spell.
+    boolean is_monstrous;
+    // Monstrous spells set this to the monster now under player control.
   }
 
   public class ShieldSpell extends Spell {
@@ -2696,12 +2779,13 @@ public class MainView extends View {
   }
 
   public class SummonSpell extends Spell {
-    void init_summon(String i_monster, String gesture,
+    void init_summon(String i_name, String gesture,
 	int bitmapid, int description, int monsterbitmapid, int i_level) {
       monster_bmid = monsterbitmapid;
       level = i_level;
-      monster = i_monster;
-      init("Summon " + monster, gesture, bitmapid, description, 0);
+      name = i_name;
+      init("Summon " + name, gesture, bitmapid, description, 0);
+      set_is_monstrous();
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -2712,16 +2796,17 @@ public class MainView extends View {
 	  is_finished = true;
 	  int k = being_list[target].controller;
 	  Being b = being_list[being_list_count] =
-	      new Being(monster, monster_bmid, k);
+	      new Being(name, monster_bmid, k);
+	  last_monster = being_list_count;
 	  being_list_count++;
 	  b.start_life(level);
 	  b.target = 1 - k;
-	  board.animate_summon(cast_hand, b);
+	  board.animate_summon(cur_cast_hand(), b);
 	  return;
       }
     }
     int level;
-    String monster;
+    String name;
     int monster_bmid;
   }
 
@@ -3238,7 +3323,10 @@ public class MainView extends View {
   static StabSpell stab_spell;
   static DispelMagicSpell dispel_spell;
   static MagicMirrorSpell magic_mirror_spell;
-  static int cast_hand;
   static String comments[];
   static int comment_i;
+  static int xsumcirc[];
+  static int ysumcirc[];
+  // Index of last monster now under player's control.
+  static int last_monster;
 }
