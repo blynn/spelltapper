@@ -291,6 +291,11 @@ Log.i("MV", "Pause");
 
   void run() {
     // Fragile code. Take care!
+    if (state < 16) {
+      mainview.has_circles = false;
+    } else {
+      mainview.has_circles = true;
+    }
     if (state > 13) {
       allow_confirm_one = false;
     } else {

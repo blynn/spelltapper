@@ -104,7 +104,7 @@ public class MainView extends View {
   }
 
   static boolean is_simplified() {
-    return false;
+    return !has_circles;
   }
   static boolean has_circles;
 
@@ -1170,6 +1170,7 @@ public class MainView extends View {
     choice = new int[2];
     lastchoice = new int[2];
     fut_choice = new int[2];
+    fresh_monster = new int[2][2];
     history = new History[2];
     history[0] = hist = new History();
     history[1] = opphist = new History();
@@ -1229,6 +1230,7 @@ public class MainView extends View {
     spell_target = new int[2];
     exec_queue = new SpellCast[16];
 
+    monster_resolve = new SpellCast(-1, new MonsterResolveSpell(), -1, -1);
     monatt = new MonsterAttack[5];
     for (int i = 1; i <= 4; i++) {
       monatt[i] = new MonsterAttack(i);
@@ -1994,13 +1996,17 @@ public class MainView extends View {
       b.target = oppturn.attack_target[i];
     }
     // Insert monster attacks.
-    for (int i = 2; i < being_list_count; i++) {
-      Being b = being_list[i];
-      if (b.dead) continue;
-      if (-1 != b.target) {
-	SpellCast sc = new SpellCast(-1, monatt[b.life_max], i, b.target);
-	insert_spell(sc);
+    if (is_simplified()) {
+      for (int i = 2; i < being_list_count; i++) {
+	Being b = being_list[i];
+	if (b.dead) continue;
+	if (-1 != b.target) {
+	  SpellCast sc = new SpellCast(-1, monatt[b.life_max], i, b.target);
+	  insert_spell(sc);
+	}
       }
+    } else {
+      insert_spell(monster_resolve);
     }
 
     clear_choices();
@@ -2010,7 +2016,8 @@ public class MainView extends View {
     exec_cursor = 0;
     mirror_sc = null;
     cur_sc = null;
-    last_monster = -1;
+    fresh_monster[0][0] = fresh_monster[0][1] = -1;
+    fresh_monster[1][0] = fresh_monster[1][1] = -1;
     if (exec_queue_count == 0) {
       // TODO: Delay?
       end_round();
@@ -2030,18 +2037,19 @@ public class MainView extends View {
   int cur_cast_hand() {
     return cur_sc.hand;
   }
-  public void next_spell() {
-    if (-1 != last_monster && !is_simplified()) {
-      Being b = being_list[last_monster];
-      b.target = cur_sc.monster_target;
-      // Requires monster attack priorities are lower than monstrous spells.
-      // TODO: Eventually must generate all monster attacks on the fly,
-      // as Blindness and Invisibility kill them before they can attack,
-      // and also the Charm Monster rules.
-      insert_spell(new SpellCast(-1, monatt[b.life_max],
-	  last_monster, b.target));
-      last_monster = -1;
+  int map_target(int target) {
+    if (target < -1) {
+      int h = -2 - target;
+      int i = 0;
+      if (h > 2) {
+	h -= 2;
+	i++;
+      }
+      target = fresh_monster[i][h];
     }
+    return target;
+  }
+  public void next_spell() {
     // Magic Mirror interrupts standard order of spells.
     if (null != mirror_sc) {
       cur_sc = mirror_sc;
@@ -2052,13 +2060,26 @@ public class MainView extends View {
       return;
     }
 
+    // Insert monster attacks at the appropriate moment.
+    if (monster_resolve == cur_sc) {
+      for (int i = 2; i < being_list_count; i++) {
+	Being b = being_list[i];
+	insert_spell(new SpellCast(-1, monatt[b.life_max],
+	    i, map_target(b.target)));
+      }
+      exec_cursor++;
+      next_spell();
+      return;
+    }
+
     SpellCast sc = cur_sc;
 
     String s = "";
     String srcname = being_list[sc.source].name;
     String tgtname = null;
-    if (sc.target != -1) {
-      tgtname = being_list[sc.target].name;
+    int target = map_target(sc.target);
+    if (target != -1) {
+      tgtname = being_list[target].name;
     }
     if (mirror_sc == sc) {
       s += "Mirror reflects " + sc.spell.name + " at ";
@@ -2078,13 +2099,13 @@ public class MainView extends View {
       }
       s += sc.spell.name + " on ";
     }
-    if (0 == sc.target) {
+    if (0 == target) {
       if (0 == sc.source) {
 	s += "yourself.";
       } else {
 	s += "you.";
       }
-    } else if (-1 == sc.target) {
+    } else if (-1 == target) {
       s += "thin air!";
     } else {
       s += tgtname + ".";
@@ -2097,28 +2118,28 @@ public class MainView extends View {
     } else if (is_dispel_cast && sc.spell.level > 0) {
       print("Dispel Magic negates the spell.");
       sc.spell.just_wait();
-    } else if (-1 == sc.target) {
+    } else if (-1 == target) {
       if (sc.spell.is_global) {
 	sc.run();
       } else {
 	sc.spell.just_wait();
       }
     } else {
-      Being b = being_list[sc.target];
+      Being b = being_list[target];
       if (b.dead) {
 	print("Dead target. Nothing happens.");
       } else if (b.counterspell) {
 	print("Counter-spell blocks the spell.");
-	sc.spell.fizzle(sc.target);
-      } else if (b.mirror && sc.source != sc.target && sc.spell.level > 0) {
+	sc.spell.fizzle(target);
+      } else if (b.mirror && sc.source != target && sc.spell.level > 0) {
 	if (sc.spell == magic_mirror_spell) {
 	  sc.run();
 	} else if (null != mirror_sc) {
 	  print("The spell bounces between the mirrors and dissipates."); 
-	  sc.spell.fizzle(sc.target);
+	  sc.spell.fizzle(target);
 	} else {
-	  mirror_sc = new SpellCast(sc.hand, sc.spell, sc.target, sc.source);
-	  sc.spell.fizzle(sc.target);
+	  mirror_sc = new SpellCast(sc.hand, sc.spell, target, sc.source);
+	  sc.spell.fizzle(target);
 	  // Complicated logic: after creating a new SpellCast representing
 	  // the mirrored spell, we return to avoid incrementing exec_cursor.
 	  return;
@@ -2130,7 +2151,7 @@ public class MainView extends View {
 	if (1 < b.psych) {
 	  print("Psychological spell conflict.");
 	  b.status = Status.OK;
-	  sc.spell.fizzle(sc.target);
+	  sc.spell.fizzle(target);
 	} else {
 	  sc.run();
 	}
@@ -2797,10 +2818,18 @@ public class MainView extends View {
 	  int k = being_list[target].controller;
 	  Being b = being_list[being_list_count] =
 	      new Being(name, monster_bmid, k);
-	  last_monster = being_list_count;
+	  int i = source;
+	  // Corner case: if a summon spell is mirrored, then the original
+	  // caster is the target, not the source.
+	  if (cur_sc == mirror_sc) i = target;
+	  fresh_monster[i][cur_cast_hand()] = being_list_count;
 	  being_list_count++;
 	  b.start_life(level);
-	  b.target = 1 - k;
+	  if (is_simplified()) {
+	    b.target = 1 - k;
+	  } else {
+	    b.target = cur_sc.monster_target;
+	  }
 	  board.animate_summon(cur_cast_hand(), b);
 	  return;
       }
@@ -3075,6 +3104,8 @@ public class MainView extends View {
     }
   }
 
+  static SpellCast monster_resolve;
+
   public class MonsterAttack extends Spell {
     MonsterAttack(int n) {
       init("", "", R.drawable.goblin, R.string.bug, 1);
@@ -3102,6 +3133,16 @@ public class MainView extends View {
       }
     }
     int power;
+  }
+
+  // Placeholder spell so resolve() knows when to add monster attacks.
+  public class MonsterResolveSpell extends Spell {
+    MonsterResolveSpell() {
+      init("", "", R.drawable.protection, R.string.bug, 0);
+      priority = 66;
+    }
+    public void cast(int source, int target) {
+    }
   }
 
   static public class Status {
@@ -3327,6 +3368,6 @@ public class MainView extends View {
   static int comment_i;
   static int xsumcirc[];
   static int ysumcirc[];
-  // Index of last monster now under player's control.
-  static int last_monster;
+  // Index of monster that is the target of a monstrous spell.
+  static int fresh_monster[][];
 }

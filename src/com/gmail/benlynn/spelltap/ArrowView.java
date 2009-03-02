@@ -7,6 +7,7 @@ package com.gmail.benlynn.spelltap;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Bitmap;
+import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 import android.util.Log;
@@ -30,6 +31,26 @@ public class ArrowView extends View {
   }
 
   static Bitmap bmspell[];
+
+  static int xtgt, ytgt;
+  static Paint ptgt;
+  void compute_xytgt(int target) {
+    if (target >= 0) {
+      Being b2 = MainView.being_list[target];
+      xtgt = b2.x + b2.midw;
+      ytgt = b2.y + b2.midh;
+    } else if (-1 == target) Log.e("ArrowView", "Bug! Arrow to thin air!");
+    else {
+      int h = -2 - target;
+      int j = 0;
+      if (h >= 2) {
+	h -= 2;
+	j++;
+      }
+      xtgt = MainView.xsumcirc[h] + 24;
+      ytgt = MainView.ysumcirc[j] + 24;
+    }
+  }
 
   @Override
   public void onDraw(Canvas canvas) {
@@ -56,14 +77,15 @@ public class ArrowView extends View {
     for (int i = 2; i < MainView.being_list_count; i++) {
       Being b = MainView.being_list[i];
       if (!b.dead && 0 == b.controller && -1 != b.target) {
-	Being b2 = MainView.being_list[b.target];
-	if (Status.OK == b.status) {
-	  canvas.drawLine(b.x + b.midw, b.y + b.midh,
-	      b2.x + b2.midw, b2.y + b2.midh, Easel.arrow_paint);
+	compute_xytgt(b.target);
+	if (Status.OK != b.status) {
+	  ptgt = Easel.weird_arrow_paint;
+	} else if (b.target < -1)  {
+	  ptgt = Easel.fut_arrow_paint;
 	} else {
-	  canvas.drawLine(b.x + b.midw, b.y + b.midh,
-	      b2.x + b2.midw, b2.y + b2.midh, Easel.weird_arrow_paint);
+	  ptgt = Easel.arrow_paint;
 	}
+	canvas.drawLine(b.x + b.midw, b.y + b.midh, xtgt, ytgt, ptgt);
       }
     }
 
@@ -72,10 +94,9 @@ public class ArrowView extends View {
       for (int h = 0; h < 2; h++) {
 	int n = MainView.fut_choice[h];
 	if (-1 != n) {
-	  Being b2 = MainView.being_list[n];
-	  canvas.drawLine(
-	      MainView.xsumcirc[h] + 24, MainView.ysumcirc[0] + 24,
-	      b2.x + b2.midw, b2.y + b2.midh, Easel.fut_arrow_paint);
+	  compute_xytgt(n);
+	  canvas.drawLine(MainView.xsumcirc[h] + 24, MainView.ysumcirc[0] + 24,
+	      xtgt, ytgt, Easel.fut_arrow_paint);
 	}
       }
     }
