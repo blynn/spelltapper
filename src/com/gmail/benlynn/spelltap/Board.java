@@ -225,16 +225,15 @@ public class Board extends View {
     anim_handler.sleep(delay);
   }
 
-  public void animate_summon(int i_hand, Being b) {
+  public void animate_summon(int source, int i_hand, Being b) {
     anim = ANIM_SUMMON;
     hand = i_hand;
     star = b;
     // TODO: Fade in monster first.
     x1 = star.x;
     y1 = star.y;
-    if (hand == 0) star.x = 160 - 32  - 2 * 48 - 2 * 10;
-    else star.x = 160 + 32 + 48 + 2 * 10;
-    star.y = MainView.ylower - 64 - 48 - 4;
+    star.x = MainView.xsumcirc[hand];
+    star.y = MainView.ysumcirc[source];
     ydelta = (y1 - star.y) / frame_max;
     xdelta = (x1 - star.x) / frame_max;
     anim_handler.sleep(delay);

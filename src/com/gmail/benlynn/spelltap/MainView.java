@@ -1,9 +1,3 @@
-// TODO: Log, character sheet.
-// Victory/defeat screen with stats.
-// Resize event.
-// Stop handlers on init.
-// Drag highlights.
-
 // Spell precedence:
 //
 //   Dispel Magic
@@ -834,7 +828,7 @@ public class MainView extends View {
   }
 
   private char encode_target(int target) {
-    if (target <= 1) {  // Player, opponent or thin air.
+    if (target <= 1) {  // Player, opponent, thin air, or fresh monster.
       return (char) ('A' + target);
     } else {
       return (char) ('A' + 2 + being_list[target].id);
@@ -843,9 +837,26 @@ public class MainView extends View {
 
   private int decode_target(char c) {
     int raw = c - 'A';
-    if (-1 == raw) return -1;
-    if (0 == raw || 1 == raw) return 1 - raw;
+    // Just as "me" and "you" are relative to the speaker, so are 0 and 1,
+    // -2 and -4, -3 and -5, and the odd monster IDs and even monster IDs.
+    switch(raw) {
+      case -5:
+	return -3;
+      case -4:
+	return -2;
+      case -3:
+	return -5;
+      case -2:
+	return -4;
+      case -1:
+	return -1;
+      case 0:
+        return 1;
+      case 1:
+        return 0;
+    }
     raw -= 2;
+    // Switch odd monster IDs to even IDs and vice versa.
     if (0 == (raw & 1)) raw++;
     else raw--;
     for (int i = 2; i < being_list_count; i++) {
@@ -882,6 +893,13 @@ public class MainView extends View {
       if (0 == b.controller) {
 	s2 += encode_target(i);
 	s2 += encode_target(b.target);
+	count++;
+      }
+    }
+    for (int i = 0; i < 2; i++) {
+      if (fut_choice[i] != -1) {
+	s2 += encode_target(-2 - i);
+	s2 += encode_target(fut_choice[i]);
 	count++;
       }
     }
@@ -1996,9 +2014,17 @@ public class MainView extends View {
       insert_spell(sc);
     }
     // Retarget monsters controlled by oppponent.
+    fut_confirm[1][0] = fut_confirm[1][1] = -1;
     for (int i = 0; i < oppturn.attack_count; i++) {
-      Being b = being_list[oppturn.attack_source[i]];
-      b.target = oppturn.attack_target[i];
+      int source = oppturn.attack_source[i];
+      if (source >= 0) {
+	Being b = being_list[source];
+	b.target = oppturn.attack_target[i];
+      } else if (-4 == source || -5 == source) {
+	fut_confirm[1][-4 - source] = oppturn.attack_target[i];
+      } else {
+	Log.e("MV", "Bug! Unknown source!");
+      }
     }
     // Insert monster attacks.
     if (is_simplified()) {
@@ -2044,7 +2070,7 @@ public class MainView extends View {
     if (target < -1) {
       int h = -2 - target;
       int i = 0;
-      if (h > 2) {
+      if (h >= 2) {
 	h -= 2;
 	i++;
       }
@@ -2073,10 +2099,12 @@ public class MainView extends View {
 	    b.target = fut_confirm[0][h];
 	  } else {
 	    // TODO: Corner case: if player casts Summon spell on opponent,
-	    // then the opponent controls the monster. At the moment the monster
-	    // attacks the player by default. We should allow choice of target
-	    // in this case.
-	    b.target = 1 - b.controller;
+	    // then the opponent controls the monster. They may be casting
+	    // their own Summon spell simultaneously, and assigning a target
+	    // for the corresponding monster. Thus both monsters must
+	    // attacking the assigned target. Should allow different choices
+	    // of targets, perhaps by targeting opponent's Summoning circles.
+	    b.target = fut_confirm[1][h];
 	  }
 	}
       }
@@ -2213,11 +2241,11 @@ public class MainView extends View {
     }
     is_dispel_cast = false;
 
-    // For player convenience, retarget attacks on dead targets if possible.
+    // For player convenience, retarget attacks on dead targets.
     for (int i = 2; i < being_list_count; i++) {
       Being b = being_list[i];
-      if (Status.OK == b.status && -1 != b.target &&
-   	  being_list[b.target].dead && 0 == being_list[b.target].controller) {
+      if (Status.OK == b.status && 0 == b.controller && -1 != b.target &&
+   	  null != being_list[b.target] && being_list[b.target].dead) {
 	b.target = 1;
       }
     }
@@ -2857,7 +2885,7 @@ public class MainView extends View {
 	  if (is_simplified()) {
 	    b.target = 1 - k;
 	  }
-	  board.animate_summon(cur_cast_hand(), b);
+	  board.animate_summon(source, cur_cast_hand(), b);
 	  return;
       }
     }
@@ -3309,7 +3337,10 @@ public class MainView extends View {
     boolean mirror;  // True if protected by mirror.
     int para_hand;
     int psych;  // Detects psychological spell conflicts.
-    int id;  // ID of monster consistent amongst all players in a net game.
+
+    // The nth summoned monster by player i is given ID 2 * n + i.
+    int id;
+
     int disease;
   }
 
