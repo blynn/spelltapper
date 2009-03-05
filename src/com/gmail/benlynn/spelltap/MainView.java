@@ -77,6 +77,9 @@ public class MainView extends View {
   static int spell_choice[];
   static int spell_target[];
   static int fut_choice[];  // Orders for future/charmed/raised monsters.
+  // Holds these orders after confirmation, and also holds the opponent's
+  // choices.
+  static int fut_confirm[][];
 
   static int being_list_count;
   static Being being_list[];
@@ -224,7 +227,7 @@ public class MainView extends View {
         learn(spellAtGesture("DPP"));
         learn(spellAtGesture("WPP"));
         learn(spellAtGesture("WWS"));
-        learn(spellAtGesture("FFF"));
+        learn(spellAtGesture("DFFDD"));
         learn(spellAtGesture("PDWP"));
       case Wisdom.ALL_LEVEL_1:
         learn(spellAtGesture("WWP"));
@@ -1172,6 +1175,7 @@ public class MainView extends View {
     choice = new int[2];
     lastchoice = new int[2];
     fut_choice = new int[2];
+    fut_confirm = new int[2][2];
     fresh_monster = new int[2][2];
     history = new History[2];
     history[0] = hist = new History();
@@ -1834,7 +1838,6 @@ public class MainView extends View {
     Spell spell;
     int target;
     int source;
-    int monster_target;
   }
   static int exec_queue_count;
   static SpellCast[] exec_queue;
@@ -1969,11 +1972,12 @@ public class MainView extends View {
 
     exec_queue_count = 0;
     // Insert player spells and targets into execution queue.
+    fut_confirm[0][0] = fut_choice[0];
+    fut_confirm[0][1] = fut_choice[1];
     if (spell_is_twohanded) {
       if (-1 != spell_choice[0]) {
 	SpellCast sc = new SpellCast(
 	    0, ready_spell[spell_choice[0]][2], 0, spell_target[0]);
-	sc.monster_target = fut_choice[0];
 	insert_spell(sc);
       }
     } else {
@@ -1981,7 +1985,6 @@ public class MainView extends View {
 	if (-1 == spell_choice[h]) continue;
 	SpellCast sc = new SpellCast(
 	    h, ready_spell[spell_choice[h]][h], 0, spell_target[h]);
-	sc.monster_target = fut_choice[h];
 	insert_spell(sc);
       }
     }
@@ -2062,6 +2065,21 @@ public class MainView extends View {
 
     // Insert monster attacks at the appropriate moment.
     if (monster_resolve == cur_sc) {
+      for (int i = 0; i < 2; i++) for (int h = 0; h < 2; h++) {
+	int j = fresh_monster[i][h];
+	if (-1 != j) {
+	  Being b = being_list[j];
+	  if (b.controller == 0) {
+	    b.target = fut_confirm[0][h];
+	  } else {
+	    // TODO: Corner case: if player casts Summon spell on opponent,
+	    // then the opponent controls the monster. At the moment the monster
+	    // attacks the player by default. We should allow choice of target
+	    // in this case.
+	    b.target = 1 - b.controller;
+	  }
+	}
+      }
       for (int i = 2; i < being_list_count; i++) {
 	Being b = being_list[i];
 	b.target = map_target(b.target);
@@ -2838,8 +2856,6 @@ public class MainView extends View {
 	  b.start_life(level);
 	  if (is_simplified()) {
 	    b.target = 1 - k;
-	  } else {
-	    b.target = cur_sc.monster_target;
 	  }
 	  board.animate_summon(cur_cast_hand(), b);
 	  return;

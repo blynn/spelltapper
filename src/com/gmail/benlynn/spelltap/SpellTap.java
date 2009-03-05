@@ -162,12 +162,12 @@ public class SpellTap extends Activity {
   @Override
   public void onSaveInstanceState(Bundle bun) {
     bun.putInt(ICE_STATE, state);
-Log.i("MV", "Saving " + state);
+    Log.i("MV", "Saving " + state);
   }
 
   @Override
   public void onPause() {
-Log.i("MV", "Pause");
+    Log.i("MV", "Pause");
     super.onPause();
   }
 
@@ -221,6 +221,9 @@ Log.i("MV", "Pause");
 	warp(14);
 	return true;
       case KeyEvent.KEYCODE_C:
+	warp(16);
+	return true;
+      case KeyEvent.KEYCODE_D:
 	warp(128);
 	return true;
       case KeyEvent.KEYCODE_1:
