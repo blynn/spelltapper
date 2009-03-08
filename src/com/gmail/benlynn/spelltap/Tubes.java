@@ -4,15 +4,69 @@ import java.io.*;
 import java.net.*;
 
 import android.util.Log;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 
 class Tubes extends SpellTapMachine {
   Tubes(SpellTap st) { super(st); }
   abstract class Machine { abstract void run(); }
   void run() {
-    spelltap.mainview.set_state_netduel();
-    spelltap.goto_mainframe();
+    spelltap.netconfig.setVisibility(View.VISIBLE);
+  }
+
+  void go_back() {
+    cancel();
+  }
+
+  static void cancel() {
+    spelltap.netconfig.setVisibility(View.GONE);
+    spelltap.goto_town();
+  }
+
+  static class NetconfigOk implements View.OnClickListener {
+    NetconfigOk() {}
+    public void onClick(View v) {
+      server = server_edittext.getText().toString();
+      boolean badport = false;
+      try {
+	port = new Integer(port_edittext.getText().toString());
+      } catch(Exception e) {
+	badport = true;
+      }
+      if (badport) {
+	spelltap.narrate(R.string.badport);
+      } else if (0 != Tubes.newgame()) {
+	spelltap.narrate(R.string.servererror);
+      } else {
+	spelltap.netconfig.setVisibility(View.GONE);
+        spelltap.mainview.set_tutorial(MainView.MACHINE_NET);
+        spelltap.goto_mainframe();
+      }
+    }
+  }
+
+  static class NetconfigCancel implements View.OnClickListener {
+    NetconfigCancel() {}
+    public void onClick(View v) {
+      cancel();
+    }
+  }
+
+  static void init(Button i_ok, Button i_cancel,
+      EditText i_server, EditText i_port) {
+    ok_button = i_ok;
+    cancel_button = i_cancel;
+    server_edittext = i_server;
+    port_edittext = i_port;
+    server_edittext.setText(server);
+    port_edittext.setText(Integer.toString(port));
+    ok_button.setOnClickListener(new NetconfigOk());
+    cancel_button.setOnClickListener(new NetconfigCancel());
   }
 
   static String reply;
@@ -28,7 +82,6 @@ class Tubes extends SpellTapMachine {
     class CmonHandler extends Handler {
       @Override
       public void handleMessage(Message msg) {
-	Log.i("Cmon", "retrying");
 	if ('-' == message.charAt(1)) {
 	  reply = send_retry();
 	} else {
@@ -108,15 +161,15 @@ class Tubes extends SpellTapMachine {
     try {
       sock = new Socket();
       sock.bind(null);
-      sock.connect(new InetSocketAddress("192.168.1.101", 3333), 2000);
+      sock.connect(new InetSocketAddress(server, port), 2000);
       out = new DataOutputStream(sock.getOutputStream());
       in = new DataInputStream(sock.getInputStream());
       out.writeBytes(msg);
       int count = in.read(buf, 0, 16);
-      Log.i("Count = ", "" + count);
+      Log.i("Tubes", "read count: " + count);
       if (count < 1) return null;
       String response = new String(buf, 0, count);
-      Log.i("resp = ", "" + response);
+      Log.i("Tubes", "response: " + response);
       out.close();
       in.close();
       sock.close();
@@ -131,5 +184,25 @@ class Tubes extends SpellTapMachine {
     }
   }
 
+  static void load_bundle(Bundle bun) {
+    server = bun.getString(ICE_SERVER);
+    port = bun.getInt(ICE_PORT);
+  }
+
+  static void save_bundle(Bundle bun) {
+    bun.putString(ICE_SERVER, server);
+    bun.putInt(ICE_PORT, port);
+  }
+
+  static final String ICE_SERVER = "game-server";
+  static final String ICE_PORT = "game-port";
+
   static int netid;
+  static int state;
+  static Button ok_button;
+  static Button cancel_button;
+  static String server = "192.168.1.101";
+  static int port = 3333;
+  static EditText server_edittext;
+  static EditText port_edittext;
 }

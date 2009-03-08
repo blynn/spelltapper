@@ -145,6 +145,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="PWPFSSSDdesc">Target dies, even if protected by Counter-spell. Ignores Shield.</string>
 
 <string name="servererror">Cannot connect to server :(</string>
+<string name="badport">Bad port number given.</string>
 
 <string name="oppmoved">Opponent has moved. Tap to continue.</string>
 

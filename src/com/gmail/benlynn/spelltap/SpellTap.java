@@ -7,6 +7,7 @@ import android.view.Window;
 import android.view.View;
 import android.view.MenuItem;
 import android.view.Menu;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Button;
 import android.hardware.SensorListener;
@@ -20,6 +21,7 @@ public class SpellTap extends Activity {
   @Override
   public void onCreate(Bundle bun) {
     super.onCreate(bun);
+    Log.i("SpellTap", "onCreate");
     // No title bar.
     requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -29,7 +31,6 @@ public class SpellTap extends Activity {
     narrator.setVisibility(View.GONE);
     narratortext = (TextView) findViewById(R.id.narratortext);
     spellbook = (TextView) findViewById(R.id.spellbook);
-    spellbook.setVisibility(View.GONE);
     spellbookv = findViewById(R.id.spellbookscroll);
     spellbookv.setVisibility(View.GONE);
     mainview = (MainView) findViewById(R.id.mainview);
@@ -47,12 +48,15 @@ public class SpellTap extends Activity {
 
     townview = (TownView) findViewById(R.id.townview);
     townview.set_spelltap(this);
+    townview.setVisibility(View.GONE);
 
     mach = new SpellTapMachine[PLACE_COUNT];
     mach[PLACE_SCHOOL] = school = new School(this);
     mach[PLACE_DOJO] = dojo = new Dojo(this);
     mach[PLACE_PIT] = pit = new Pit(this);
     mach[PLACE_NET] = tubes = new Tubes(this);
+    mach[PLACE_TOWN] = townview.stmach;
+    mach[PLACE_MAIN] = mainview.stmach;
     for (int i = 0; i < PLACE_COUNT; i++) {
       if (null == mach[i]) Log.e("SpellTap", "null mach remains");
     }
@@ -63,16 +67,36 @@ public class SpellTap extends Activity {
     butclo = (Button) findViewById(R.id.button_close);
     butv.setVisibility(View.GONE);
 
+    netconfig = findViewById(R.id.netconfig_layout);
+    netconfig.setVisibility(View.GONE);
+    Tubes.init((Button) findViewById(R.id.netconfig_ok),
+	(Button) findViewById(R.id.netconfig_cancel),
+	(EditText) findViewById(R.id.netconfig_server),
+	(EditText) findViewById(R.id.netconfig_port));
+
     init_gesture_state_knowledge();
     spellbook_is_open = false;
 
     if (null != bun) {
       state = bun.getInt(ICE_STATE);
+      MainView.load_bundle(bun);
+      Tubes.load_bundle(bun);
+      run();
+      set_place(bun.getInt(ICE_PLACE));
+      townview.setVisibility(bun.getInt(ICE_VIS_TOWN));
+      mainframe.setVisibility(bun.getInt(ICE_VIS_MAIN));
+      speech_layout.setVisibility(bun.getInt(ICE_VIS_SPEECH));
+      hog.setVisibility(bun.getInt(ICE_VIS_HOG));
+      narrator.setVisibility(bun.getInt(ICE_VIS_NARRATOR));
+      spellbookv.setVisibility(bun.getInt(ICE_VIS_SPELLBOOKV));
+      butv.setVisibility(bun.getInt(ICE_VIS_BUTV));
+      netconfig.setVisibility(bun.getInt(ICE_VIS_NETCONFIG));
+    } else {
+      // Start in town.
+      townview.setVisibility(View.VISIBLE);
+      run();
+      set_place(PLACE_TOWN);
     }
-    run();
-    // Start in town.
-    curmach = townview.stmach;
-    curmach.run();
     senseman = (SensorManager) getSystemService(SENSOR_SERVICE);
     tilt_listener = new TiltListener();
   }
@@ -129,12 +153,12 @@ public class SpellTap extends Activity {
 
   void tilt_up() {
     // Log.i("Tilt", "Up");
-    if (mainview.stmach == curmach) mainview.tilt_up();
+    if (PLACE_MAIN == curplace) mainview.tilt_up();
   }
 
   void tilt_down() {
     // Log.i("Tilt", "Down");
-    if (mainview.stmach == curmach) mainview.tilt_down();
+    if (PLACE_MAIN == curplace) mainview.tilt_down();
   }
 
   @Override
@@ -158,16 +182,36 @@ public class SpellTap extends Activity {
   }
 
   static final String ICE_STATE = "game-state";
+  static final String ICE_PLACE = "game-place";
+  static final String ICE_VIS_MAIN = "game-vis-main";
+  static final String ICE_VIS_TOWN = "game-vis-town";
+  static final String ICE_VIS_BUTV = "game-vis-butv";
+  static final String ICE_VIS_SPELLBOOKV = "game-vis-spellbookv";
+  static final String ICE_VIS_SPEECH = "game-vis-speech";
+  static final String ICE_VIS_HOG = "game-vis-hog";
+  static final String ICE_VIS_NETCONFIG = "game-vis-netconfig";
+  static final String ICE_VIS_NARRATOR = "game-vis-narrator";
 
   @Override
   public void onSaveInstanceState(Bundle bun) {
     bun.putInt(ICE_STATE, state);
-    Log.i("MV", "Saving " + state);
+    bun.putInt(ICE_PLACE, curplace);
+    bun.putInt(ICE_VIS_MAIN, mainframe.getVisibility());
+    bun.putInt(ICE_VIS_TOWN, townview.getVisibility());
+    bun.putInt(ICE_VIS_BUTV, butv.getVisibility());
+    bun.putInt(ICE_VIS_SPELLBOOKV, spellbookv.getVisibility());
+    bun.putInt(ICE_VIS_SPEECH, speech_layout.getVisibility());
+    bun.putInt(ICE_VIS_HOG, hog.getVisibility());
+    bun.putInt(ICE_VIS_NETCONFIG, netconfig.getVisibility());
+    bun.putInt(ICE_VIS_NARRATOR, narrator.getVisibility());
+    Tubes.save_bundle(bun);
+    MainView.save_bundle(bun);
+    Log.i("SpellTap", "Saving " + state);
   }
 
   @Override
   public void onPause() {
-    Log.i("MV", "Pause");
+    Log.i("SpellTap", "Pause");
     super.onPause();
   }
 
@@ -304,7 +348,6 @@ public class SpellTap extends Activity {
     } else {
       allow_confirm_one = true;
     }
-    mainframe.setVisibility(View.GONE);
     if (state > 0) {
       unlock_place(SpellTap.PLACE_DOJO);
       townview.set_state_normal();
@@ -421,19 +464,19 @@ public class SpellTap extends Activity {
   }
 
   void set_place(int i) {
+    Log.i("SpellTap", "set place "  + i);
+    curplace = i;
     curmach = mach[i];
     curmach.run();
   }
-  boolean is_in_town() { return townview.stmach == curmach; }
+  boolean is_in_town() { return PLACE_TOWN == curplace; }
   void goto_town() {
-    curmach = townview.stmach;
-    curmach.run();
+    set_place(PLACE_TOWN);
     mainframe.setVisibility(View.GONE);
     townview.setVisibility(View.VISIBLE);
   }
   void goto_mainframe() {
-    curmach = mainview.stmach;
-    curmach.run();
+    set_place(PLACE_MAIN);
     townview.setVisibility(View.GONE);
     mainframe.setVisibility(View.VISIBLE);
   }
@@ -472,7 +515,6 @@ public class SpellTap extends Activity {
 
   void open_about() {
     spellbook.setText(getText(R.string.about));
-    spellbook.setVisibility(View.VISIBLE);
     spellbookv.setVisibility(View.VISIBLE);
     butv.setVisibility(View.VISIBLE);
     butclo.setOnClickListener(new SpellBookCloser());
@@ -482,7 +524,6 @@ public class SpellTap extends Activity {
 
   void open_spellbook() {
     compute_spellbook();
-    spellbook.setVisibility(View.VISIBLE);
     spellbookv.setVisibility(View.VISIBLE);
     butv.setVisibility(View.VISIBLE);
     butclo.setOnClickListener(new SpellBookCloser());
@@ -527,7 +568,6 @@ public class SpellTap extends Activity {
   }
 
   void close_spellbook() {
-    spellbook.setVisibility(View.GONE);
     butv.setVisibility(View.GONE);
     spellbookv.setVisibility(View.GONE);
     hog.unblockInput();
@@ -536,6 +576,7 @@ public class SpellTap extends Activity {
 
   static boolean spellbook_is_open;
   static MainView mainview;
+  static View netconfig;
   static View mainframe;
   static View narrator;
   static TextView narratortext;
@@ -543,7 +584,10 @@ public class SpellTap extends Activity {
   static final int PLACE_DOJO = 1;
   static final int PLACE_PIT = 2;
   static final int PLACE_NET = 3;
-  static final int PLACE_COUNT = 4;
+  static final int PLACE_TOWN_COUNT = 4;
+  static final int PLACE_TOWN = 4;
+  static final int PLACE_MAIN = 5;
+  static final int PLACE_COUNT = 6;
   static TownView townview;
   static InputHog hog;
   static View speech_layout;
@@ -559,5 +603,6 @@ public class SpellTap extends Activity {
   static View butv;
   static Tubes tubes;
   static int state = 128;
+  static int curplace;
   static boolean allow_confirm_one;
 }

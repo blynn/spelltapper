@@ -29,7 +29,7 @@ public class TownView extends View {
     machine = new FirstMachine();
     is_animating = false;
 
-    place_list = new Place[SpellTap.PLACE_COUNT];
+    place_list = new Place[SpellTap.PLACE_TOWN_COUNT];
     put_place(SpellTap.PLACE_SCHOOL, "Academy", 0, 0, R.drawable.academy);
     put_place(SpellTap.PLACE_DOJO, "Training Hall",
 	320 - 128, 0, R.drawable.training);
@@ -37,7 +37,7 @@ public class TownView extends View {
     put_place(SpellTap.PLACE_NET, "Tavern",
 	320 - 128, 96 + 64, R.drawable.tavern);
     unlock(SpellTap.PLACE_SCHOOL);
-    for (int i = 0; i < SpellTap.PLACE_COUNT; i++) {
+    for (int i = 0; i < SpellTap.PLACE_TOWN_COUNT; i++) {
       if (null == place_list[i]) {
 	Log.e("TownView", "null Place remains.");
       }
@@ -109,7 +109,7 @@ public class TownView extends View {
   @Override
   public void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-    for (int i = 0; i < SpellTap.PLACE_COUNT; i++) {
+    for (int i = 0; i < SpellTap.PLACE_TOWN_COUNT; i++) {
       Place p = place_list[i];
       if (!p.is_locked) {
 	canvas.drawRect(p.x, p.y, p.x + 128, p.y + 16, bgpaint);
@@ -130,7 +130,7 @@ public class TownView extends View {
 	x0 = event.getX();
 	y0 = event.getY();
 	choice = -1;
-	for (int i = 0; i < SpellTap.PLACE_COUNT; i++) {
+	for (int i = 0; i < SpellTap.PLACE_TOWN_COUNT; i++) {
 	  Place p = place_list[i];
 	  if (!p.is_locked) {
 	    if (x0 >= p.x && x0 < p.x + 128 && y0 >= p.y && y0 < p.y + 96) {

@@ -22,7 +22,7 @@ class Dojo extends SpellTapMachine {
   class FirstMachine extends Machine {
     FirstMachine() {}
     void run() {
-      spelltap.mainview.set_state_dummytutorial();
+      spelltap.mainview.set_tutorial(MainView.MACHINE_DUMMY);
       spelltap.goto_mainframe();
     }
   }

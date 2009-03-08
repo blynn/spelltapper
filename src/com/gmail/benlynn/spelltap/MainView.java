@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
@@ -105,9 +106,6 @@ public class MainView extends View {
   }
   static boolean has_circles;
 
-  void set_state_dummytutorial() {
-    tut = new DummyTutorial();
-  }
   void set_state_knifetutorial() {
     tut = new KnifeTutorial();
   }
@@ -127,8 +125,9 @@ public class MainView extends View {
   void set_state_wfplesson() {
     tut = new WFPTutorial();
   }
-  void set_state_netduel() {
-    tut = new NetDuel();
+  static void set_tutorial(int i) {
+    tut_index = i;
+    tut = machines[i];
   }
 
   static SpellTapMove oppturn;
@@ -247,7 +246,6 @@ public class MainView extends View {
   class KnifeTutorial extends Tutorial {
     KnifeTutorial() {
       state = 0;
-      count = 0;
     }
     void run() {
       for(;;) switch(state) {
@@ -325,7 +323,6 @@ public class MainView extends View {
       }
     }
     int state;
-    int count;
   }
 
   // Defeat a pacifist wooden dummy with 3 hitpoints to pass this one.
@@ -1085,20 +1082,8 @@ public class MainView extends View {
     void run() {
       for(;;) switch(state) {
 	case 0:
-	  if (0 != Tubes.newgame()) {
-	    set_main_state(STATE_VOID);
-	    board.setVisibility(View.GONE);
-	    arrow_view.setVisibility(View.GONE);
-	    spelltap.narrate(R.string.servererror);
-	    state = 1;
-	    return;
-	  }
-	  init_opponent(new NetAgent());
-	  reset_game();
-	  board.setVisibility(View.VISIBLE);
-	  arrow_view.setVisibility(View.VISIBLE);
+	  new_game(new NetAgent());
           state = 1;
-	  invalidate();
 	  return;
 	case 1:
 	  spelltap.goto_town();
@@ -1107,6 +1092,15 @@ public class MainView extends View {
       }
     }
     int state;
+  }
+
+  static final String ICE_MAIN_MACHINE = "game-main-machine";
+  static void load_bundle(Bundle bun) {
+    int i = bun.getInt(ICE_MAIN_MACHINE);
+    if (-1 != i) set_tutorial(i);
+  }
+  static void save_bundle(Bundle bun) {
+    bun.putInt(ICE_MAIN_MACHINE, tut_index);
   }
 
   void clear_choices() {
@@ -1292,6 +1286,11 @@ public class MainView extends View {
     xsumcirc[1] = 160 + 32 + 48 + 2 * 10;
     ysumcirc[0] = MainView.ylower - 64 - 48 - 4;
     ysumcirc[1] = 64 + 4;
+
+    machines = new Tutorial[MACHINE_COUNT];
+    machines[MACHINE_DUMMY] = new DummyTutorial();
+    machines[MACHINE_NET] = new NetDuel();
+    tut_index = -1;
   }
   static String emptyleftmsg;
   static String emptyrightmsg;
@@ -1308,6 +1307,7 @@ public class MainView extends View {
   @Override
   public void onDraw(Canvas canvas) {
     super.onDraw(canvas);
+    Log.i("MV", "onDraw");
     int x, y;
 
     // Board class handles avatars and status line.
@@ -1375,10 +1375,10 @@ public class MainView extends View {
       case NET_IDLE:
 	if (is_confirmable) {
 	  if (choosing_charm) {
-	    canvas.drawRect(0, ystatus, 320, 480, Easel.charm_text);
+	    canvas.drawRect(0, ystatus, 320, 480, Easel.reply_paint);
 	    canvas.drawText("Charm", 160, ystatus + 36, Easel.tap_ctext);
 	  } else if (choosing_para) {
-	    canvas.drawRect(0, ystatus, 320, 480, Easel.charm_text);
+	    canvas.drawRect(0, ystatus, 320, 480, Easel.reply_paint);
 	    canvas.drawText("Paralyze", 160, ystatus + 36, Easel.tap_ctext);
 	  } else if (Gesture.PALM == choice[0] && Gesture.PALM == choice[1]) {
 	    canvas.drawRect(0, ystatus, 320, 480, Easel.surrender_paint);
@@ -1403,7 +1403,7 @@ public class MainView extends View {
 	      canvas.drawText("AMNESIA!", 160, ystatus + 36, Easel.tap_ctext);
 	      break;
 	    default:
-	      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
+	      canvas.drawRect(0, ystatus, 320, 480, Easel.reply_paint);
 	      canvas.drawText("TAP!", 160, ystatus + 36, Easel.tap_ctext);
 	      break;
 	  }
@@ -3428,4 +3428,10 @@ public class MainView extends View {
   static int ysumcirc[];
   // Index of monster that is the target of a monstrous spell.
   static int fresh_monster[][];
+
+  static int tut_index;
+  static final int MACHINE_DUMMY = 0;
+  static final int MACHINE_NET = 1;
+  static final int MACHINE_COUNT = 2;
+  static Tutorial machines[];
 }

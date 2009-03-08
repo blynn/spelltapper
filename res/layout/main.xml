@@ -30,6 +30,59 @@
       />
 </FrameLayout>
 <LinearLayout
+ android:id="@+id/netconfig_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    >
+    <TextView
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="Spell Tap server:"
+	android:textSize="18dip"
+	/>
+    <EditText
+	android:id="@+id/netconfig_server"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:singleLine="true"
+	/>
+    <TextView
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="Port:"
+	android:textSize="18dip"
+	/>
+    <EditText
+	android:id="@+id/netconfig_port"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:singleLine="true"
+	/>
+    <LinearLayout
+     android:layout_width="wrap_content"
+     android:layout_height="wrap_content"
+     android:orientation="horizontal">
+      <Button android:id="@+id/netconfig_ok"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:textSize="18dip"
+      android:text="Ok" />
+      <Button android:id="@+id/netconfig_cancel"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:textSize="18dip"
+      android:text="Cancel" />
+    </LinearLayout>
+    <TextView
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="Download server from http://cs.stanford.edu/~blynn/spelltap."
+	android:textSize="16dip"
+	android:autoLink="all"
+	/>
+</LinearLayout>
+<LinearLayout
  android:id="@+id/narrator"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
