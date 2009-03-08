@@ -3,8 +3,8 @@ package com.gmail.benlynn.spelltap;
 class Gesture {
   Gesture(String i_name, int i_x, int i_y) {
     name = i_name;
-    abbr = name.charAt(0);
-    statusname = abbr + " (" + name + ")";
+    initial = name.charAt(0);
+    statusname = initial + " (" + name + ")";
     x = i_x;
     y = i_y;
     // Assign unicode arrows.
@@ -47,12 +47,6 @@ class Gesture {
     }
     learned = false;
   }
-  String name;
-  String arrow;
-  String statusname;
-  char abbr;
-  boolean learned;
-  int x, y;
 
   static final int flattenxy(int x, int y) {
     return (x + 1) + (y + 1) * 3;
@@ -65,6 +59,33 @@ class Gesture {
     return g;
   }
 
+  static void put_gest(String s, int x, int y) {
+    int n = Gesture.flattenxy(x, y);
+    Gesture g = list[n] = new Gesture(s, x, y);;
+  }
+
+  static void init() {
+    list = new Gesture[9];
+    put_gest("Snap", -1, -1);
+    put_gest("Knife", 0, -1);
+    put_gest("Digit", 1, -1);
+    put_gest("Clap", 1, 0);
+    put_gest("Wave", -1, 1);
+    put_gest("Palm", 0, 1);
+    put_gest("Fingers", 1, 1);
+  }
+
+  static char abbr(int i)  {
+    return list[i].initial;
+  }
+
+  String name;
+  String arrow;
+  String statusname;
+  char initial;
+  boolean learned;
+  int x, y;
+
   static final int SNAP = flattenxy(-1, -1);
   static final int KNIFE = flattenxy(0, -1);
   static final int DIGIT = flattenxy(1, -1);
@@ -73,4 +94,5 @@ class Gesture {
   static final int FINGERS = flattenxy(1, 1);
   static final int CLAP = flattenxy(1, 0);
   static final int NONE = flattenxy(0, 0);
+  static Gesture[] list;
 }

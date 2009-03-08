@@ -119,6 +119,7 @@ public class Being {
 
   // Summoned creatures should appear close to their owner, hence this mess.
   static void init() {
+    list = new Being[16];
     summon_count = new int[2];
     summon_count[0] = summon_count[1] = 0;
     int x, y;

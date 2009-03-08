@@ -35,7 +35,6 @@ import com.gmail.benlynn.spelltap.SpellTap.Wisdom;
 import com.gmail.benlynn.spelltap.Being.Status;
 
 public class MainView extends View {
-  static Gesture[] gesture;
   static float x0, y0, x1, y1;
   static Tutorial tut;
   static int main_state;
@@ -181,25 +180,25 @@ public class MainView extends View {
   }
   void set_gesture_knowledge(int level) {
     for (int i = 0; i < 9; i++) {
-      Gesture g = gesture[i];
+      Gesture g = Gesture.list[i];
       if (null != g) g.learned = false;
     }
     // Exploit fall-through.
     switch(level) {
       case Wisdom.ALL_GESTURES:
-        gesture[Gesture.CLAP].learned = true;
+        Gesture.list[Gesture.CLAP].learned = true;
       case Wisdom.ALL_BUT_C:
-        gesture[Gesture.FINGERS].learned = true;
+        Gesture.list[Gesture.FINGERS].learned = true;
       case Wisdom.ALL_BUT_FC:
-        gesture[Gesture.WAVE].learned = true;
+        Gesture.list[Gesture.WAVE].learned = true;
       case Wisdom.DKPS:
-        gesture[Gesture.DIGIT].learned = true;
+        Gesture.list[Gesture.DIGIT].learned = true;
       case Wisdom.KPS:
-        gesture[Gesture.SNAP].learned = true;
+        Gesture.list[Gesture.SNAP].learned = true;
       case Wisdom.KNIFE_AND_PALM:
-        gesture[Gesture.PALM].learned = true;
+        Gesture.list[Gesture.PALM].learned = true;
       case Wisdom.KNIFE_ONLY:
-        gesture[Gesture.KNIFE].learned = true;
+        Gesture.list[Gesture.KNIFE].learned = true;
       case Wisdom.NONE:
     }
   }
@@ -992,7 +991,7 @@ public class MainView extends View {
 	case HANDLER_GET_CHARM_GESTURE:
 	  {
 	    int g = Tubes.reply.charAt(0) - '0';
-	    if (g >= 0 && g <= 8 && g != Gesture.NONE && gesture[g] != null) {
+	    if (g >= 0 && g <= 8 && g != Gesture.NONE && Gesture.list[g] != null) {
 	      choice[charmed_hand] = g;
 	    } else {
 	      Log.e("TODO", "Handle bad messages");
@@ -1162,14 +1161,6 @@ public class MainView extends View {
     int[] start;
   }
 
-  private void put_gest(String s, int x, int y) {
-    int n = Gesture.flattenxy(x, y);
-    Gesture g = gesture[n] = new Gesture(s, x, y);;
-    g.name = s;
-    g.x = x;
-    g.y = y;
-  }
-
   void init_opponent(Agent a) {
     Being.list[1] = new Being(a.name(), get_bitmap(a.bitmap_id()), -2);
     Being.list[1].start_life(a.life());
@@ -1235,7 +1226,7 @@ public class MainView extends View {
     spell_level = 5;
     add_spell(new FingerOfDeathSpell(), 50);
 
-    Being.list = new Being[16];
+    Gesture.init();
     Being.init();
 
     Being.list[0] = new Being("Player", bmwizard, -1);
@@ -1258,15 +1249,6 @@ public class MainView extends View {
     bmgoblin = get_bitmap(R.drawable.goblin);
     bmwizard = get_bitmap(R.drawable.wiz);
     oppturn = new SpellTapMove();
-
-    gesture = new Gesture[9];
-    put_gest("Snap", -1, -1);
-    put_gest("Knife", 0, -1);
-    put_gest("Digit", 1, -1);
-    put_gest("Clap", 1, 0);
-    put_gest("Wave", -1, 1);
-    put_gest("Palm", 0, 1);
-    put_gest("Fingers", 1, 1);
 
     net_handler = new NetHandler();
     arrow_view = null;
@@ -1316,7 +1298,7 @@ public class MainView extends View {
     if (Being.list_count > 1) {
       y = 16;
       for (int i = opphist.start[0]; i < opphist.cur; i++) {
-	s += " " + gesture[opphist.gest[i][0]].abbr;
+	s += " " + Gesture.abbr(opphist.gest[i][0]);
       }
       if (Status.PARALYZED == Being.list[1].status &&
 	  0 == Being.list[1].para_hand) pa = Easel.para_text;
@@ -1325,7 +1307,7 @@ public class MainView extends View {
       canvas.drawText(s, 0, y, pa);
       s = "";
       for (int i = opphist.start[1]; i < opphist.cur; i++) {
-	s += gesture[opphist.gest[i][1]].abbr + " ";
+	s += Gesture.abbr(opphist.gest[i][1]) + " ";
       }
       if (Status.PARALYZED == Being.list[1].status &&
 	  1 == Being.list[1].para_hand) pa = Easel.para_rtext;
@@ -1337,7 +1319,7 @@ public class MainView extends View {
     y = ylower - 2;
     s = "";
     for (int i = hist.start[0]; i < hist.cur; i++) {
-      s += " " + gesture[hist.gest[i][0]].abbr;
+      s += " " + Gesture.abbr(hist.gest[i][0]);
     }
     if (Status.PARALYZED == Being.list[0].status &&
         0 == Being.list[0].para_hand) pa = Easel.para_text;
@@ -1345,7 +1327,7 @@ public class MainView extends View {
     canvas.drawText(s, 0, y, pa);
     s = "";
     for (int i = hist.start[1]; i < hist.cur; i++) {
-      s += gesture[hist.gest[i][1]].abbr + " ";
+      s += Gesture.abbr(hist.gest[i][1]) + " ";
     }
     if (Status.PARALYZED == Being.list[0].status &&
         1 == Being.list[0].para_hand) pa = Easel.para_rtext;
@@ -1418,20 +1400,20 @@ public class MainView extends View {
 	int g = Gesture.paralyze(
 	    history[para_target[para_i]].last_gesture(h));
 	canvas.drawText("Paralyze: " +
-	    (Gesture.NONE == g ? "(empty)" : gesture[g].abbr),
+	    (Gesture.NONE == g ? "(empty)" : Gesture.abbr(g)),
 	    h == 0 ? 0 : 320, y,
 	    h == 0 ? Easel.charm_text : Easel.charm_rtext);
       }
     } else {
       if (0 == charmed_hand) {
 	if (freeze_gesture) {
-	  Gesture g = gesture[choice[0]];
+	  Gesture g = Gesture.list[choice[0]];
 	  canvas.drawText(g.statusname, 0, y, Easel.charm_text);
 	} else {
 	  canvas.drawText("[Charmed]", 0, y, Easel.charm_text);
 	}
       } else {
-	Gesture g = gesture[choice[0]];
+	Gesture g = Gesture.list[choice[0]];
 	if (null == g) {
 	  canvas.drawText(emptyleftmsg, 0, y, Easel.grey_text);
 	} else {
@@ -1440,13 +1422,13 @@ public class MainView extends View {
       }
       if (1 == charmed_hand) {
 	if (freeze_gesture) {
-	  Gesture g = gesture[choice[1]];
+	  Gesture g = Gesture.list[choice[1]];
 	  canvas.drawText(g.statusname, 320, y, Easel.charm_rtext);
 	} else {
 	  canvas.drawText("[Charmed]", 320, y, Easel.charm_rtext);
 	}
       } else {
-	Gesture g = gesture[choice[1]];
+	Gesture g = Gesture.list[choice[1]];
 	if (null == g) {
 	  canvas.drawText(emptyrightmsg, 320, y, Easel.grey_rtext);
 	} else {
@@ -1798,7 +1780,7 @@ public class MainView extends View {
 		h == Being.list[0].para_hand) return true;
 	  }
 	  choice[h] = Gesture.flattenxy(dirx, diry);
-	  if (null == gesture[choice[h]] || !gesture[choice[h]].learned) {
+	  if (null == Gesture.list[choice[h]] || !Gesture.list[choice[h]].learned) {
 	    choice[h] = Gesture.NONE;
 	  }
 	  if (!choosing_para && !choosing_charm) {
@@ -2535,8 +2517,8 @@ public class MainView extends View {
 	    twohanded = true;
 	    ch = Character.toUpperCase(ch);
 	    if (choice[0] != choice[1] ||
-		ch != gesture[choice[0]].abbr) continue;
-	  } else if (ch != gesture[choice[h]].abbr) continue;
+		ch != Gesture.abbr(choice[0])) continue;
+	  } else if (ch != Gesture.abbr(choice[h])) continue;
 	  // Complicated logic: if the last gesture is two-handed we
 	  // need to search both histories for this spell. Otherwise we
 	  // only search the hand that changed.
@@ -2549,9 +2531,8 @@ public class MainView extends View {
 		ch = Character.toUpperCase(ch);
 		int old0 = hist.gest[k2][0];
 		int old1 = hist.gest[k2][1];
-		if (old0 != old1 ||
-		    ch != gesture[old0].abbr) break;
-	      } else if (ch != gesture[hist.gest[k2][hand]].abbr) break;
+		if (old0 != old1 || ch != Gesture.abbr(old0)) break;
+	      } else if (ch != Gesture.abbr(hist.gest[k2][hand])) break;
 	      k2--;
 	      k--;
 	    }

@@ -466,7 +466,6 @@ public class SpellTap extends Activity {
   }
 
   void set_place(int i) {
-    Log.i("SpellTap", "set place "  + i);
     curplace = i;
     curmach = mach[i];
     curmach.run();
@@ -537,7 +536,7 @@ public class SpellTap extends Activity {
     int count = 0;
     String s = "";
     for (int i = 0; i < 9; i++) {
-      Gesture g = MainView.gesture[i];
+      Gesture g = Gesture.list[i];
       if (g == null || !g.learned) continue;
       count++;
       s += g.statusname + ": " + g.arrow + "\n";
