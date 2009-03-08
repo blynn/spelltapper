@@ -1,7 +1,7 @@
 package com.gmail.benlynn.spelltap;
 
 import com.gmail.benlynn.spelltap.MainView.SpellTapMove;
-import com.gmail.benlynn.spelltap.MainView.Status;
+import com.gmail.benlynn.spelltap.Being.Status;
 
 abstract public class Agent {
   abstract String name();

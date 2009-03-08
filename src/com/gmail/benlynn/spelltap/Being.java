@@ -44,7 +44,7 @@ public class Being {
       id = controller + 2 * summon_count[controller];
       summon_count[controller]++;
     }
-    status = MainView.Status.OK;
+    status = Status.OK;
     unsummon = false;
     remove_enchantments();
     counterspell = false;
@@ -104,39 +104,8 @@ public class Being {
     disease = 0;
     shield = 0;
     para_hand = -1;
-    status = MainView.Status.OK;
+    status = Status.OK;
   }
-
-  static int list_count;
-  static Being list[];
-  Bitmap bitmap;
-  String name;
-  String lifeline;
-  int index;  // Index into pos.
-  int x, y;
-  int life;
-  int life_max;
-  int status;
-  int target;
-  int shield;
-  int w, h;
-  int midw, midh;
-  // For monsters, the player that controls it.
-  // In future, if ever we support more than two players, for players it
-  // could represent the source of a Charm Person spell. For now we know
-  // it must be the other player.
-  short controller;
-  boolean dead, doomed, unsummon;
-  boolean counterspell;  // True if protected by counter-spell.
-  boolean mirror;  // True if protected by mirror.
-  int para_hand;
-  int psych;  // Detects psychological spell conflicts.
-
-  // The nth summoned monster by player i is given ID 2 * n + i.
-  int id;
-
-  int disease;
-  static Position pos[];
 
   static class Position {
     Position(int init_x, int init_y) {
@@ -172,5 +141,44 @@ public class Being {
   static void reset_pos() {
     for (int i = 0; i < 16; i++) pos[i].being = null;
   }
+  static public class Status {
+    static public final int OK = 0;
+    static public final int CONFUSED = 1;
+    static public final int CHARMED = 2;
+    static public final int FEAR = 3;
+    static public final int AMNESIA = 4;
+    static public final int PARALYZED = 5;
+  }
+
   static int[] summon_count;
+  static int list_count;
+  static Being list[];
+  static Position pos[];
+
+  Bitmap bitmap;
+  String name;
+  String lifeline;
+  int index;  // Index into pos.
+  int x, y;
+  int life;
+  int life_max;
+  int status;
+  int target;
+  int shield;
+  int w, h;
+  int midw, midh;
+  // For monsters, the player that controls it.
+  // In future, if ever we support more than two players, for players it
+  // could represent the source of a Charm Person spell. For now we know
+  // it must be the other player.
+  short controller;
+  boolean dead, doomed, unsummon;
+  boolean counterspell;  // True if protected by counter-spell.
+  boolean mirror;  // True if protected by mirror.
+  int para_hand;
+  int psych;  // Detects psychological spell conflicts.
+
+  // The nth summoned monster by player i is given ID 2 * n + i.
+  int id;
+  int disease;
 }

@@ -32,6 +32,7 @@ import android.text.Spanned;
 import android.text.style.StyleSpan;
 
 import com.gmail.benlynn.spelltap.SpellTap.Wisdom;
+import com.gmail.benlynn.spelltap.Being.Status;
 
 public class MainView extends View {
   static Gesture[] gesture;
@@ -71,6 +72,7 @@ public class MainView extends View {
   static int spell_choice[];
   static int spell_target[];
   static int fut_choice[];  // Orders for future/charmed/raised monsters.
+
   // Holds these orders after confirmation, and also holds the opponent's
   // choices.
   static int fut_confirm[][];
@@ -3194,15 +3196,6 @@ public class MainView extends View {
     }
     public void cast(int source, int target) {
     }
-  }
-
-  static public class Status {
-    static public final int OK = 0;
-    static public final int CONFUSED = 1;
-    static public final int CHARMED = 2;
-    static public final int FEAR = 3;
-    static public final int AMNESIA = 4;
-    static public final int PARALYZED = 5;
   }
 
   static Bitmap bmcorpse;

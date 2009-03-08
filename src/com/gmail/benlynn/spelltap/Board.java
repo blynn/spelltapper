@@ -12,7 +12,7 @@ import android.view.View;
 import android.os.Handler;
 import android.os.Message;
 
-import com.gmail.benlynn.spelltap.MainView.Status;
+import com.gmail.benlynn.spelltap.Being.Status;
 
 public class Board extends View {
   public Board(Context context, AttributeSet attrs) {

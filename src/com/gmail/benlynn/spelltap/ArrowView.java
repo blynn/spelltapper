@@ -12,7 +12,7 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 import android.util.Log;
-import com.gmail.benlynn.spelltap.MainView.Status;
+import com.gmail.benlynn.spelltap.Being.Status;
 
 public class ArrowView extends View {
   public ArrowView(Context context, AttributeSet attrs) {
