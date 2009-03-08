@@ -45,7 +45,6 @@ public class MainView extends View {
   static boolean okstate;
 
   static boolean is_animating;
-  static BeingPosition being_pos[];
 
   static final int STATE_VOID = -1;
   static final int STATE_NORMAL = 0;
@@ -76,8 +75,6 @@ public class MainView extends View {
   // choices.
   static int fut_confirm[][];
 
-  static int being_list_count;
-  static Being being_list[];
   static int winner;
   static MonsterAttack monatt[];
 
@@ -339,7 +336,7 @@ public class MainView extends View {
       for(;;) switch(state) {
       case 0:
         new_game(Agent.getDummy());
-	being_list[1].start_life(3);
+	Being.list[1].start_life(3);
 	jack_says(R.string.dummytut);
 	state = 1;
         return;
@@ -407,16 +404,16 @@ public class MainView extends View {
       for(;;) switch(state) {
       case 0:
         new_game(Agent.getDummy());
-	being_list[1].start_life(3);
+	Being.list[1].start_life(3);
 	// Two goblins.
-	being_list[2] = new Being("Porsap", R.drawable.goblin, 1);
-	being_list[2].start_life(1);
-	being_list[2].target = 0;
+	Being.list[2] = new Being("Porsap", bmgoblin, 1);
+	Being.list[2].start_life(1);
+	Being.list[2].target = 0;
 
-	being_list[3] = new Being("Dedmit", R.drawable.goblin, 1);
-	being_list[3].start_life(1);
-	being_list[3].target = 0;
-	being_list_count = 4;
+	Being.list[3] = new Being("Dedmit", bmgoblin, 1);
+	Being.list[3].start_life(1);
+	Being.list[3].target = 0;
+	Being.list_count = 4;
 
 	jack_tip(R.string.targettut);
 	set_main_state(STATE_GESTURE_TEACH);
@@ -439,7 +436,7 @@ public class MainView extends View {
 	  if (-1 == h) return;
 	  jack_tip_off();
 	  arr_y0 = MainView.yicon + 24;
-	  Being b = being_list[2 + h];
+	  Being b = Being.list[2 + h];
 	  arr_x1 = b.x + b.midw;
 	  arr_y1 = b.y + b.midh;
 	  help_arrow_on();
@@ -482,7 +479,7 @@ public class MainView extends View {
 	  state = 0;
 	  break;
 	}
-	reset_being_pos();
+	Being.reset_pos();
         return;
       case 7:
 	spelltap.next_state();
@@ -582,7 +579,7 @@ public class MainView extends View {
       for(;;) switch(state) {
 	case 0:
 	  new_game(Agent.getDummy());
-	  being_list[1].start_life(dummyhp);
+	  Being.list[1].start_life(dummyhp);
 	  state = 1;
 	  return;
 	case 1:
@@ -627,7 +624,7 @@ public class MainView extends View {
 	case 0:
 	  set_gesture_knowledge(Wisdom.KPS);
 	  new_game(Agent.getDummy());
-	  being_list[1].start_life(5);
+	  Being.list[1].start_life(5);
 	  jack_says(R.string.SDtut0);
 	  state = 1;
 	  return;
@@ -719,7 +716,7 @@ public class MainView extends View {
 	case 0:
 	  set_gesture_knowledge(Wisdom.ALL_BUT_FC);
 	  new_game(Agent.getDummy());
-	  being_list[1].start_life(4);
+	  Being.list[1].start_life(4);
 	  jack_says(R.string.wavetut);
 	  state = 1;
 	  return;
@@ -830,7 +827,7 @@ public class MainView extends View {
     if (target <= 1) {  // Player, opponent, thin air, or fresh monster.
       return (char) ('A' + target);
     } else {
-      return (char) ('A' + 2 + being_list[target].id);
+      return (char) ('A' + 2 + Being.list[target].id);
     }
   }
 
@@ -858,8 +855,8 @@ public class MainView extends View {
     // Switch odd monster IDs to even IDs and vice versa.
     if (0 == (raw & 1)) raw++;
     else raw--;
-    for (int i = 2; i < being_list_count; i++) {
-      if (raw == being_list[i].id) return i;
+    for (int i = 2; i < Being.list_count; i++) {
+      if (raw == Being.list[i].id) return i;
     }
     return -1;
   }
@@ -887,8 +884,8 @@ public class MainView extends View {
     // Encode monster attacks.
     String s2 = "";
     int count = 0;
-    for (int i = 2; i < being_list_count; i++) {
-      Being b = being_list[i];
+    for (int i = 2; i < Being.list_count; i++) {
+      Being b = Being.list[i];
       if (0 == b.controller) {
 	s2 += encode_target(i);
 	s2 += encode_target(b.target);
@@ -1172,8 +1169,8 @@ public class MainView extends View {
   }
 
   void init_opponent(Agent a) {
-    being_list[1] = new Being(a.name(), a.bitmap_id(), -2);
-    being_list[1].start_life(a.life());
+    Being.list[1] = new Being(a.name(), get_bitmap(a.bitmap_id()), -2);
+    Being.list[1].start_life(a.life());
     agent = a;
     a.reset();
   }
@@ -1236,14 +1233,12 @@ public class MainView extends View {
     spell_level = 5;
     add_spell(new FingerOfDeathSpell(), 50);
 
-    being_list = new Being[16];
-    summon_count = new int[2];
-    summon_count[0] = summon_count[1] = 0;
-    init_being_pos();
+    Being.list = new Being[16];
+    Being.init();
 
-    being_list[0] = new Being("Player", R.drawable.wiz, -1);
-    being_list[0].start_life(5);
-    being_list_count = 1;
+    Being.list[0] = new Being("Player", bmwizard, -1);
+    Being.list[0].start_life(5);
+    Being.list_count = 1;
 
     spell_target = new int[2];
     exec_queue = new SpellCast[16];
@@ -1258,6 +1253,8 @@ public class MainView extends View {
     comment_i = 0;
     comments = new String[4];
     bmcorpse = get_bitmap(R.drawable.corpse);
+    bmgoblin = get_bitmap(R.drawable.goblin);
+    bmwizard = get_bitmap(R.drawable.wiz);
     oppturn = new SpellTapMove();
 
     gesture = new Gesture[9];
@@ -1314,13 +1311,13 @@ public class MainView extends View {
     // Opponent history.
     String s = "";
     Paint pa;
-    if (being_list_count > 1) {
+    if (Being.list_count > 1) {
       y = 16;
       for (int i = opphist.start[0]; i < opphist.cur; i++) {
 	s += " " + gesture[opphist.gest[i][0]].abbr;
       }
-      if (Status.PARALYZED == being_list[1].status &&
-	  0 == being_list[1].para_hand) pa = Easel.para_text;
+      if (Status.PARALYZED == Being.list[1].status &&
+	  0 == Being.list[1].para_hand) pa = Easel.para_text;
       else pa = Easel.history_text;
 
       canvas.drawText(s, 0, y, pa);
@@ -1328,8 +1325,8 @@ public class MainView extends View {
       for (int i = opphist.start[1]; i < opphist.cur; i++) {
 	s += gesture[opphist.gest[i][1]].abbr + " ";
       }
-      if (Status.PARALYZED == being_list[1].status &&
-	  1 == being_list[1].para_hand) pa = Easel.para_rtext;
+      if (Status.PARALYZED == Being.list[1].status &&
+	  1 == Being.list[1].para_hand) pa = Easel.para_rtext;
       else pa = Easel.history_rtext;
       canvas.drawText(s, 320, y, pa);
     }
@@ -1340,16 +1337,16 @@ public class MainView extends View {
     for (int i = hist.start[0]; i < hist.cur; i++) {
       s += " " + gesture[hist.gest[i][0]].abbr;
     }
-    if (Status.PARALYZED == being_list[0].status &&
-        0 == being_list[0].para_hand) pa = Easel.para_text;
+    if (Status.PARALYZED == Being.list[0].status &&
+        0 == Being.list[0].para_hand) pa = Easel.para_text;
     else pa = Easel.history_text;
     canvas.drawText(s, 0, y, pa);
     s = "";
     for (int i = hist.start[1]; i < hist.cur; i++) {
       s += gesture[hist.gest[i][1]].abbr + " ";
     }
-    if (Status.PARALYZED == being_list[0].status &&
-        1 == being_list[0].para_hand) pa = Easel.para_rtext;
+    if (Status.PARALYZED == Being.list[0].status &&
+        1 == Being.list[0].para_hand) pa = Easel.para_rtext;
     else pa = Easel.history_rtext;
     canvas.drawText(s, 320, y, pa);
 
@@ -1382,7 +1379,7 @@ public class MainView extends View {
 	  } else if (Gesture.PALM == choice[0] && Gesture.PALM == choice[1]) {
 	    canvas.drawRect(0, ystatus, 320, 480, Easel.surrender_paint);
 	    canvas.drawText("SURRENDER!", 160, ystatus + 36, Easel.tap_ctext);
-	  } else switch(being_list[0].status) {
+	  } else switch(Being.list[0].status) {
 	    case Status.CHARMED:
 	      canvas.drawRect(0, ystatus, 320, 480, Easel.status_paint);
 	      canvas.drawText(
@@ -1636,8 +1633,8 @@ public class MainView extends View {
 	    }
 	  } else {
 	    // Check for monster retargeting drag.
-	    for (int i = 2; i < being_list_count; i++) {
-	      Being b = being_list[i];
+	    for (int i = 2; i < Being.list_count; i++) {
+	      Being b = Being.list[i];
 	      // TODO: Allow corpse retargeting at Level 5 (for Raise Dead).
 	      if (b.dead || 0 != b.controller) continue;
 	      if (b.contains(x0, y0)) {
@@ -1672,8 +1669,8 @@ public class MainView extends View {
 	y1 = event.getY();
 	if (drag_i != -1) {
 	  int target;
-	  for(target = being_list_count - 1; target >= 0; target--) {
-	    Being b = being_list[target];
+	  for(target = Being.list_count - 1; target >= 0; target--) {
+	    Being b = Being.list[target];
 	    if (b.contains(x1, y1)) break;
 	  }
 	  if (!is_simplified()) {
@@ -1721,7 +1718,7 @@ public class MainView extends View {
 	      spell_target[1 - drag_i] = spell_target[drag_i];
 	    }
 	  } else {
-	    Being b = being_list[drag_i];
+	    Being b = Being.list[drag_i];
 	    if (Status.OK == b.status) {
 	      b.target = target;
 	    }
@@ -1795,15 +1792,15 @@ public class MainView extends View {
 	  }
 	  if (!choosing_para && !choosing_charm) {
 	    if (h == charmed_hand) return true;
-	    if (Status.PARALYZED == being_list[0].status &&
-		h == being_list[0].para_hand) return true;
+	    if (Status.PARALYZED == Being.list[0].status &&
+		h == Being.list[0].para_hand) return true;
 	  }
 	  choice[h] = Gesture.flattenxy(dirx, diry);
 	  if (null == gesture[choice[h]] || !gesture[choice[h]].learned) {
 	    choice[h] = Gesture.NONE;
 	  }
 	  if (!choosing_para && !choosing_charm) {
-	    if (Status.FEAR == being_list[0].status &&
+	    if (Status.FEAR == Being.list[0].status &&
 		choice[h] != Gesture.PALM &&
 		choice[h] != Gesture.WAVE &&
 		choice[h] != Gesture.KNIFE) choice[h] = Gesture.NONE;
@@ -1880,7 +1877,7 @@ public class MainView extends View {
       int h;
       for (h = 0; h < 2 && Gesture.NONE == choice[h]; h++);
       if (h < 2) {
-	being_list[para_target[para_i]].para_hand = h;
+	Being.list[para_target[para_i]].para_hand = h;
 	opp_ready = true;
 	agent.set_para(para_target[para_i], h);
 	if (opp_ready) {
@@ -1981,8 +1978,8 @@ public class MainView extends View {
     opphist.add(oppturn.gest);
 
     // Expire status effects.
-    for (int i = 0; i < being_list_count; i++) {
-      Being b = being_list[i];
+    for (int i = 0; i < Being.list_count; i++) {
+      Being b = Being.list[i];
       b.status = Status.OK;
       b.psych = 0;
     }
@@ -2017,7 +2014,7 @@ public class MainView extends View {
     for (int i = 0; i < oppturn.attack_count; i++) {
       int source = oppturn.attack_source[i];
       if (source >= 0) {
-	Being b = being_list[source];
+	Being b = Being.list[source];
 	b.target = oppturn.attack_target[i];
       } else if (-4 == source || -5 == source) {
 	fut_confirm[1][-4 - source] = oppturn.attack_target[i];
@@ -2027,8 +2024,8 @@ public class MainView extends View {
     }
     // Insert monster attacks.
     if (is_simplified()) {
-      for (int i = 2; i < being_list_count; i++) {
-	Being b = being_list[i];
+      for (int i = 2; i < Being.list_count; i++) {
+	Being b = Being.list[i];
 	if (b.dead) continue;
 	if (-1 != b.target) {
 	  SpellCast sc = new SpellCast(-1, monatt[b.life_max], i, b.target);
@@ -2093,7 +2090,7 @@ public class MainView extends View {
       for (int i = 0; i < 2; i++) for (int h = 0; h < 2; h++) {
 	int j = fresh_monster[i][h];
 	if (-1 != j) {
-	  Being b = being_list[j];
+	  Being b = Being.list[j];
 	  if (b.controller == 0) {
 	    b.target = fut_confirm[0][h];
 	  } else {
@@ -2107,8 +2104,8 @@ public class MainView extends View {
 	  }
 	}
       }
-      for (int i = 2; i < being_list_count; i++) {
-	Being b = being_list[i];
+      for (int i = 2; i < Being.list_count; i++) {
+	Being b = Being.list[i];
 	b.target = map_target(b.target);
 	if (!b.dead) {
 	  insert_spell(new SpellCast(-1, monatt[b.life_max], i, b.target));
@@ -2122,11 +2119,11 @@ public class MainView extends View {
     SpellCast sc = cur_sc;
 
     String s = "";
-    String srcname = being_list[sc.source].name;
+    String srcname = Being.list[sc.source].name;
     String tgtname = null;
     int target = map_target(sc.target);
     if (target != -1) {
-      tgtname = being_list[target].name;
+      tgtname = Being.list[target].name;
     }
     if (mirror_sc == sc) {
       s += "Mirror reflects " + sc.spell.name + " at ";
@@ -2172,7 +2169,7 @@ public class MainView extends View {
 	sc.spell.just_wait();
       }
     } else {
-      Being b = being_list[target];
+      Being b = Being.list[target];
       if (b.dead) {
 	print("Dead target. Nothing happens.");
       } else if (b.counterspell) {
@@ -2213,8 +2210,8 @@ public class MainView extends View {
   // End of round. Check for death, shield expiration, etc.
   void end_round() {
     boolean gameover = false;
-    for(int i = being_list_count - 1; i >= 0; i--) {
-      Being b = being_list[i];
+    for(int i = Being.list_count - 1; i >= 0; i--) {
+      Being b = Being.list[i];
       b.counterspell = false;
       b.mirror = false;
       if (b.shield > 0) b.shield--;
@@ -2230,21 +2227,21 @@ public class MainView extends View {
       }
       if (b.unsummon) {
 	if (i < 2) Log.e("MV", "Bug! Cannot unsummon player!");
-	being_pos[b.index].being = null;
-	for(int j = being_list_count - 1; j > i; j--) {
-	  being_list[j - 1] = being_list[j];
+	Being.pos[b.index].being = null;
+	for(int j = Being.list_count - 1; j > i; j--) {
+	  Being.list[j - 1] = Being.list[j];
 	}
-	being_list_count--;
+	Being.list_count--;
 	// TODO: Unsummon animation.
       }
     }
     is_dispel_cast = false;
 
     // For player convenience, retarget attacks on dead targets.
-    for (int i = 2; i < being_list_count; i++) {
-      Being b = being_list[i];
+    for (int i = 2; i < Being.list_count; i++) {
+      Being b = Being.list[i];
       if (Status.OK == b.status && 0 == b.controller && -1 != b.target &&
-   	  null != being_list[b.target] && being_list[b.target].dead) {
+   	  null != Being.list[b.target] && Being.list[b.target].dead) {
 	b.target = 1;
       }
     }
@@ -2254,15 +2251,15 @@ public class MainView extends View {
     arrow_view.setVisibility(View.VISIBLE);
     int sid = R.string.bug;
     winner = -1;
-    if (being_list[1].dead) {
+    if (Being.list[1].dead) {
       gameover = true;
       winner = 0;
       sid = R.string.win;
-      if (being_list[0].dead) {
+      if (Being.list[0].dead) {
 	winner = 2;
 	sid = R.string.draw;
       }
-    } else if (being_list[0].dead) {
+    } else if (Being.list[0].dead) {
       winner = 1;
       gameover = true;
       sid = R.string.lose;
@@ -2299,25 +2296,25 @@ public class MainView extends View {
   }
 
   boolean player_charmed() {
-    return Status.CHARMED == being_list[0].status;
+    return Status.CHARMED == Being.list[0].status;
   }
 
   boolean opp_charmed() {
-    return Status.CHARMED == being_list[1].status;
+    return Status.CHARMED == Being.list[1].status;
   }
 
   void reset_game() {
     clear_choices();
     hist.reset();
     opphist.reset();
-    being_list_count = 2;
-    being_list[0].status = Status.OK;
-    being_list[1].status = Status.OK;
-    being_list[0].shield = 0;
-    being_list[1].shield = 0;
-    being_list[0].heal_full();
-    being_list[1].heal_full();
-    reset_being_pos();
+    Being.list_count = 2;
+    Being.list[0].status = Status.OK;
+    Being.list[1].status = Status.OK;
+    Being.list[0].shield = 0;
+    Being.list[1].shield = 0;
+    Being.list[0].heal_full();
+    Being.list[1].heal_full();
+    Being.reset_pos();
     set_main_state(STATE_NORMAL);
     net_state = NET_IDLE;
     tilt_state = TILT_AWAIT_UP;
@@ -2380,7 +2377,7 @@ public class MainView extends View {
     para_i++;
     if (para_i < para_count) {
       if (0 == para_source[para_i]) {
-	Being b = being_list[para_target[para_i]];
+	Being b = Being.list[para_target[para_i]];
 	// Psychological conflicts mean that we could have canceled spells
 	// on the para_target and para_source arrays.
 	if (Status.PARALYZED == b.status && -1 == b.para_hand) {
@@ -2401,7 +2398,7 @@ public class MainView extends View {
     para_i++;
     if (para_i < para_count) {
       if (1 == para_source[para_i]) {
-	Being b = being_list[para_target[para_i]];
+	Being b = Being.list[para_target[para_i]];
 	// Psychological conflicts mean that we could have canceled spells
 	// on the para_target and para_source arrays.
 	if (Status.PARALYZED == b.status && -1 == b.para_hand) {
@@ -2423,22 +2420,22 @@ public class MainView extends View {
   }
 
   void set_para_hand() {
-    being_list[para_target[para_i]].para_hand = agent.reply_hand;
+    Being.list[para_target[para_i]].para_hand = agent.reply_hand;
     new_round_para2();
   }
 
   void new_round_post_para() {
-    if (Status.PARALYZED != being_list[1].status) being_list[1].para_hand = -1;
-    if (Status.PARALYZED != being_list[0].status) being_list[0].para_hand = -1;
+    if (Status.PARALYZED != Being.list[1].status) Being.list[1].para_hand = -1;
+    if (Status.PARALYZED != Being.list[0].status) Being.list[0].para_hand = -1;
     else {
-      int h = being_list[0].para_hand;
+      int h = Being.list[0].para_hand;
       if (-1 == h) Log.e("MV", "Bug! Paralyzed hand not chosen!");
       int lastg = hist.last_gesture(h);
       choice[h] = Gesture.paralyze(lastg);
     }
 
     // Handle amnesia.
-    if (Status.AMNESIA == being_list[0].status) {
+    if (Status.AMNESIA == Being.list[0].status) {
       choice[0] = hist.last_gesture(0);
       handle_new_choice(0);
       choice[1] = hist.last_gesture(1);
@@ -2447,8 +2444,8 @@ public class MainView extends View {
     }
 
     // Handle confused and paralyzed monsters.
-    for (int i = 2; i < being_list_count; i++) {
-      Being b = being_list[i];
+    for (int i = 2; i < Being.list_count; i++) {
+      Being b = Being.list[i];
       if (Status.CONFUSED == b.status) {
 	b.target = b.controller;
       } else if (Status.PARALYZED == b.status) {
@@ -2485,7 +2482,7 @@ public class MainView extends View {
       return;
     }
     spell_search(h);
-    if (Status.CONFUSED == being_list[0].status) {
+    if (Status.CONFUSED == Being.list[0].status) {
       if (choice[1 - h] != choice[h]) {
 	choice[1 - h] = choice[h];
 	spell_search(1 - h);
@@ -2690,7 +2687,7 @@ public class MainView extends View {
           board.animate_shield(target);
           return;
         case 1:
-          Being b = being_list[target];
+          Being b = Being.list[target];
           if (0 == b.shield) b.shield = 1;
           finish_spell();
           return;
@@ -2708,7 +2705,7 @@ public class MainView extends View {
           board.animate_shield(target);
           return;
         case 1:
-          Being b = being_list[target];
+          Being b = Being.list[target];
           if (0 == b.shield) b.shield = 1;
 	  b.counterspell = true;
           finish_spell();
@@ -2735,7 +2732,7 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  // TODO: Remove duplicated code.
-	  Being b = being_list[target];
+	  Being b = Being.list[target];
 	  if (0 == b.shield) {
 	    b.get_hurt(1);
 	    board.animate_move_damage(target, 1);
@@ -2763,7 +2760,7 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  is_finished = true;
-	  Being b = being_list[target];
+	  Being b = Being.list[target];
 	  if (0 == b.shield) {
 	    b.get_hurt(1);
 	    board.animate_damage(target, 1);
@@ -2787,7 +2784,7 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  is_finished = true;
-	  being_list[target].get_hurt(2);
+	  Being.list[target].get_hurt(2);
 	  board.animate_damage(target, 2);
 	  return;
       }
@@ -2805,7 +2802,7 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  is_finished = true;
-	  being_list[target].get_hurt(3);
+	  Being.list[target].get_hurt(3);
 	  board.animate_damage(target, 3);
 	  return;
       }
@@ -2823,7 +2820,7 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  is_finished = true;
-	  being_list[target].get_hurt(5);
+	  Being.list[target].get_hurt(5);
 	  board.animate_damage(target, 5);
 	  return;
       }
@@ -2839,7 +2836,7 @@ public class MainView extends View {
 	case 0:
 	  is_finished = true;
 	  board.animate_spell(target, bitmap);
-	  being_list[target].doomed = true;
+	  Being.list[target].doomed = true;
 	  return;
 	/* TODO: Ominous animation.
 	case 0:
@@ -2847,7 +2844,7 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  is_finished = true;
-	  being_list[target].doomed = true;
+	  Being.list[target].doomed = true;
 	  board.animate_damage(target, 2);
 	  return;
 	  */
@@ -2871,15 +2868,15 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  is_finished = true;
-	  int k = being_list[target].controller;
-	  Being b = being_list[being_list_count] =
-	      new Being(name, monster_bmid, k);
+	  int k = Being.list[target].controller;
+	  Being b = Being.list[Being.list_count] =
+	      new Being(name, get_bitmap(monster_bmid), k);
 	  int i = source;
 	  // Corner case: if a summon spell is mirrored, then the original
 	  // caster is the target, not the source.
 	  if (cur_sc == mirror_sc) i = target;
-	  fresh_monster[i][cur_cast_hand()] = being_list_count;
-	  being_list_count++;
+	  fresh_monster[i][cur_cast_hand()] = Being.list_count;
+	  Being.list_count++;
 	  b.start_life(level);
 	  if (is_simplified()) {
 	    b.target = 1 - k;
@@ -2929,7 +2926,7 @@ public class MainView extends View {
       switch(state) {
 	case 0:
 	  is_finished = true;
-	  being_list[target].heal(1);
+	  Being.list[target].heal(1);
 	  board.animate_spell(target, bitmap);
 	  return;
       }
@@ -2944,7 +2941,7 @@ public class MainView extends View {
       switch(state) {
 	case 0:
 	  is_finished = true;
-	  Being b = being_list[target];
+	  Being b = Being.list[target];
 	  b.heal(2);
 	  b.disease = 0;
 	  board.animate_spell(target, bitmap);
@@ -2961,7 +2958,7 @@ public class MainView extends View {
       switch(state) {
 	case 0:
 	  is_finished = true;
-	  Being b = being_list[target];
+	  Being b = Being.list[target];
 	  if (0 == b.disease) b.disease = 1;
 	  board.animate_spell(target, bitmap);
 	  return;
@@ -2978,7 +2975,7 @@ public class MainView extends View {
       switch(state) {
 	case 0:
 	  is_finished = true;
-	  being_list[target].status = Status.CONFUSED;
+	  Being.list[target].status = Status.CONFUSED;
 	  board.animate_spell(target, bitmap);
 	  return;
       }
@@ -2996,7 +2993,7 @@ public class MainView extends View {
 	  is_finished = true;
 	  // Only works on opponent.
 	  if (1 - source == target) {
-	    being_list[target].status = Status.CHARMED;
+	    Being.list[target].status = Status.CHARMED;
 	  }
 	  board.animate_spell(target, bitmap);
 	  return;
@@ -3015,7 +3012,7 @@ public class MainView extends View {
 	  is_finished = true;
 	  // Only affects humans.
 	  if (target == 1 || target == 0) {
-	    being_list[target].status = Status.FEAR;
+	    Being.list[target].status = Status.FEAR;
 	  }
 	  board.animate_spell(target, bitmap);
 	  return;
@@ -3032,7 +3029,7 @@ public class MainView extends View {
       switch(state) {
 	case 0:
 	  is_finished = true;
-	  being_list[target].status = Status.AMNESIA;
+	  Being.list[target].status = Status.AMNESIA;
 	  board.animate_spell(target, bitmap);
 	  return;
       }
@@ -3048,7 +3045,7 @@ public class MainView extends View {
       switch(state) {
 	case 0:
 	  is_finished = true;
-	  being_list[target].status = Status.PARALYZED;
+	  Being.list[target].status = Status.PARALYZED;
 	  if (0 == target || 1 == target) {
 	    para_source[para_count] = source;
 	    para_target[para_count] = target;
@@ -3084,7 +3081,7 @@ public class MainView extends View {
     public void cast(int source, int target) {
       switch(state) {
 	case 0:
-	  Being b = being_list[target];
+	  Being b = Being.list[target];
 	  b.remove_enchantments();
 	  if (target > 1) {
 	    // Destroy monster.
@@ -3106,8 +3103,8 @@ public class MainView extends View {
       is_finished = true;
       if (!is_dispel_cast) {
 	is_dispel_cast = true;
-	for (int i = 0; i < being_list_count; i++) {
-	  Being b = being_list[i];
+	for (int i = 0; i < Being.list_count; i++) {
+	  Being b = Being.list[i];
 	  if (i < 2) {
 	    b.remove_enchantments();
 	  } else {
@@ -3116,7 +3113,7 @@ public class MainView extends View {
 	}
       }
       if (target != -1) {
-	Being b = being_list[target];
+	Being b = Being.list[target];
 	b.shield = 1;
 	board.animate_shield(target);
       } else {
@@ -3132,10 +3129,10 @@ public class MainView extends View {
     }
     public void cast(int source, int target) {
       is_finished = true;
-      if (being_list[target].mirror) {
+      if (Being.list[target].mirror) {
 	print("Magic Mirror merges with existing mirror.");
       }
-      being_list[target].mirror = true;
+      Being.list[target].mirror = true;
       board.animate_shield(target);
     }
   }
@@ -3150,7 +3147,7 @@ public class MainView extends View {
 	  board.animate_shield(target);
 	  return;
 	case 1:
-	  Being b = being_list[target];
+	  Being b = Being.list[target];
 	  b.shield = 4;
 	  finish_spell();
 	  return;
@@ -3171,7 +3168,7 @@ public class MainView extends View {
 	  board.animate_move(source, target);
 	  return;
 	case 1:
-	  Being b = being_list[target];
+	  Being b = Being.list[target];
 	  if (0 == b.shield) {
 	    b.get_hurt(power);
 	    board.animate_move_damage(target, 1);
@@ -3208,173 +3205,7 @@ public class MainView extends View {
     static public final int PARALYZED = 5;
   }
 
-  static int[] summon_count;
   static Bitmap bmcorpse;
-  public class Being {
-    public Being(String init_name, int bitmapid, int owner) {
-      switch(owner) {
-	case -1:  // This being is the player.
-	  y = ylower - 64;
-	  index = -1;
-	  controller = 0;
-	  break;
-	case -2:  // This being is the opponent.
-	  y = 0;
-	  index = -2;
-	  controller = 1;
-	  break;
-        case 0:  // Player controls this being.
-	  for (index = 0; index < 16; index++) {
-	    if (null == being_pos[index].being) break;
-	  }
-	  controller = 0;
-	  break;
-        case 1:  // Opponent controls this being.
-	  for (index = 16 - 1; index >= 0; index--) {
-	    if (null == being_pos[index].being) break;
-	  }
-	  controller = 1;
-	  break;
-	default:
-	  Log.e("Being", "Ctor given bad owner.");
-	  break;
-      }
-      if (owner < 0) {
-	x = 160 - 32;
-	set_size_64();
-      } else {
-	if (index < 0 || index >= 16) Log.e("Being", "index out of range! Summon should never have been successful?");
-	x = being_pos[index].x;
-	y = being_pos[index].y;
-	being_pos[index].being = this;
-	set_size_48();
-	id = controller + 2 * summon_count[controller];
-	summon_count[controller]++;
-      }
-      status = Status.OK;
-      unsummon = false;
-      remove_enchantments();
-      counterspell = false;
-      mirror = false;
-      dead = false;
-      setup(init_name, bitmapid, 0);
-    }
-    void setup(String init_name, int bitmapid, int life) {
-      name = init_name;
-      bitmap = get_bitmap(bitmapid);
-      start_life(life);
-    }
-    void heal(int amount) {
-      if (!dead) {
-	life += amount;
-	if (life > life_max) life = life_max;
-	lifeline = Integer.toString(life) + "/" + Integer.toString(life_max);
-      }
-    }
-    void get_hurt(int amount) {
-      if (!dead) {
-	life -= amount;
-	lifeline = Integer.toString(life) + "/" + Integer.toString(life_max);
-      }
-    }
-    void set_size_48() {
-      w = h = 48;
-      midw = midh = 24;
-    }
-    void set_size_64() {
-      w = h = 64;
-      midw = midh = 32;
-    }
-    void start_life(int n) {
-      life_max = n;
-      heal_full();
-    }
-    void heal_full() {
-      dead = false;
-      doomed = false;
-      life = life_max;
-      lifeline = Integer.toString(life) + "/" + Integer.toString(life);
-    }
-    void die() {
-      dead = true;
-      lifeline = "Dead";
-      remove_enchantments();
-    }
-    boolean contains(float xf, float yf) {
-      int x0 = (int) xf;
-      int y0 = (int) yf;
-      return x0 + SLOP >= x && x0 < x + w + SLOP &&
-	  y0 + SLOP >= y && y0 < y + h + SLOP;
-    }
-
-    void remove_enchantments() {
-      disease = 0;
-      shield = 0;
-      para_hand = -1;
-      status = Status.OK;
-    }
-
-    Bitmap bitmap;
-    String name;
-    String lifeline;
-    int index;  // Index into being_pos.
-    int x, y;
-    int life;
-    int life_max;
-    int status;
-    int target;
-    int shield;
-    int w, h;
-    int midw, midh;
-    // For monsters, the player that controls it.
-    // In future, if ever we support more than two players, for players it
-    // could represent the source of a Charm Person spell. For now we know
-    // it must be the other player.
-    short controller;
-    boolean dead, doomed, unsummon;
-    boolean counterspell;  // True if protected by counter-spell.
-    boolean mirror;  // True if protected by mirror.
-    int para_hand;
-    int psych;  // Detects psychological spell conflicts.
-
-    // The nth summoned monster by player i is given ID 2 * n + i.
-    int id;
-
-    int disease;
-  }
-
-  class BeingPosition {
-    BeingPosition(int init_x, int init_y) {
-      x = init_x;
-      y = init_y;
-      being = null;
-    }
-    int x, y;
-    Being being;
-  }
-
-  // Summoned creatures should appear close to their owner, hence this mess.
-  void init_being_pos() {
-    int x, y;
-    x = 160 - 32;
-    y = ylower - 64;
-    being_pos = new BeingPosition[16];
-    being_pos[0] = new BeingPosition(x - 48 - 10, y);
-    being_pos[1] = new BeingPosition(x + 64 + 10, y);
-    being_pos[2] = new BeingPosition(x - 48 - 10, y - 48 - 4);
-    being_pos[3] = new BeingPosition(x + 64 + 10, y - 48 - 4);
-    being_pos[4] = new BeingPosition(x - 2 * 48 - 2 * 10, y);
-    being_pos[5] = new BeingPosition(x + 64 + 48 + 2 * 10, y);
-    being_pos[6] = new BeingPosition(x - 2 * 48 - 2 * 10, y - 48 - 4);
-    being_pos[7] = new BeingPosition(x + 64 + 48 + 2 * 10, y - 48 - 4);
-    for (int i = 0; i < 8; i++) {
-      being_pos[8 + i] = new BeingPosition(
-	  being_pos[8 - i - 1].x, ylower - 64 - being_pos[8 - i - 1].y + 16);
-    }
-  }
-  void reset_being_pos() {
-    for (int i = 0; i < 16; i++) being_pos[i].being = null;
-  }
 
   Bitmap get_bitmap(int id) {
     return BitmapFactory.decodeResource(getResources(), id);
@@ -3427,6 +3258,8 @@ public class MainView extends View {
   static int ysumcirc[];
   // Index of monster that is the target of a monstrous spell.
   static int fresh_monster[][];
+  static Bitmap bmgoblin;
+  static Bitmap bmwizard;
 
   static int tut_index;
   static final int MACHINE_DUMMY = 0;

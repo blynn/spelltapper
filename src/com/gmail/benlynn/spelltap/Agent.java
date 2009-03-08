@@ -69,7 +69,7 @@ abstract public class Agent {
       hand = 1 - hand;
       // If confused, gesture knife with other hand even though it's useless.
       // Beats surrendering!
-      if (Status.CONFUSED == MainView.being_list[1].status) {
+      if (Status.CONFUSED == Being.list[1].status) {
 	turn.gest[hand] = Gesture.KNIFE;
 	turn.spell[hand] = -1;
 	return;

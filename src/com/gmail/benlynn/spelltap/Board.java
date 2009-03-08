@@ -12,7 +12,6 @@ import android.view.View;
 import android.os.Handler;
 import android.os.Message;
 
-import com.gmail.benlynn.spelltap.MainView.Being;
 import com.gmail.benlynn.spelltap.MainView.Status;
 
 public class Board extends View {
@@ -160,7 +159,7 @@ public class Board extends View {
     anim = ANIM_BULLET;
     source = init_source;
     target = init_target;
-    Being b = MainView.being_list[source];
+    Being b = Being.list[source];
     x = b.x + b.midw;
     y = b.y + b.midh;
     if (target == -1 || target == source) {
@@ -169,7 +168,7 @@ public class Board extends View {
       x1 = x;
       y1 = y;
     } else {
-      b = MainView.being_list[target];
+      b = Being.list[target];
       x1 = b.x + b.midw;
       y1 = b.y + b.midh;
       ydelta = (y1 - y) / frame_max;
@@ -182,7 +181,7 @@ public class Board extends View {
     anim = ANIM_SHIELD;
     target = init_target;
     if (target != -1) {
-      Being b = MainView.being_list[target];
+      Being b = Being.list[target];
       x = b.x + b.midw;
       y = b.y + b.midh;
       shieldr = 1;
@@ -193,7 +192,7 @@ public class Board extends View {
 
   public void animate_move_back() {
     anim = ANIM_MOVE_BACK;
-    Being b = MainView.being_list[source];
+    Being b = Being.list[source];
     x1 = b.x;
     y1 = b.y;
     ydelta = (y1 - y) / frame_max;
@@ -205,7 +204,7 @@ public class Board extends View {
     anim = ANIM_MOVE;
     source = init_source;
     target = init_target;
-    Being b = MainView.being_list[source];
+    Being b = Being.list[source];
     x = b.x;
     y = b.y;
     if (target == -1 || target == source) {
@@ -214,7 +213,7 @@ public class Board extends View {
       x1 = x;
       y1 = y;
     } else {
-      Being b2 = MainView.being_list[target];
+      Being b2 = Being.list[target];
       x1 = b2.x;
       if (b2.y > y) y1 = b2.y - b.h;
       else if (b2.y < y) y1 = b2.y + b2.h;
@@ -272,7 +271,7 @@ public class Board extends View {
   void set_notify_me(Handler h) { notify_me = h; }
 
   public void drawBeing(int i, int mx, int my, Canvas canvas) {
-    Being b = MainView.being_list[i];
+    Being b = Being.list[i];
     canvas.drawBitmap(b.bitmap, mx, my, paint);
     if (b.shield > 0) {
       int n = b.shield - 1;
@@ -306,7 +305,7 @@ public class Board extends View {
   @Override
   public void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-    if (null == MainView.being_list) return;
+    if (null == Being.list) return;
 
     if (!MainView.is_simplified()) {
       canvas.drawBitmap(bmsumcirc,
@@ -325,13 +324,13 @@ public class Board extends View {
     }
 
     // Avatars.
-    for (int i = 0; i < MainView.being_list_count; i++) {
+    for (int i = 0; i < Being.list_count; i++) {
       if (anim == ANIM_MOVE || anim == ANIM_MOVE_BACK || anim == ANIM_MOVE_DAMAGE) {
 	if (i == source) {
 	  continue;
 	}
       }
-      Being b = MainView.being_list[i];
+      Being b = Being.list[i];
       drawBeing(i, b.x, b.y, canvas);
     }
 
@@ -345,7 +344,7 @@ public class Board extends View {
 	// ***  FALLTHROUGH ***
       case ANIM_DAMAGE:
 	if (-1 != target) {
-	  Being b = MainView.being_list[target];
+	  Being b = Being.list[target];
 	  canvas.drawRect(b.x, b.y, b.x + b.w, b.y + b.h, fade_paint);
 	  canvas.drawText(damage, b.x + b.midw - damagex,
 	      b.y + b.midh + damagey, big_white_text);
@@ -353,7 +352,7 @@ public class Board extends View {
 	break;
       case ANIM_SPELL:
 	if (-1 != target) {
-	  Being b = MainView.being_list[target];
+	  Being b = Being.list[target];
 	  canvas.drawBitmap(bitmap, b.x + b.midw - 24, b.y + b.midh - 24, fade_paint);
 	}
 	break;

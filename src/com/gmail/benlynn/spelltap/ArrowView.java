@@ -12,7 +12,6 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 import android.util.Log;
-import com.gmail.benlynn.spelltap.MainView.Being;
 import com.gmail.benlynn.spelltap.MainView.Status;
 
 public class ArrowView extends View {
@@ -37,7 +36,7 @@ public class ArrowView extends View {
   static Paint ptgt;
   void compute_xytgt(int target) {
     if (target >= 0) {
-      Being b2 = MainView.being_list[target];
+      Being b2 = Being.list[target];
       xtgt = b2.x + b2.midw;
       ytgt = b2.y + b2.midh;
     } else if (-1 == target) Log.e("ArrowView", "Bug! Arrow to thin air!");
@@ -79,8 +78,8 @@ public class ArrowView extends View {
     }
 
     // Monster attacks.
-    for (int i = 2; i < MainView.being_list_count; i++) {
-      Being b = MainView.being_list[i];
+    for (int i = 2; i < Being.list_count; i++) {
+      Being b = Being.list[i];
       if (!b.dead && 0 == b.controller && -1 != b.target) {
 	compute_xytgt(b.target);
 	if (Status.OK != b.status) {
