@@ -29,9 +29,8 @@ class School extends SpellTapMachine {
   }
   void set_state_wfplesson() {
     machine = new LectureMachine(
-      R.string.talkabouttilt1,
-      R.string.talkabouttilt2,
-      R.string.meetforwfp);
+      R.string.meetforwfp,
+      R.string.meetforwfp2);
   }
   void set_state_duel2advice() {
     machine = new AdviceMachine(
@@ -57,8 +56,6 @@ class School extends SpellTapMachine {
   void set_state_lvl1lesson() {
     machine = new LectureMachine(
       R.string.lvl1teach1,
-      R.string.lvl1teach2,
-      R.string.lvl1teach3,
       R.string.lvl1teach4);
   }
   void set_state_graduate() {

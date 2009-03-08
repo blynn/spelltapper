@@ -76,6 +76,7 @@ public class SpellTap extends Activity {
 
     init_gesture_state_knowledge();
     spellbook_is_open = false;
+    Player.init();
 
     if (null != bun) {
       state = bun.getInt(ICE_STATE);
@@ -360,6 +361,14 @@ public class SpellTap extends Activity {
     if (state > 13) {
       unlock_place(SpellTap.PLACE_NET);
     }
+    if (state < 14) {
+      Player.level = 0;
+    } else if (state < 16) {
+      Player.level = 1;
+    } else {
+      Player.level = 5;
+    }
+
     int i;
     for (i = gsk_count - 1; gesture_state[i] > state; i--);
     set_gesture_knowledge(gesture_knowledge[i]);

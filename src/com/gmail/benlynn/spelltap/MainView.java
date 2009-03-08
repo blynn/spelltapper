@@ -162,12 +162,15 @@ public class MainView extends View {
   }
 
   void new_game_solo() {
+    Being.list[0].start_life(Player.life[Player.level]);
     clear_choices();
     board.setVisibility(View.GONE);
     arrow_view.setVisibility(View.GONE);
   }
 
   void new_game(Agent a) {
+    Log.i("MV", "blc " + Being.list_count);
+    Being.list[0].start_life(Player.life[Player.level]);
     init_opponent(a);
     reset_game();
     board.setVisibility(View.VISIBLE);
@@ -1226,6 +1229,10 @@ public class MainView extends View {
     spell_level = 5;
     add_spell(new FingerOfDeathSpell(), 50);
 
+    bmcorpse = get_bitmap(R.drawable.corpse);
+    bmgoblin = get_bitmap(R.drawable.goblin);
+    bmwizard = get_bitmap(R.drawable.wiz);
+
     Gesture.init();
     Being.init();
 
@@ -1245,9 +1252,6 @@ public class MainView extends View {
 
     comment_i = 0;
     comments = new String[4];
-    bmcorpse = get_bitmap(R.drawable.corpse);
-    bmgoblin = get_bitmap(R.drawable.goblin);
-    bmwizard = get_bitmap(R.drawable.wiz);
     oppturn = new SpellTapMove();
 
     net_handler = new NetHandler();

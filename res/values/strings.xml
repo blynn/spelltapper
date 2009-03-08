@@ -58,9 +58,8 @@
     <string name="SDtutpass4">Have fun! Come find me later.</string>
     <string name="SDtutwrong">That\'s not right. Let\'s start again.</string>
 
-    <string name="talkabouttilt1">There\'s a showier way to cast spells than tapping the bottom of the screen.</string>
-    <string name="talkabouttilt2">After gesturing, tilt the screen up vertically. When the bottom line flashes, tilt the screen back to its original position.</string>
-    <string name="meetforwfp">Now, <i>Missile</i> is useful, but can be blocked by <i>Shield</i>. I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
+    <string name="meetforwfp">Now, <i>Missile</i> is useful, but can be blocked by <i>Shield</i>.</string>
+    <string name="meetforwfp2">I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
 
     <string name="wavetut">To make a <b>Wave</b> gesture (<b>W</b>), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ).</string>
     <string name="wavetut1">Gesture <b>Wave</b> with both hands.</string>
@@ -85,16 +84,24 @@
 
 <string name="generic_advice">Best of luck in your next battle!</string>
 
-<string name="lvl1teach1">There are two more Level 1 spells.</string>
-<string name="lvl1teach2"><b>WWP</b> is <i>Protection From Evil</i>. It acts as a Shield that lasts for 4 turns, including the turn it is cast.</string>
+    <string name="talkabouttilt1">There\'s a showier way to cast spells than tapping the bottom of the screen.</string>
+    <string name="talkabouttilt2">After gesturing, tilt the screen up vertically. When the bottom line flashes, tilt the screen back to its original position.</string>
+
+<string name="lvl1teach1">There are two more Level 1 spells. See your spellbook.</string>
+<string name="lvl1teach2">
+<b>WWP</b> is <i>Protection From Evil</i>. It acts as a Shield that lasts for 4 turns, including the turn it is cast.</string>
 <string name="lvl1teach3"><b>PSDF</b> is <i>Charm Person</i>, which forces the opponent to make a gesture of your choice on one hand. It also cancels with <i>Confusion</i>.</string>
-<string name="lvl1teach4">Your next challenger is waiting for you at the Arena.</string>
+<string name="lvl1teach4">Your next challenger is waiting for you at the Arena. See me afterwards.</string>
 
 <string name="graduate1">Congratulations! You are now a Level 1 Wizard!</string>
 <string name="graduate2">Pick fights with other wizards at the Tavern, and
 earn experience by casting spells in duels. Then gain levels and learn new spells.</string>
 <string name="graduate3">No doubt you found yourself disadvantaged whenever you failed to select a gesture for one or both hands.</string>
 <string name="graduate4">From now on, this game will help you by insisting you have a gesture in each hand.</string>
+
+<string name="lvl2teach1">Welcome to Level 2! Your Summon spells are now stronger.</string>
+<string name="lvl2teach2">Monsters can attack the turn they are summoned. Spells may also target monsters as they materialize.</string>
+<string name="lvl2teach3">Experiment with the summoning circles to see what I mean.</string>
 
 <string name="bug">Oops! You\'ve uncovered a bug!</string>
 <string name="win">You win!</string>
