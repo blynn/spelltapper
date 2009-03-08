@@ -69,6 +69,7 @@ class Tubes extends SpellTapMachine {
     cancel_button.setOnClickListener(new NetconfigCancel());
   }
 
+  static boolean is_abandoned;
   static String reply;
   static class NetThread extends Thread {
     NetThread(String msg) {
@@ -76,12 +77,14 @@ class Tubes extends SpellTapMachine {
       retry_handler = cmon_handler = new CmonHandler();
     }
     public void run() {
+      is_abandoned = false;
       reply = send(message);
       cmon_handler.handle_reply();
     }
     class CmonHandler extends Handler {
       @Override
       public void handleMessage(Message msg) {
+	if (is_abandoned) return;
 	if ('-' == message.charAt(1)) {
 	  reply = send_retry();
 	} else {

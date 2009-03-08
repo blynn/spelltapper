@@ -212,6 +212,7 @@ public class SpellTap extends Activity {
   @Override
   public void onPause() {
     Log.i("SpellTap", "Pause");
+    Tubes.is_abandoned = true;
     super.onPause();
   }
 
@@ -249,6 +250,7 @@ public class SpellTap extends Activity {
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     switch(keyCode) {
       case KeyEvent.KEYCODE_BACK:
+	Log.i("SpellTap", "BACK " + curplace);
 	if (spellbook_is_open) {
 	  close_spellbook();
 	  return true;
@@ -471,14 +473,14 @@ public class SpellTap extends Activity {
   }
   boolean is_in_town() { return PLACE_TOWN == curplace; }
   void goto_town() {
-    set_place(PLACE_TOWN);
     mainframe.setVisibility(View.GONE);
     townview.setVisibility(View.VISIBLE);
+    set_place(PLACE_TOWN);
   }
   void goto_mainframe() {
-    set_place(PLACE_MAIN);
     townview.setVisibility(View.GONE);
     mainframe.setVisibility(View.VISIBLE);
+    set_place(PLACE_MAIN);
   }
   void unlock_place(int place) {
     townview.unlock(place);

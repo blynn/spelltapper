@@ -94,7 +94,7 @@ public class MainView extends View {
   void run() { tut.run(); }
   void go_back() {
     // TODO: Confirm player wants to leave.
-    // TODO: Clean up, e.g. stop network retry.
+    Tubes.is_abandoned = true;
     if (!is_animating) {
       help_arrow_off();
       spelltap.goto_town();
@@ -128,6 +128,7 @@ public class MainView extends View {
   static void set_tutorial(int i) {
     tut_index = i;
     tut = machines[i];
+    tut.set_state(0);
   }
 
   static SpellTapMove oppturn;
@@ -177,6 +178,7 @@ public class MainView extends View {
 
   abstract class Tutorial {
     abstract void run();
+    void set_state(int i) {}
   }
   void set_gesture_knowledge(int level) {
     for (int i = 0; i < 9; i++) {
@@ -1076,9 +1078,8 @@ public class MainView extends View {
   }
 
   class NetDuel extends Tutorial {
-    NetDuel() {
-      state = 0;
-    }
+    NetDuel() {}
+    void set_state(int i) { state = i; }
     void run() {
       for(;;) switch(state) {
 	case 0:
@@ -1087,7 +1088,6 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  spelltap.goto_town();
-          state = 0;
 	  return;
       }
     }
@@ -1307,7 +1307,6 @@ public class MainView extends View {
   @Override
   public void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-    Log.i("MV", "onDraw");
     int x, y;
 
     // Board class handles avatars and status line.
