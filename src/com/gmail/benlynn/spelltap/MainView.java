@@ -1226,6 +1226,7 @@ public class MainView extends View {
     add_spell(new FireballSpell(), 59);
     spell_level = 4;
     add_spell(new SummonGiantSpell(), 3);
+    add_spell(new CharmMonsterSpell(), 31);
     add_spell(new ResistHeatSpell(), 23);
     add_spell(new ResistColdSpell(), 22);
     add_spell(new FireStormSpell(), 58);
@@ -1248,18 +1249,14 @@ public class MainView extends View {
     spell_target = new int[2];
     exec_queue = new SpellCast[16];
 
-    Spell sen = new SentinelSpell();
-    sen.priority = 66;
-    monster_resolve = new SpellCast(-1, sen, -1, -1);
+    monster_resolve = new SpellCast(-1, new SentinelSpell(66), -1, -1);
     monatt = new MonsterAttack[5];
     for (int i = 1; i <= 4; i++) {
       monatt[i] = new MonsterAttack(i);
       monatt[i].priority = 66;
     }
 
-    sen = new SentinelSpell();
-    sen.priority = 60;
-    fireice_resolve = new SpellCast(-1, sen, -1, -1);
+    fireice_resolve = new SpellCast(-1, new SentinelSpell(60), -1, -1);
 
     comment_i = 0;
     comments = new String[4];
@@ -2113,8 +2110,8 @@ public class MainView extends View {
 	    // TODO: Corner case: if player casts Summon spell on opponent,
 	    // then the opponent controls the monster. They may be casting
 	    // their own Summon spell simultaneously, and assigning a target
-	    // for the corresponding monster. Thus both monsters must
-	    // attacking the assigned target. Should allow different choices
+	    // for the corresponding monster. Thus both monsters
+	    // attack the assigned target. Should allow different choices
 	    // of targets, perhaps by targeting opponent's Summoning circles.
 	    b.target = fut_confirm[1][h];
 	  }
@@ -3175,6 +3172,24 @@ public class MainView extends View {
     }
   }
 
+  public class CharmMonsterSpell extends Spell {
+    CharmMonsterSpell() {
+      init("Charm Monster", "PSDD", R.drawable.confusion, R.string.PSDDdesc, 1);
+      set_is_psych();
+    }
+    public void cast(int source, int target) {
+	is_finished = true;
+	// Only works on monsters.
+	if (1 < target) {
+	  Being.list[target].controller = 0;
+	  // The newly controlled monster takes orders from the summoning
+	  // circle.
+	  fresh_monster[0][cur_cast_hand()] = target;
+	}
+	board.animate_spell(target, bitmap);
+    }
+  }
+
   public class FearSpell extends Spell {
     FearSpell() {
       init("Fear", "SWD", R.drawable.fear, R.string.SWDdesc, 1);
@@ -3361,8 +3376,9 @@ public class MainView extends View {
   // Placeholder spell so we know when to handle monster attacks,
   // and when to resolve fire and ice spells.
   public class SentinelSpell extends Spell {
-    SentinelSpell() {
+    SentinelSpell(int p) {
       init("", "", R.drawable.protection, R.string.bug, 0);
+      priority = p;
     }
     public void cast(int source, int target) {
     }

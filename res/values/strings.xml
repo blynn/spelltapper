@@ -150,12 +150,13 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="cwdesc">Spells cast at target are reflected back at caster.</string>
 
 <string name="WFPSFWdesc">Giants can do 4 damage, and have 4 hit points.</string>
+<string name="PSDDdesc">Control target monster. No effect on wizards. Cancels with other psychological spells.</string>
 <string name="DWWFWDdesc">Target dies within 6 turns from poison. Can be cured with <i>Remove Enchantment</i> or <i>Dispel Magic</i>.</string>
 <string name="WWFPdesc">Target becomes immune to damage from <i>Fireball</i>, <i>Fire Storm</i> and <i>Fire Elementals</i> until enchantment is removed. Destroys <i>Fire Elementals</i>.</string>
 <string name="SSFPdesc">Target becomes immune to damage from <i>Ice Storm</i> and <i>Ice Elementals</i> until enchantment is removed. Destroys <i>Ice Elementals</i>.</string>
 <string name="SWWcdesc">Each being takes 5 fire damage unless protected by Resist Heat or Counter-spell. Cancels <i>Ice Storm</i> and <i>Ice Elemental</i>, merges with <i>Fire Storm</i>, absorbs <i>Fire Elemental</i>.</string>
 <string name="WSScdesc">Each being takes 5 fire damage unless protected by Resist Heat or Counter-spell, or is hit by a Fireball. Cancels <i>Ice Storm</i> and <i>Ice Elemental</i>, merges with <i>Fire Storm</i>, absorbs <i>Fire Elemental</i>.</string>
-<string name="PWPFSSSDdesc">Target dies, even if protected by Counter-spell. Ignores Shield.</string>
+<string name="PWPFSSSDdesc">Target dies, even if protected by Counter-spell. Ignores <i>Shield</i>. Countered by <i>Raise Dead</i>.</string>
 
 <string name="servererror">Cannot connect to server :(</string>
 <string name="badport">Bad port number given.</string>
