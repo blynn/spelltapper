@@ -1234,6 +1234,8 @@ public class MainView extends View {
     add_spell(new PoisonSpell(), 24);
     spell_level = 5;
     add_spell(new FingerOfDeathSpell(), 50);
+    raise_dead_spell = new RaiseDeadSpell();
+    add_spell(raise_dead_spell, 130);
 
     bmcorpse = get_bitmap(R.drawable.corpse);
     bmgoblin = get_bitmap(R.drawable.goblin);
@@ -1994,6 +1996,7 @@ public class MainView extends View {
       b.status = Status.OK;
       b.psych = 0;
       b.is_fireballed = false;
+      b.raisedead = false;
     }
 
     exec_queue_count = 0;
@@ -2214,7 +2217,7 @@ public class MainView extends View {
       }
     } else {
       Being b = Being.list[target];
-      if (b.dead) {
+      if (b.dead && raise_dead_spell != sc.spell) {
 	print("Dead target. Nothing happens.");
       } else if (b.counterspell) {
 	print("Counter-spell blocks the spell.");
@@ -2270,7 +2273,6 @@ public class MainView extends View {
       }
       if (b.life <= 0 || b.doomed) {
 	b.doomed = false;
-	if (i >= 2) b.bitmap = bmcorpse;
 	b.die();
       }
       if (b.unsummon) {
@@ -2284,6 +2286,18 @@ public class MainView extends View {
       }
     }
     is_dispel_cast = false;
+
+    for(int i = Being.list_count - 1; i >= 0; i--) {
+      Being b = Being.list[i];
+      if (b.raisedead) {
+	if (b.dead) {
+	  b.remove_enchantments();
+	  b.heal_full();
+	} else {
+	  b.heal(5);
+	}
+      }
+    }
 
     // For player convenience, retarget attacks on dead targets.
     for (int i = 2; i < Being.list_count; i++) {
@@ -2356,10 +2370,8 @@ public class MainView extends View {
     hist.reset();
     opphist.reset();
     Being.list_count = 2;
-    Being.list[0].status = Status.OK;
-    Being.list[1].status = Status.OK;
-    Being.list[0].shield = 0;
-    Being.list[1].shield = 0;
+    Being.list[0].remove_enchantments();
+    Being.list[1].remove_enchantments();
     Being.list[0].heal_full();
     Being.list[1].heal_full();
     Being.reset_pos();
@@ -2977,8 +2989,10 @@ public class MainView extends View {
 
   public class SummonSpell extends Spell {
     void init_summon(String i_name, String gesture,
-	int bitmapid, int description, int monsterbitmapid, int i_level) {
-      monster_bmid = monsterbitmapid;
+	int bitmapid, int description,
+	int i_alive_bmid, int i_dead_bmid, int i_level) {
+      alive_bmid = i_alive_bmid;
+      dead_bmid = i_dead_bmid;
       level = i_level;
       name = i_name;
       init("Summon " + name, gesture, bitmapid, description, 0);
@@ -2993,7 +3007,8 @@ public class MainView extends View {
 	  is_finished = true;
 	  int k = Being.list[target].controller;
 	  Being b = Being.list[Being.list_count] =
-	      new Being(name, get_bitmap(monster_bmid), k);
+	      new Being(name, get_bitmap(alive_bmid), k);
+	  b.bitmap_dead = get_bitmap(dead_bmid);
 	  int i = source;
 	  // Corner case: if a summon spell is mirrored, then the original
 	  // caster is the target, not the source.
@@ -3010,34 +3025,35 @@ public class MainView extends View {
     }
     int level;
     String name;
-    int monster_bmid;
+    int dead_bmid;
+    int alive_bmid;
   }
 
   public class SummonGoblinSpell extends SummonSpell {
     SummonGoblinSpell() {
       init_summon("Goblin", "SFW", R.drawable.summon1, R.string.SFWdesc,
-	  R.drawable.goblin, 1);
+	  R.drawable.goblin, R.drawable.corpse, 1);
     }
   }
 
   public class SummonOgreSpell extends SummonSpell {
     SummonOgreSpell() {
       init_summon("Ogre", "PSFW", R.drawable.summon1, R.string.PSFWdesc,
-	  R.drawable.goblin, 2);
+	  R.drawable.goblin, R.drawable.corpse, 2);
     }
   }
 
   public class SummonTrollSpell extends SummonSpell {
     SummonTrollSpell() {
       init_summon("Troll", "FPSFW", R.drawable.summon1, R.string.FPSFWdesc,
-	  R.drawable.goblin, 3);
+	  R.drawable.goblin, R.drawable.corpse, 3);
     }
   }
 
   public class SummonGiantSpell extends SummonSpell {
     SummonGiantSpell() {
       init_summon("Giant", "WFPSFW", R.drawable.summon1, R.string.WFPSFWdesc,
-	  R.drawable.goblin, 4);
+	  R.drawable.goblin, R.drawable.corpse, 4);
     }
   }
 
@@ -3222,6 +3238,17 @@ public class MainView extends View {
 	  board.animate_spell(target, bitmap);
 	  return;
       }
+    }
+  }
+
+  public class RaiseDeadSpell extends Spell {
+    RaiseDeadSpell() {
+      init("Raise Dead", "DWWFWc", R.drawable.amnesia, R.string.DWWFWcdesc, 0);
+    }
+    public void cast(int source, int target) {
+      is_finished = true;
+      Being.list[target].raisedead = true;
+      board.animate_spell(target, bitmap);
     }
   }
 
@@ -3431,6 +3458,7 @@ public class MainView extends View {
   static StabSpell stab_spell;
   static DispelMagicSpell dispel_spell;
   static MagicMirrorSpell magic_mirror_spell;
+  static RaiseDeadSpell raise_dead_spell;
   static String comments[];
   static int comment_i;
   static int xsumcirc[];

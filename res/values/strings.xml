@@ -157,6 +157,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="SWWcdesc">Each being takes 5 fire damage unless protected by Resist Heat or Counter-spell. Cancels <i>Ice Storm</i> and <i>Ice Elemental</i>, merges with <i>Fire Storm</i>, absorbs <i>Fire Elemental</i>.</string>
 <string name="WSScdesc">Each being takes 5 fire damage unless protected by Resist Heat or Counter-spell, or is hit by a Fireball. Cancels <i>Ice Storm</i> and <i>Ice Elemental</i>, merges with <i>Fire Storm</i>, absorbs <i>Fire Elemental</i>.</string>
 <string name="PWPFSSSDdesc">Target dies, even if protected by Counter-spell. Ignores <i>Shield</i>. Countered by <i>Raise Dead</i>.</string>
+<string name="DWWFWcdesc">Brings target corpse back to life. Restores up to 5 hit points on living target, but does not cure poison or disease.</string>
 
 <string name="servererror">Cannot connect to server :(</string>
 <string name="badport">Bad port number given.</string>

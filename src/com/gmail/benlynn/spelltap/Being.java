@@ -54,7 +54,8 @@ public class Being {
   }
   void setup(String i_name, Bitmap i_bitmap, int life) {
     name = i_name;
-    bitmap = i_bitmap;
+    bitmap = bitmap_alive = i_bitmap;
+    bitmap_dead = null;
     start_life(life);
   }
   void heal(int amount) {
@@ -87,11 +88,13 @@ public class Being {
     doomed = false;
     life = life_max;
     lifeline = Integer.toString(life) + "/" + Integer.toString(life);
+    bitmap = bitmap_alive;
   }
   void die() {
     dead = true;
     lifeline = "Dead";
     remove_enchantments();
+    if (null != bitmap_dead) bitmap = bitmap_dead;
   }
   boolean contains(float xf, float yf) {
     int x0 = (int) xf;
@@ -160,6 +163,8 @@ public class Being {
   static Position pos[];
 
   Bitmap bitmap;
+  Bitmap bitmap_alive;
+  Bitmap bitmap_dead;
   String name;
   String lifeline;
   int index;  // Index into pos.
@@ -188,4 +193,5 @@ public class Being {
   int poison;
   boolean resist_heat, resist_cold;
   boolean is_fireballed;
+  boolean raisedead;
 }
