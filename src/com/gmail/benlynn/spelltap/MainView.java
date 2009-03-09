@@ -1227,11 +1227,11 @@ public class MainView extends View {
     spell_level = 4;
     add_spell(new SummonGiantSpell(), 3);
     add_spell(new CharmMonsterSpell(), 31);
+    add_spell(new PoisonSpell(), 24);
     add_spell(new ResistHeatSpell(), 23);
     add_spell(new ResistColdSpell(), 22);
     add_spell(new FireStormSpell(), 58);
     add_spell(new IceStormSpell(), 57);
-    add_spell(new PoisonSpell(), 24);
     spell_level = 5;
     add_spell(new FingerOfDeathSpell(), 50);
     raise_dead_spell = new RaiseDeadSpell();
@@ -2541,7 +2541,14 @@ public class MainView extends View {
       invalidate();
       return;
     }
-    spell_search(h);
+    if (spell_is_twohanded) {
+      // Changing one hand invalidates two-handed spells so we must search from
+      // scratch.
+      spell_search(0);
+      spell_search(1);
+    } else {
+      spell_search(h);
+    }
     if (Status.CONFUSED == Being.list[0].status) {
       if (choice[1 - h] != choice[h]) {
 	choice[1 - h] = choice[h];
@@ -2585,7 +2592,6 @@ public class MainView extends View {
 	  if (!sp.learned) continue;
 	  String g = sp.gesture;
 	  int k = g.length() - 1;
-	  if (k > hist.cur - hist.start[h]) continue;
 	  char ch = g.charAt(k);
 	  boolean twohanded = false;
 	  int hand = h;
@@ -2594,7 +2600,9 @@ public class MainView extends View {
 	    ch = Character.toUpperCase(ch);
 	    if (choice[0] != choice[1] ||
 		ch != Gesture.abbr(choice[0])) continue;
-	  } else if (ch != Gesture.abbr(choice[h])) continue;
+	  // TODO: Could use the length check for the two-handed case too.
+	  } else if (k > hist.cur - hist.start[h] ||
+	             ch != Gesture.abbr(choice[h])) continue;
 	  // Complicated logic: if the last gesture is two-handed we
 	  // need to search both histories for this spell. Otherwise we
 	  // only search the hand that changed.
