@@ -2866,7 +2866,7 @@ public class MainView extends View {
 
   public class IceStormSpell extends Spell {
     IceStormSpell() {
-      init("Ice Storm", "WSSc", R.drawable.missile, R.string.WSScdesc, -1);
+      init("Ice Storm", "WSSc", R.drawable.icestorm, R.string.WSScdesc, -1);
       set_is_global();
     }
     public void cast(int source, int target) {
@@ -2954,7 +2954,7 @@ public class MainView extends View {
 
   public class LightningSpell extends Spell {
     LightningSpell() {
-      init("Lightning", "DFFDD", R.drawable.wound, R.string.DFFDDdesc, 1);
+      init("Lightning", "DFFDD", R.drawable.lightning, R.string.DFFDDdesc, 1);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -3147,7 +3147,7 @@ public class MainView extends View {
 
   public class PoisonSpell extends Spell {
     PoisonSpell() {
-      init("Poison", "DWWFWD", R.drawable.disease, R.string.DWWFWDdesc, 1);
+      init("Poison", "DWWFWD", R.drawable.poison, R.string.DWWFWDdesc, 1);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -3251,7 +3251,7 @@ public class MainView extends View {
 
   public class RaiseDeadSpell extends Spell {
     RaiseDeadSpell() {
-      init("Raise Dead", "DWWFWc", R.drawable.amnesia, R.string.DWWFWcdesc, 0);
+      init("Raise Dead", "DWWFWc", R.drawable.raise, R.string.DWWFWcdesc, 0);
     }
     public void cast(int source, int target) {
       is_finished = true;
