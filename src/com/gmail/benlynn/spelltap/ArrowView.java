@@ -104,5 +104,26 @@ public class ArrowView extends View {
 	}
       }
     }
+
+    // Gesture compass
+    if (-1 != MainView.gesture_help) {
+      x = 0;
+      y = 128;
+      if (1 == MainView.gesture_help) x = 200;
+      canvas.drawRect(x, y, x + 120, y + 120, Easel.compass_background);
+      for (int i = 0; i <= 8; i++) {
+	Gesture g = Gesture.list[i];
+	if (null != g && g.learned) {
+	  x = g.x * 20;
+	  if (1 == MainView.gesture_help) x = 200 - x;
+	  y = g.y * 20;
+	  canvas.drawText(g.arrow[MainView.gesture_help], x + 52, y + 64 + 128, Easel.compass_text);
+	  x = g.x * 40;
+	  if (1 == MainView.gesture_help) x = 200 - x;
+	  y *= 2;
+	  canvas.drawText("" + g.initial, x + 52, y + 64 + 128, Easel.compass_text);
+	}
+      }
+    }
   }
 }

@@ -27,23 +27,22 @@
     <string name="dummytutskip">Clearly you know how to target your spells, so we\'ll skip a lesson. Train more on the dummy, If you like. Then see me back at school for your first magic lesson.</string>
 
     <string name="targettut">Again, do the <i>Knife</i> gesture.</string>
-    <string name="targettut1">Next, direct your attack to a goblin. Drag your finger from the <i>Stab</i> icon to a goblin. [Tap to continue.]</string>
+    <string name="targettut1">You must direct your first attacks to the goblins.[Tap to continue.]</string>
     <string name="targettut2">Now tap the bottom of the screen.</string>
     <string name="targettut3">Good! Kill the other goblin, then destroy the dummy.</string>
     <string name="targettutwin">You learn fast. Come see me at the school for your first magic lesson. Or stay awhile and smash a few more dummies.</string>
     <string name="targettutlose">You\'re lucky I know the <i>Raise Dead</i> spell. Let\'s try that again.</string>
 
     <string name="palmtut"><b>Palm</b> is a simple but powerful magical gesture.</string>
-    <string name="palmtut1">Drag your finger downwards ( &#x2193; ) in the lower part of the screen to make the <b>Palm</b> gesture (<b>P</b>). </string>
-    <string name="palmtutpass1">Good. In a duel, you could cast <i><i>Shield</i></i> now. Try <b>P</b> on other side.</string>
+    <string name="palmtut1">Drag your finger downwards ( &#x2193; ) in the lower left of the screen to make a left-hand <b>Palm</b> gesture (<b>P</b>). </string>
+    <string name="palmtutpass1">Good. In a duel, you could cast <i><i>Shield</i></i>. Try <b>P</b> on other side.</string>
     <string name="palmtutpass2">Great! <i>Shield</i> protects you from all physical attacks. Do one more <b>P</b>. Switch hands again.</string>
     <string name="palmtutpass3">Excellent! But beware! Gesturing <b>P</b> with both hands means you surrender!</string>
     <string name="palmtutpass4">Double <b>P</b> loses, unless your opponent dies.</string>
-    <string name="palmtutpass5">Your first opponent awaits you at the Arena. See me once you\'ve won.</string>
+    <string name="palmtutpass5">Your first opponent awaits you at the Arena. You\'ll need both hands. See me once you\'ve won.</string>
 
-<string name="duel1advice1">Cast <i>Shield</i> (<b>P</b>) to block stabs.</string>
-<string name="duel1advice2">If you end up in trouble, surrender by gesturing <b>P</b> with both hands.</string>
-<string name="duel1advice3">Good luck! See you after the duel!</string>
+<string name="duel1advice1">Cast <i>Shield</i> (<b>P</b>) with one hand and <i>Stab</i> with the other.</string>
+<string name="duel1advice2">Good luck! See you after the duel!</string>
 
     <string name="arenashut">The Arena is closed.</string>
 
@@ -63,7 +62,7 @@
 
     <string name="wavetut">To make a <b>Wave</b> gesture (<b>W</b>), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ).</string>
     <string name="wavetut1">Gesture <b>Wave</b> with both hands.</string>
-    <string name="wavetut2">Tap the bottom of the screen</string>
+    <string name="wavetut2">Tap the bottom of the screen.</string>
     <string name="fingerstut">Now make the <b>Fingers</b> gesture (<b>F</b>) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ).</string>
     <string name="fingerstutpass1">Perfect! Gesture <b>Palm</b> with both hands. Normally this loses, but since <b>WFP</b> is <i>Cause Light Wounds</i>, you\'ll do 4 points of damage and kill your opponent!</string>
     <string name="fingerstutpass2">Well done! Notice a gesture can only complete 1 spell, explaining why no <i>Shield</i> was cast.</string>
@@ -87,7 +86,7 @@
     <string name="talkabouttilt1">There\'s a showier way to cast spells than tapping the bottom of the screen.</string>
     <string name="talkabouttilt2">After gesturing, tilt the screen up vertically. When the bottom line flashes, tilt the screen back to its original position.</string>
 
-<string name="lvl1teach1">There are two more Level 1 spells. See your spellbook.</string>
+<string name="lvl1teach1">Your spellbook now contains the last two more Level 1 spells.</string>
 <string name="lvl1teach2">
 <b>WWP</b> is <i>Protection From Evil</i>. It acts as a Shield that lasts for 4 turns, including the turn it is cast.</string>
 <string name="lvl1teach3"><b>PSDF</b> is <i>Charm Person</i>, which forces the opponent to make a gesture of your choice on one hand. It also cancels with <i>Confusion</i>.</string>
@@ -118,10 +117,8 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="empty_right_hand">[Right Hand]</string>
 
 <string name="heading_spells"><u><b>Spells</b></u>\n</string>
-<string name="heading_gestures"><u><b>Gestures (Left Hand)</b></u>\n</string>
 <string name="emptyspellbook">\n\n\nYou don\'t know any spells yet.</string>
 <string name="button_close">Close</string>
-<string name="ins_righthand">\nDraw the mirror image for the right hand.\n</string>
 <string name="stabdesc">(Not a spell.) Attack target for 1 damage.</string>
 <string name="Pdesc">Prevents all physical damage: stabs, monster attacks, and missiles.</string>
 <string name="SDdesc">Fire projectile at target for 1 damage.</string>

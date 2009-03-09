@@ -410,10 +410,12 @@ public class MainView extends View {
 	Being.list[1].start_life(3);
 	// Two goblins.
 	Being.list[2] = new Being("Porsap", bmgoblin, 1);
+	Being.list[2].bitmap_dead = bmcorpse;
 	Being.list[2].start_life(1);
 	Being.list[2].target = 0;
 
 	Being.list[3] = new Being("Dedmit", bmgoblin, 1);
+	Being.list[3].bitmap_dead = bmcorpse;
 	Being.list[3].start_life(1);
 	Being.list[3].target = 0;
 	Being.list_count = 4;
@@ -498,8 +500,6 @@ public class MainView extends View {
   class PalmTutorial extends Tutorial {
     PalmTutorial() {
       state = 0;
-      count = 0;
-      last_hand = -1;
     }
     void run() {
       for(;;) switch(state) {
@@ -515,52 +515,55 @@ public class MainView extends View {
 	  arr_y0 = ylower + 32;
 	  arr_x1 = 75;
 	  arr_y1 = ystatus - 8;
-	  help_arrow_on_symmetric();
+	  help_arrow_on();
 	  jack_tip(R.string.palmtut1);
 	  set_main_state(STATE_GESTURE_TEACH);
 	  state = 2;
 	  return;
 	case 2:
-	  // Yuck!
-	  if (choice[0] == Gesture.PALM) {
-	    if (choice[1] == Gesture.PALM) {
-	      choice[last_hand] = Gesture.NONE;
-	      handle_new_choice(last_hand);
-	      last_hand = 1 - last_hand;
-	    } else {
-	      if (-1 == last_hand) last_hand = 0;
-	      else return;
-	    }
-	  } else if (choice[1] == Gesture.PALM) {
-	    if (-1 == last_hand) last_hand = 1;
-	    else return;
-	  }
-	  if (last_hand >= 0) {
-	    count++;
-	    switch(count) {
-	    case 3:
-	      help_arrow_off();
-	      jack_says(R.string.palmtutpass3);
-	      state = 3;
-	      break;
-	    case 2:
-	      jack_tip(R.string.palmtutpass2);
-	      break;
-	    case 1:
-	      jack_tip(R.string.palmtutpass1);
-	      break;
-	    }
+	  if (Gesture.PALM == choice[0]) {
+	    help_arrow_off();
+	    arr_x0 = 320 - 75;
+	    arr_y0 = ylower + 32;
+	    arr_x1 = 320 - 75;
+	    arr_y1 = ystatus - 8;
+	    help_arrow_on();
+	    jack_tip(R.string.palmtutpass1);
+	    state = 3;
+	  } else {
+	    clear_choices();
 	  }
 	  return;
 	case 3:
-	  jack_says(R.string.palmtutpass4);
-	  state = 4;
+	  if (Gesture.PALM == choice[1]) {
+	    help_arrow_off();
+	    choice[0] = Gesture.NONE;
+	    handle_new_choice(0);
+	    jack_tip(R.string.palmtutpass2);
+	    state = 4;
+	  } else {
+	    clear_choices();
+	  }
 	  return;
 	case 4:
-	  jack_says(R.string.palmtutpass5);
-	  state = 5;
+	  if (Gesture.PALM == choice[0]) {
+	    choice[1] = Gesture.NONE;
+	    handle_new_choice(1);
+	    jack_says(R.string.palmtutpass3);
+	    state = 5;
+	  } else {
+	    clear_choices();
+	  }
 	  return;
 	case 5:
+	  jack_says(R.string.palmtutpass4);
+	  state = 6;
+	  return;
+	case 6:
+	  jack_says(R.string.palmtutpass5);
+	  state = 7;
+	  return;
+	case 7:
 	  set_main_state(STATE_NORMAL);
 	  spelltap.next_state();
 	  spelltap.goto_town();
@@ -568,8 +571,6 @@ public class MainView extends View {
       }
     }
     int state;
-    int count;
-    int last_hand;
   }
 
   static int dummyhp;
@@ -1286,6 +1287,7 @@ public class MainView extends View {
     machines[MACHINE_DUMMY] = new DummyTutorial();
     machines[MACHINE_NET] = new NetDuel();
     tut_index = -1;
+    gesture_help = -1;
   }
   static String emptyleftmsg;
   static String emptyrightmsg;
@@ -1354,6 +1356,10 @@ public class MainView extends View {
       canvas.drawRect(0, y, 320, 480, Easel.dark_red_paint);
     } else {
       canvas.drawRect(0, y, 320, 480, Easel.octarine);
+    }
+
+    if (STATE_TARGET_TEACH == main_state) {
+	canvas.drawText("Drag from Stab icon to goblin", 160, ystatus + 36, Easel.tap_ctext);
     }
 
     // Bottom line.
@@ -1657,12 +1663,23 @@ public class MainView extends View {
 	  }
 	  return false;
 	}
+	if (x0 < 160 - BUFFERZONE) {
+	  gesture_help = 0;
+	  arrow_view.invalidate();
+	} else if (x0 >= 160 + BUFFERZONE) {
+	  gesture_help = 1;
+	  arrow_view.invalidate();
+	}
 	if (y0 >= ystatus) {
 	  okstate = true;
 	  return true;
 	}
 	return true;
       case MotionEvent.ACTION_UP:
+	if (-1 != gesture_help) {
+	  gesture_help = -1;
+	  arrow_view.invalidate();
+	}
 	x1 = event.getX();
 	y1 = event.getY();
 	if (drag_i != -1) {
@@ -2557,6 +2574,8 @@ public class MainView extends View {
     }
     if (-1 != charmed_hand) {
       is_confirmable = Gesture.NONE != choice[1 - charmed_hand];
+    } else if (STATE_GESTURE_TEACH == main_state) {
+      is_confirmable = false;
     } else if (spelltap.allow_confirm_one) {
       is_confirmable = Gesture.NONE != choice[h] ||
 	  Gesture.NONE != choice[1 - h];
@@ -3488,4 +3507,5 @@ public class MainView extends View {
   static int global_spell;
   static int fireice_i;
   static SpellCast monster_resolve, fireice_resolve;
+  static int gesture_help;
 }

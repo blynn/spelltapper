@@ -7,44 +7,9 @@ class Gesture {
     statusname = initial + " (" + name + ")";
     x = i_x;
     y = i_y;
-    // Assign unicode arrows.
-    switch(x) {
-      case -1:
-	switch(y) {
-	  case 0:  // Left.
-	    arrow = "\u2190";
-	  case -1:  // Up and left.
-	    arrow = "\u2196";
-	    break;
-	  case 1:  // Down and left.
-	    arrow = "\u2199";
-	    break;
-	}
-	break;
-      case 0:
-	switch(y) {
-	  case -1:  // Up.
-	    arrow = "\u2191";
-	    break;
-	  case 1:  // Down.
-	    arrow = "\u2193";
-	    break;
-	}
-	break;
-      case 1:
-	switch(y) {
-	  case 0:  // Right.
-	    arrow = "\u2192";
-	    break;
-	  case -1:  // Up and right.
-	    arrow = "\u2197";
-	    break;
-	  case 1:  // Down and right.
-	    arrow = "\u2198";
-	    break;
-	}
-	break;
-    }
+    arrow = new String[2];
+    arrow[0] = get_arrow(x, y);
+    arrow[1] = get_arrow(-x, y);
     learned = false;
   }
 
@@ -79,8 +44,40 @@ class Gesture {
     return list[i].initial;
   }
 
+  static String get_arrow(int x, int y) {
+    // Assign unicode arrows.
+    switch(x) {
+      case -1:
+	switch(y) {
+	  case 0:  // Left.
+	    return "\u2190";
+	  case -1:  // Up and left.
+	    return "\u2196";
+	  case 1:  // Down and left.
+	    return "\u2199";
+	}
+      case 0:
+	switch(y) {
+	  case -1:  // Up.
+	    return "\u2191";
+	  case 1:  // Down.
+	    return "\u2193";
+	}
+      case 1:
+	switch(y) {
+	  case 0:  // Right.
+	    return "\u2192";
+	  case -1:  // Up and right.
+	    return "\u2197";
+	  case 1:  // Down and right.
+	    return "\u2198";
+	}
+    }
+    return "BUG!";
+  }
+
   String name;
-  String arrow;
+  String arrow[];
   String statusname;
   char initial;
   boolean learned;

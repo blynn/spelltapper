@@ -542,25 +542,7 @@ public class SpellTap extends Activity {
   }
 
   void compute_spellbook() {
-    int count = 0;
-    String s = "";
-    for (int i = 0; i < 9; i++) {
-      Gesture g = Gesture.list[i];
-      if (g == null || !g.learned) continue;
-      count++;
-      s += g.statusname + ": " + g.arrow + "\n";
-    }
-    if (0 == count) {
-      spellbook.setText(getText(R.string.emptyspellbook));
-      return;
-    }
-    spellbook.setText(getText(R.string.heading_gestures));
-    spellbook.append(s);
-    if (count > 2) {
-      spellbook.append(getText(R.string.ins_righthand));
-    }
-    spellbook.append("\n");
-    spellbook.append(getText(R.string.heading_spells));
+    spellbook.setText(getText(R.string.heading_spells));
 
     for (int i = 0; i < MainView.spell_list_count; i++) {
       MainView.Spell sp = MainView.spell_list[i];
@@ -612,7 +594,7 @@ public class SpellTap extends Activity {
   static Button butclo;
   static View butv;
   static Tubes tubes;
-  static int state = 128;
+  static int state = 2;
   static int curplace;
   static boolean allow_confirm_one;
 }
