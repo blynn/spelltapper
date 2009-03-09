@@ -169,7 +169,6 @@ public class MainView extends View {
   }
 
   void new_game(Agent a) {
-    Log.i("MV", "blc " + Being.list_count);
     Being.list[0].start_life(Player.life[Player.level]);
     init_opponent(a);
     reset_game();
@@ -1197,21 +1196,21 @@ public class MainView extends View {
     stab_spell = new StabSpell();
     add_spell(stab_spell, 65);
     spell_level = 1;
-    add_spell(new ShieldSpell(), 8);
+    add_spell(new ShieldSpell(), 10);
     add_spell(new MissileSpell(), 64);
     add_spell(new CauseLightWoundsSpell(), 63);
     add_spell(new ConfusionSpell(), 28);
     add_spell(new CureLightWoundsSpell(), 128);
     add_spell(new SummonGoblinSpell(), 6);
-    add_spell(new ProtectionSpell(), 7);
+    add_spell(new ProtectionSpell(), 11);
     add_spell(new CharmPersonSpell(), 31);
     spell_level = 2;
     add_spell(new SummonOgreSpell(), 5);
     add_spell(new AmnesiaSpell(), 29);
     add_spell(new FearSpell(), 30);
     add_spell(new AntiSpellSpell(), 27);
-    add_spell(new CounterSpellSpell(), 2);
-    add_spell(new CounterSpellAltSpell(), 2);
+    add_spell(new CounterSpellSpell(), 1);
+    add_spell(new CounterSpellAltSpell(), 1);
     add_spell(new RemoveEnchantmentSpell(), 32);
     add_spell(new LightningSpell(), 61);
     spell_level = 3;
@@ -1224,8 +1223,14 @@ public class MainView extends View {
     add_spell(new CauseHeavyWoundsSpell(), 62);
     add_spell(new CureHeavyWoundsSpell(), 129);
     add_spell(new DiseaseSpell(), 25);
+    add_spell(new FireballSpell(), 59);
     spell_level = 4;
     add_spell(new SummonGiantSpell(), 3);
+    add_spell(new ResistHeatSpell(), 23);
+    add_spell(new ResistColdSpell(), 22);
+    add_spell(new FireStormSpell(), 58);
+    add_spell(new IceStormSpell(), 57);
+    add_spell(new PoisonSpell(), 24);
     spell_level = 5;
     add_spell(new FingerOfDeathSpell(), 50);
 
@@ -1243,12 +1248,18 @@ public class MainView extends View {
     spell_target = new int[2];
     exec_queue = new SpellCast[16];
 
-    monster_resolve = new SpellCast(-1, new MonsterResolveSpell(), -1, -1);
+    Spell sen = new SentinelSpell();
+    sen.priority = 66;
+    monster_resolve = new SpellCast(-1, sen, -1, -1);
     monatt = new MonsterAttack[5];
     for (int i = 1; i <= 4; i++) {
       monatt[i] = new MonsterAttack(i);
       monatt[i].priority = 66;
     }
+
+    sen = new SentinelSpell();
+    sen.priority = 60;
+    fireice_resolve = new SpellCast(-1, sen, -1, -1);
 
     comment_i = 0;
     comments = new String[4];
@@ -1946,11 +1957,24 @@ public class MainView extends View {
     new_round_charm2();
   }
 
+  // Awful hack to increase priorities of Counter-spells and Magic Mirrors
+  // cast on freshly summoned monsters so they won't end up being cast on
+  // thin air.
+  private int adjusted_priority(SpellCast sc) {
+    int pr = sc.spell.priority;
+    if ((1 == pr || 2 == pr) && sc.target < -1) {
+      pr += 8;
+    }
+    return pr;
+  }
+
   // Insert spells by priority.
   private void insert_spell(SpellCast sc) {
     int i;
+    int pr = adjusted_priority(sc);
+
     for (i = 0; i < exec_queue_count; i++) {
-      if (exec_queue[i].spell.priority > sc.spell.priority) break;
+      if (adjusted_priority(exec_queue[i]) > pr) break;
     }
     for (int j = exec_queue_count; j > i; j--) {
       exec_queue[j] = exec_queue[j - 1];
@@ -1965,11 +1989,14 @@ public class MainView extends View {
     para_count = 0;
     opphist.add(oppturn.gest);
 
+    global_spell = GLOBAL_NONE;
+    fireice_i = 0;
     // Expire status effects.
     for (int i = 0; i < Being.list_count; i++) {
       Being b = Being.list[i];
       b.status = Status.OK;
       b.psych = 0;
+      b.is_fireballed = false;
     }
 
     exec_queue_count = 0;
@@ -2023,6 +2050,7 @@ public class MainView extends View {
     } else {
       insert_spell(monster_resolve);
     }
+    insert_spell(fireice_resolve);
 
     clear_choices();
     arrow_view.setVisibility(View.GONE);
@@ -2104,12 +2132,43 @@ public class MainView extends View {
       return;
     }
 
+    // Handle fire and ice spells at the appropriate moment
+    if (fireice_resolve == cur_sc) {
+      if (GLOBAL_NONE != global_spell && fireice_i < Being.list_count) {
+	Being b = Being.list[fireice_i];
+	switch(global_spell) {
+	  case GLOBAL_ICE_STORM:
+	    if (b.is_fireballed ||
+		b.resist_cold || b.counterspell) {
+	      board.animate_damage(fireice_i, 0);
+	    } else {
+	      b.get_hurt(5);
+	      board.animate_damage(fireice_i, 5);
+	    }
+	    break;
+	  case GLOBAL_FIRE_STORM:
+	    if (b.resist_heat || b.counterspell) {
+	      board.animate_damage(fireice_i, 0);
+	    } else {
+	      b.get_hurt(5);
+	      board.animate_damage(fireice_i, 5);
+	    }
+	    break;
+	}
+	fireice_i++;
+      } else {
+	exec_cursor++;
+	next_spell();
+      }
+      return;
+    }
+
     SpellCast sc = cur_sc;
 
     String s = "";
     String srcname = Being.list[sc.source].name;
     String tgtname = null;
-    int target = map_target(sc.target);
+    int target = sc.target = map_target(sc.target);
     if (target != -1) {
       tgtname = Being.list[target].name;
     }
@@ -2207,6 +2266,10 @@ public class MainView extends View {
       if (b.disease > 0) {
 	b.disease++;
 	if (b.disease > 6) b.die();
+      }
+      if (b.poison > 0) {
+	b.poison++;
+	if (b.poison > 6) b.die();
       }
       if (b.life <= 0 || b.doomed) {
 	b.doomed = false;
@@ -2760,6 +2823,82 @@ public class MainView extends View {
     }
   }
 
+  public class FireStormSpell extends Spell {
+    FireStormSpell() {
+      init("Fire Storm", "SWWc", R.drawable.missile, R.string.SWWcdesc, -1);
+      set_is_global();
+    }
+    public void cast(int source, int target) {
+      is_finished = true;
+      Log.i("TODO", "fire storm animation");
+      board.animate_delay();
+      switch(global_spell) {
+        case GLOBAL_NONE:
+	  global_spell = GLOBAL_FIRE_STORM;
+	  break;
+	case GLOBAL_ICE_STORM:
+	  print("Fire Storm cancels with Ice Storm.");
+	  global_spell = GLOBAL_NONE;
+	  break;
+        case GLOBAL_FIRE_STORM:
+	  print("Fire Storm merges with Fire Storm");
+	  break;
+      }
+    }
+  }
+
+  public class IceStormSpell extends Spell {
+    IceStormSpell() {
+      init("Ice Storm", "WSSc", R.drawable.missile, R.string.WSScdesc, -1);
+      set_is_global();
+    }
+    public void cast(int source, int target) {
+      is_finished = true;
+      Log.i("TODO", "ice storm animation");
+      board.animate_delay();
+      switch(global_spell) {
+        case GLOBAL_NONE:
+	  global_spell = GLOBAL_ICE_STORM;
+	  break;
+	case GLOBAL_ICE_STORM:
+	  print("Ice Storm merges with Ice Storm");
+	  break;
+        case GLOBAL_FIRE_STORM:
+	  print("Ice Storm cancels with Fire Storm.");
+	  global_spell = GLOBAL_NONE;
+	  break;
+      }
+    }
+  }
+
+  public class FireballSpell extends Spell {
+    FireballSpell() {
+      init("Fireball", "FSSDD", R.drawable.missile, R.string.FSSDDdesc, 1);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  board.animate_bullet(source, target);
+	  return;
+	case 1:
+	  is_finished = true;
+	  Being b = Being.list[target];
+	  b.is_fireballed = true;
+	  if (global_spell != GLOBAL_ICE_STORM) {
+	    Log.i("TODO", "Ice Storm + Fireball animation");
+	    board.animate_damage(target, 0);
+	  } else if (!b.resist_heat) {
+	    b.get_hurt(5);
+	    board.animate_damage(target, 5);
+	  } else {
+	    Log.i("TODO", "resist heat animation");
+	    board.animate_damage(target, 0);
+	  }
+	  return;
+      }
+    }
+  }
+
   public class CauseLightWoundsSpell extends Spell {
     CauseLightWoundsSpell() {
       init("Cause Light Wounds", "WFP", R.drawable.wound, R.string.WFPdesc, 1);
@@ -2937,6 +3076,38 @@ public class MainView extends View {
     }
   }
 
+  public class ResistColdSpell extends Spell {
+    ResistColdSpell() {
+      init("Resist Cold", "SSFP", R.drawable.shield, R.string.SSFPdesc, 0);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  Being b = Being.list[target];
+	  b.resist_cold = true;
+	  board.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
+  public class ResistHeatSpell extends Spell {
+    ResistHeatSpell() {
+      init("Resist Heat", "WWFP", R.drawable.shield, R.string.WWFPdesc, 0);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  Being b = Being.list[target];
+	  b.resist_heat = true;
+	  board.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
   public class DiseaseSpell extends Spell {
     DiseaseSpell() {
       init("Disease", "DSFFFc", R.drawable.disease, R.string.DSFFFcdesc, 1);
@@ -2947,6 +3118,22 @@ public class MainView extends View {
 	  is_finished = true;
 	  Being b = Being.list[target];
 	  if (0 == b.disease) b.disease = 1;
+	  board.animate_spell(target, bitmap);
+	  return;
+      }
+    }
+  }
+
+  public class PoisonSpell extends Spell {
+    PoisonSpell() {
+      init("Poison", "DWWFWD", R.drawable.disease, R.string.DWWFWDdesc, 1);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  is_finished = true;
+	  Being b = Being.list[target];
+	  if (0 == b.poison) b.poison = 1;
 	  board.animate_spell(target, bitmap);
 	  return;
       }
@@ -3142,8 +3329,6 @@ public class MainView extends View {
     }
   }
 
-  static SpellCast monster_resolve;
-
   public class MonsterAttack extends Spell {
     MonsterAttack(int n) {
       init("", "", R.drawable.goblin, R.string.bug, 1);
@@ -3173,11 +3358,11 @@ public class MainView extends View {
     int power;
   }
 
-  // Placeholder spell so resolve() knows when to add monster attacks.
-  public class MonsterResolveSpell extends Spell {
-    MonsterResolveSpell() {
+  // Placeholder spell so we know when to handle monster attacks,
+  // and when to resolve fire and ice spells.
+  public class SentinelSpell extends Spell {
+    SentinelSpell() {
       init("", "", R.drawable.protection, R.string.bug, 0);
-      priority = 66;
     }
     public void cast(int source, int target) {
     }
@@ -3244,4 +3429,11 @@ public class MainView extends View {
   static final int MACHINE_NET = 1;
   static final int MACHINE_COUNT = 2;
   static Tutorial machines[];
+
+  static final int GLOBAL_NONE = 0;
+  static final int GLOBAL_FIRE_STORM = 1;
+  static final int GLOBAL_ICE_STORM = 2;
+  static int global_spell;
+  static int fireice_i;
+  static SpellCast monster_resolve, fireice_resolve;
 }

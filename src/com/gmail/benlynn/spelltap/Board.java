@@ -299,6 +299,9 @@ public class Board extends View {
       for (int k = 0; k < b.disease - 1; k++) {
 	canvas.drawCircle(mx + b.midw + spot_x[k], my + b.midh + spot_y[k], 3, Easel.red_paint);
       }
+      for (int k = 0; k < b.poison - 1; k++) {
+	canvas.drawCircle(mx + b.midw - spot_x[k], my + b.midh - spot_y[k], 3, Easel.green_paint);
+      }
     }
   }
 

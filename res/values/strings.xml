@@ -139,16 +139,22 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="WWSdesc">Alternate sequence for Counter-spell</string>
 <string name="PDWPdesc">Removes all enchantments from target wizard. Unsummon target monster, who can still attack this round.</string>
 <string name="DFFDDdesc">5 electrical damage. Ignores Shield.</string>
+<string name="SPFPdesc">Interrupt spell combo. Starting next turn, target wizard must start spells anew.</string>
 <string name="FFFdesc">Target monster cannot attack next turn. Freeze target hand of wizard: F, S, W become C, D, P respectively. If already paralyzed, the same hand is paralyzed again, otherwise the caster chooses the hand. Cancels with other psychological spells.</string>
 <string name="FPSFWdesc">Trolls can do 3 damage, and have 3 hit points.</string>
 <string name="cDPWdesc">No other spells can be cast this turn. Unsummon all monsters, who still attack this round, and remove all enchantments. Global effect: works even when aimed at nothing. Shields target if valid.</string>
 <string name="WPFDdesc">3 magical damage to target. Ignores <i>Shield</i>.</string>
 <string name="DFPWdesc">Heal up to 2 health points. Cures disease.</string>
 <string name="DSFFFcdesc">Target dies within 6 turns from disease. Can be cured with <i>Remove Enchantment</i>, <i>Cure Heavy Wounds</i> or <i>Dispel Magic</i>.</string>
+<string name="FSSDDdesc">5 fire damage (ignores <i>Shield</i>). Protects target in an Ice Storm.</string>
 <string name="cwdesc">Spells cast at target are reflected back at caster.</string>
 
 <string name="WFPSFWdesc">Giants can do 4 damage, and have 4 hit points.</string>
-<string name="SPFPdesc">Interrupt spell combo. Starting next turn, target wizard must start spells anew.</string>
+<string name="DWWFWDdesc">Target dies within 6 turns from poison. Can be cured with <i>Remove Enchantment</i> or <i>Dispel Magic</i>.</string>
+<string name="WWFPdesc">Target becomes immune to damage from <i>Fireball</i>, <i>Fire Storm</i> and <i>Fire Elementals</i> until enchantment is removed. Destroys <i>Fire Elementals</i>.</string>
+<string name="SSFPdesc">Target becomes immune to damage from <i>Ice Storm</i> and <i>Ice Elementals</i> until enchantment is removed. Destroys <i>Ice Elementals</i>.</string>
+<string name="SWWcdesc">Each being takes 5 fire damage unless protected by Resist Heat or Counter-spell. Cancels <i>Ice Storm</i> and <i>Ice Elemental</i>, merges with <i>Fire Storm</i>, absorbs <i>Fire Elemental</i>.</string>
+<string name="WSScdesc">Each being takes 5 fire damage unless protected by Resist Heat or Counter-spell, or is hit by a Fireball. Cancels <i>Ice Storm</i> and <i>Ice Elemental</i>, merges with <i>Fire Storm</i>, absorbs <i>Fire Elemental</i>.</string>
 <string name="PWPFSSSDdesc">Target dies, even if protected by Counter-spell. Ignores Shield.</string>
 
 <string name="servererror">Cannot connect to server :(</string>

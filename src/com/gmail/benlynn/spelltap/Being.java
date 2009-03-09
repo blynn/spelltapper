@@ -101,8 +101,11 @@ public class Being {
   }
 
   void remove_enchantments() {
+    poison = 0;
     disease = 0;
     shield = 0;
+    resist_heat = false;
+    resist_cold = false;
     para_hand = -1;
     status = Status.OK;
   }
@@ -182,4 +185,7 @@ public class Being {
   // The nth summoned monster by player i is given ID 2 * n + i.
   int id;
   int disease;
+  int poison;
+  boolean resist_heat, resist_cold;
+  boolean is_fireballed;
 }
