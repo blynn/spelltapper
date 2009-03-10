@@ -29,9 +29,8 @@ public class SpellTap extends Activity {
     narrator = findViewById(R.id.narrator);
     narrator.setVisibility(View.GONE);
     narratortext = (TextView) findViewById(R.id.narratortext);
-    spellbook = (TextView) findViewById(R.id.spellbook);
-    spellbookv = findViewById(R.id.spellbookscroll);
-    spellbookv.setVisibility(View.GONE);
+    bookview = (BookView) findViewById(R.id.bookview);
+    bookview.setVisibility(View.GONE);
     mainview = (MainView) findViewById(R.id.mainview);
     mainview.set_spelltap(this);
     mainview.set_board((Board) findViewById(R.id.board));
@@ -88,7 +87,7 @@ public class SpellTap extends Activity {
       speech_layout.setVisibility(bun.getInt(ICE_VIS_SPEECH));
       hog.setVisibility(bun.getInt(ICE_VIS_HOG));
       narrator.setVisibility(bun.getInt(ICE_VIS_NARRATOR));
-      spellbookv.setVisibility(bun.getInt(ICE_VIS_SPELLBOOKV));
+      bookview.setVisibility(bun.getInt(ICE_VIS_BOOKVIEW));
       butv.setVisibility(bun.getInt(ICE_VIS_BUTV));
       netconfig.setVisibility(bun.getInt(ICE_VIS_NETCONFIG));
     } else {
@@ -191,7 +190,7 @@ public class SpellTap extends Activity {
   static final String ICE_VIS_MAIN = "game-vis-main";
   static final String ICE_VIS_TOWN = "game-vis-town";
   static final String ICE_VIS_BUTV = "game-vis-butv";
-  static final String ICE_VIS_SPELLBOOKV = "game-vis-spellbookv";
+  static final String ICE_VIS_BOOKVIEW = "game-vis-bookview";
   static final String ICE_VIS_SPEECH = "game-vis-speech";
   static final String ICE_VIS_HOG = "game-vis-hog";
   static final String ICE_VIS_NETCONFIG = "game-vis-netconfig";
@@ -204,7 +203,7 @@ public class SpellTap extends Activity {
     bun.putInt(ICE_VIS_MAIN, mainframe.getVisibility());
     bun.putInt(ICE_VIS_TOWN, townview.getVisibility());
     bun.putInt(ICE_VIS_BUTV, butv.getVisibility());
-    bun.putInt(ICE_VIS_SPELLBOOKV, spellbookv.getVisibility());
+    bun.putInt(ICE_VIS_BOOKVIEW, bookview.getVisibility());
     bun.putInt(ICE_VIS_SPEECH, speech_layout.getVisibility());
     bun.putInt(ICE_VIS_HOG, hog.getVisibility());
     bun.putInt(ICE_VIS_NETCONFIG, netconfig.getVisibility());
@@ -528,32 +527,14 @@ public class SpellTap extends Activity {
   }
 
   void open_about() {
-    spellbook.setText(getText(R.string.about));
-    spellbookv.setVisibility(View.VISIBLE);
-    butv.setVisibility(View.VISIBLE);
-    butclo.setOnClickListener(new SpellBookCloser());
-    hog.blockInput();
-    spellbook_is_open = true;
+    //spellbook.setText(getText(R.string.about));
+    //bookview.setVisibility(View.VISIBLE);
+    //spellbook_is_open = true;
   }
 
   void open_spellbook() {
-    compute_spellbook();
-    spellbookv.setVisibility(View.VISIBLE);
-    butv.setVisibility(View.VISIBLE);
-    butclo.setOnClickListener(new SpellBookCloser());
-    hog.blockInput();
+    bookview.setVisibility(View.VISIBLE);
     spellbook_is_open = true;
-  }
-
-  void compute_spellbook() {
-    spellbook.setText(getText(R.string.heading_spells));
-
-    for (int i = 0; i < MainView.spell_list_count; i++) {
-      MainView.Spell sp = MainView.spell_list[i];
-      if (sp.learned) {
-	spellbook.append(sp.purty);
-      }
-    }
   }
 
   class SpellBookCloser implements View.OnClickListener {
@@ -564,9 +545,7 @@ public class SpellTap extends Activity {
   }
 
   void close_spellbook() {
-    butv.setVisibility(View.GONE);
-    spellbookv.setVisibility(View.GONE);
-    hog.unblockInput();
+    bookview.setVisibility(View.GONE);
     spellbook_is_open = false;
   }
 
@@ -593,8 +572,7 @@ public class SpellTap extends Activity {
   static Pit pit;
   static Dojo dojo;
   static School school;
-  static TextView spellbook;
-  static View spellbookv;
+  static BookView bookview;
   static Button butclo;
   static View butv;
   static Tubes tubes;

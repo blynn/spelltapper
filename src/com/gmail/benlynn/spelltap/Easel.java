@@ -89,6 +89,12 @@ class Easel {
 
     compass_background = new Paint();
     compass_background.setARGB(159, 0, 0, 0);
+
+    book_background = new Paint();
+    book_background.setARGB(207, 63, 0, 63);
+
+    book_spell_text = new Paint(white_text);
+    book_spell_text.setTextSize(12);
   }
 
   static Paint paint;
@@ -114,4 +120,6 @@ class Easel {
   static Paint comment_text;
   static Paint compass_text;
   static Paint compass_background;
+  static Paint book_background;
+  static Paint book_spell_text;
 }
