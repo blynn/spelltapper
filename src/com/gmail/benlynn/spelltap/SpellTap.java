@@ -29,8 +29,12 @@ public class SpellTap extends Activity {
     narrator = findViewById(R.id.narrator);
     narrator.setVisibility(View.GONE);
     narratortext = (TextView) findViewById(R.id.narratortext);
+    booklayout = findViewById(R.id.booklayout);
+    booklayout.setVisibility(View.GONE);
     bookview = (BookView) findViewById(R.id.bookview);
-    bookview.setVisibility(View.GONE);
+    ((Button) findViewById(R.id.book_prev)).setOnClickListener(new BookPrev());
+    ((Button) findViewById(R.id.book_next)).setOnClickListener(new BookNext());
+    ((Button) findViewById(R.id.book_close)).setOnClickListener(new BookClose());
     mainview = (MainView) findViewById(R.id.mainview);
     mainview.set_spelltap(this);
     mainview.set_board((Board) findViewById(R.id.board));
@@ -87,7 +91,7 @@ public class SpellTap extends Activity {
       speech_layout.setVisibility(bun.getInt(ICE_VIS_SPEECH));
       hog.setVisibility(bun.getInt(ICE_VIS_HOG));
       narrator.setVisibility(bun.getInt(ICE_VIS_NARRATOR));
-      bookview.setVisibility(bun.getInt(ICE_VIS_BOOKVIEW));
+      booklayout.setVisibility(bun.getInt(ICE_VIS_BOOKVIEW));
       butv.setVisibility(bun.getInt(ICE_VIS_BUTV));
       netconfig.setVisibility(bun.getInt(ICE_VIS_NETCONFIG));
     } else {
@@ -190,7 +194,7 @@ public class SpellTap extends Activity {
   static final String ICE_VIS_MAIN = "game-vis-main";
   static final String ICE_VIS_TOWN = "game-vis-town";
   static final String ICE_VIS_BUTV = "game-vis-butv";
-  static final String ICE_VIS_BOOKVIEW = "game-vis-bookview";
+  static final String ICE_VIS_BOOKVIEW = "game-vis-booklayout";
   static final String ICE_VIS_SPEECH = "game-vis-speech";
   static final String ICE_VIS_HOG = "game-vis-hog";
   static final String ICE_VIS_NETCONFIG = "game-vis-netconfig";
@@ -203,7 +207,7 @@ public class SpellTap extends Activity {
     bun.putInt(ICE_VIS_MAIN, mainframe.getVisibility());
     bun.putInt(ICE_VIS_TOWN, townview.getVisibility());
     bun.putInt(ICE_VIS_BUTV, butv.getVisibility());
-    bun.putInt(ICE_VIS_BOOKVIEW, bookview.getVisibility());
+    bun.putInt(ICE_VIS_BOOKVIEW, booklayout.getVisibility());
     bun.putInt(ICE_VIS_SPEECH, speech_layout.getVisibility());
     bun.putInt(ICE_VIS_HOG, hog.getVisibility());
     bun.putInt(ICE_VIS_NETCONFIG, netconfig.getVisibility());
@@ -234,6 +238,7 @@ public class SpellTap extends Activity {
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
       case MENU_SPELLBOOK:
+        BookView.compute_spells();
 	open_spellbook();
 	return true;
       case MENU_ABOUT:
@@ -528,24 +533,38 @@ public class SpellTap extends Activity {
 
   void open_about() {
     //spellbook.setText(getText(R.string.about));
-    //bookview.setVisibility(View.VISIBLE);
+    //booklayout.setVisibility(View.VISIBLE);
     //spellbook_is_open = true;
   }
 
   void open_spellbook() {
-    bookview.setVisibility(View.VISIBLE);
+    booklayout.setVisibility(View.VISIBLE);
     spellbook_is_open = true;
   }
 
-  class SpellBookCloser implements View.OnClickListener {
-    SpellBookCloser() {}
+  class BookPrev implements View.OnClickListener {
+    BookPrev() {}
+    public void onClick(View v) {
+      bookview.prev();
+    }
+  }
+
+  class BookNext implements View.OnClickListener {
+    BookNext() {}
+    public void onClick(View v) {
+      bookview.next();
+    }
+  }
+
+  class BookClose implements View.OnClickListener {
+    BookClose() {}
     public void onClick(View v) {
       SpellTap.this.close_spellbook();
     }
   }
 
   void close_spellbook() {
-    bookview.setVisibility(View.GONE);
+    booklayout.setVisibility(View.GONE);
     spellbook_is_open = false;
   }
 
@@ -554,6 +573,8 @@ public class SpellTap extends Activity {
   static View netconfig;
   static View mainframe;
   static View narrator;
+  static View booklayout;
+  static BookView bookview;
   static TextView narratortext;
   static final int PLACE_SCHOOL = 0;
   static final int PLACE_DOJO = 1;
@@ -572,7 +593,6 @@ public class SpellTap extends Activity {
   static Pit pit;
   static Dojo dojo;
   static School school;
-  static BookView bookview;
   static Button butclo;
   static View butv;
   static Tubes tubes;

@@ -162,11 +162,38 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     />
-<com.gmail.benlynn.spelltap.BookView
- android:id="@+id/bookview"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    />
+<FrameLayout
+ android:id="@+id/booklayout"
+ android:layout_width="fill_parent"
+ android:layout_height="fill_parent"
+ >
+  <com.gmail.benlynn.spelltap.BookView
+   android:id="@+id/bookview"
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      />
+  <LinearLayout
+   android:layout_width="wrap_content"
+   android:layout_height="wrap_content"
+   android:layout_gravity="bottom"
+   android:orientation="horizontal">
+    <Button android:id="@+id/book_prev"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:textSize="18dip"
+    android:text="Prev" />
+    <Button android:id="@+id/book_next"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:textSize="18dip"
+    android:text="Next" />
+    <Button android:id="@+id/book_close"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:textSize="18dip"
+    android:text="Close" />
+  </LinearLayout>
+</FrameLayout>
 <LinearLayout
    android:id="@+id/buttonhog"
       android:layout_width="fill_parent"
