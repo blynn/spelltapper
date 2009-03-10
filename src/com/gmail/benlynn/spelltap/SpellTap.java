@@ -1,4 +1,3 @@
-// TODO: Options: animation speed. Restart.
 package com.gmail.benlynn.spelltap;
 
 import android.app.Activity;
@@ -165,6 +164,11 @@ public class SpellTap extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
+    Tubes.is_abandoned = false;
+    if (null != Tubes.net_thread) {
+      Log.i("SpellTap", "Restaring nethread");
+      Tubes.net_thread.run();
+    }
     senseman.registerListener(tilt_listener,
 	SensorManager.SENSOR_ORIENTATION |
 	SensorManager.SENSOR_DELAY_GAME);
@@ -594,7 +598,7 @@ public class SpellTap extends Activity {
   static Button butclo;
   static View butv;
   static Tubes tubes;
-  static int state = 2;
+  static int state = 128;
   static int curplace;
   static boolean allow_confirm_one;
 }

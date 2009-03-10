@@ -13,7 +13,11 @@ import android.widget.Button;
 import android.widget.EditText;
 
 class Tubes extends SpellTapMachine {
-  Tubes(SpellTap st) { super(st); }
+  Tubes(SpellTap st) {
+    super(st);
+    is_abandoned = false;
+    net_thread = null;
+  }
   abstract class Machine { abstract void run(); }
   void run() {
     spelltap.netconfig.setVisibility(View.VISIBLE);
@@ -69,7 +73,6 @@ class Tubes extends SpellTapMachine {
     cancel_button.setOnClickListener(new NetconfigCancel());
   }
 
-  static boolean is_abandoned;
   static String reply;
   static class NetThread extends Thread {
     NetThread(String msg) {
@@ -153,7 +156,6 @@ class Tubes extends SpellTapMachine {
     net_thread = new NetThread(s);
     net_thread.run();
   }
-  static Thread net_thread;
 
   private static String send(String msg) {
     Socket sock = null;
@@ -208,4 +210,6 @@ class Tubes extends SpellTapMachine {
   static int port = 3333;
   static EditText server_edittext;
   static EditText port_edittext;
+  static boolean is_abandoned;
+  static Thread net_thread;
 }

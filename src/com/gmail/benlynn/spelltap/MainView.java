@@ -963,6 +963,7 @@ public class MainView extends View {
       // Valid reply received from network.
       try {
 	Tubes.net_thread.join();
+	Tubes.net_thread = null;
       } catch (InterruptedException e) {
       }
       Log.i("Reply", Tubes.reply);
@@ -1056,7 +1057,7 @@ public class MainView extends View {
   class NetAgent extends Agent {
     String name() { return "Opponent"; }
     String name_full() { return "Opponent"; }
-    int life() { return 5; }
+    int life() { return Player.life[Player.level]; }
     int bitmap_id() { return R.drawable.wiz; }
     void move(SpellTapMove turn) {
       net_move(turn);
@@ -1174,6 +1175,7 @@ public class MainView extends View {
   // Constructor.
   public MainView(Context context, AttributeSet attrs) {
     super(context, attrs);
+    Log.i("MainView", "cons");
     con = context;
     drag_i = -1;
     is_animating = false;
@@ -1370,7 +1372,7 @@ public class MainView extends View {
 	break;
       case NET_REPLY:
 	canvas.drawRect(0, ystatus, 320, 480, Easel.reply_paint);
-	canvas.drawText("Tap to continue.", 160, ystatus + 36, Easel.white_ctext);
+	canvas.drawText("Opponent has moved. TAP!", 160, ystatus + 36, Easel.white_ctext);
 	break;
       case NET_IDLE:
 	if (is_confirmable) {
@@ -1663,18 +1665,22 @@ public class MainView extends View {
 	  }
 	  return false;
 	}
-	if (x0 < 160 - BUFFERZONE) {
-	  gesture_help = 0;
-	  arrow_view.invalidate();
-	} else if (x0 >= 160 + BUFFERZONE) {
-	  gesture_help = 1;
-	  arrow_view.invalidate();
-	}
 	if (y0 >= ystatus) {
 	  okstate = true;
 	  return true;
 	}
 	return true;
+      case MotionEvent.ACTION_MOVE:
+        if ((event.getEventTime() - event.getDownTime()) > 256 && y0 >= ylower) {
+	  if (x0 < 160 - BUFFERZONE) {
+	    gesture_help = 0;
+	    arrow_view.invalidate();
+	  } else if (x0 >= 160 + BUFFERZONE) {
+	    gesture_help = 1;
+	    arrow_view.invalidate();
+	  }
+	}
+        return true;
       case MotionEvent.ACTION_UP:
 	if (-1 != gesture_help) {
 	  gesture_help = -1;
@@ -2632,10 +2638,12 @@ public class MainView extends View {
 	      ch = g.charAt(k);
 	      if (Character.isLowerCase(ch)) {
 		ch = Character.toUpperCase(ch);
+		if (k2 < hist.start[0] || k2 < hist.start[1]) break;
 		int old0 = hist.gest[k2][0];
 		int old1 = hist.gest[k2][1];
 		if (old0 != old1 || ch != Gesture.abbr(old0)) break;
-	      } else if (ch != Gesture.abbr(hist.gest[k2][hand])) break;
+	      } else if (k2 < hist.start[hand] ||
+		  ch != Gesture.abbr(hist.gest[k2][hand])) break;
 	      k2--;
 	      k--;
 	    }
