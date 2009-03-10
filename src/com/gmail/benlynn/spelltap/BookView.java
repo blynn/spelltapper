@@ -4,20 +4,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-
-import android.graphics.Typeface;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.StyleSpan;
 
 import com.gmail.benlynn.spelltap.MainView.Spell;
 
@@ -81,6 +72,17 @@ public class BookView extends View {
       //canvas.drawRect(r, Easel.book_background);
       canvas.drawText(sp.name, x + 50, y + 44, Easel.book_spell_text);
     }
+    if (-1 == choice) {
+      if (list_count == 0) {
+	tv.setText(R.string.emptyspellbook);
+      } else {
+	tv.setText(R.string.book_nochoice);
+      }
+    } else {
+      Spell sp = list[choice];
+      canvas.drawText(sp.name, 0, 286, Easel.white_text);
+      tv.setText(sp.description);
+    }
   }
 
   @Override
@@ -103,4 +105,5 @@ public class BookView extends View {
   static int list_count;
   static int choice;
   static Spell list[];
+  static TextView tv;
 }

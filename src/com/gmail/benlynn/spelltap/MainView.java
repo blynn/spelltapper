@@ -218,6 +218,7 @@ public class MainView extends View {
     // Exploits fall-through.
     switch(level) {
       case Wisdom.ALL_LEVEL_2:
+        learn(spellAtGesture("PSFW"));
         learn(spellAtGesture("SWD"));
         learn(spellAtGesture("DPP"));
         learn(spellAtGesture("WPP"));
@@ -3327,7 +3328,7 @@ public class MainView extends View {
 
   public class RemoveEnchantmentSpell extends Spell {
     RemoveEnchantmentSpell() {
-      init("Remove Enchantment", "PDWP", R.drawable.shield, R.string.PDWPdesc, 0);
+      init("Disenchant", "PDWP", R.drawable.shield, R.string.PDWPdesc, 0);
     }
     public void cast(int source, int target) {
       switch(state) {

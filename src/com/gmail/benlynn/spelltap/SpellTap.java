@@ -32,6 +32,7 @@ public class SpellTap extends Activity {
     booklayout = findViewById(R.id.booklayout);
     booklayout.setVisibility(View.GONE);
     bookview = (BookView) findViewById(R.id.bookview);
+    bookview.tv = (TextView) findViewById(R.id.bookdesc);
     ((Button) findViewById(R.id.book_prev)).setOnClickListener(new BookPrev());
     ((Button) findViewById(R.id.book_next)).setOnClickListener(new BookNext());
     ((Button) findViewById(R.id.book_close)).setOnClickListener(new BookClose());
@@ -65,9 +66,6 @@ public class SpellTap extends Activity {
     hog = (InputHog) findViewById(R.id.inputhog);
     hog.setVisibility(View.GONE);
     hog.spelltap = this;
-    butv = findViewById(R.id.buttonhog);
-    butclo = (Button) findViewById(R.id.button_close);
-    butv.setVisibility(View.GONE);
 
     netconfig = findViewById(R.id.netconfig_layout);
     netconfig.setVisibility(View.GONE);
@@ -92,7 +90,6 @@ public class SpellTap extends Activity {
       hog.setVisibility(bun.getInt(ICE_VIS_HOG));
       narrator.setVisibility(bun.getInt(ICE_VIS_NARRATOR));
       booklayout.setVisibility(bun.getInt(ICE_VIS_BOOKVIEW));
-      butv.setVisibility(bun.getInt(ICE_VIS_BUTV));
       netconfig.setVisibility(bun.getInt(ICE_VIS_NETCONFIG));
     } else {
       // Start in town.
@@ -193,7 +190,6 @@ public class SpellTap extends Activity {
   static final String ICE_PLACE = "game-place";
   static final String ICE_VIS_MAIN = "game-vis-main";
   static final String ICE_VIS_TOWN = "game-vis-town";
-  static final String ICE_VIS_BUTV = "game-vis-butv";
   static final String ICE_VIS_BOOKVIEW = "game-vis-booklayout";
   static final String ICE_VIS_SPEECH = "game-vis-speech";
   static final String ICE_VIS_HOG = "game-vis-hog";
@@ -206,7 +202,6 @@ public class SpellTap extends Activity {
     bun.putInt(ICE_PLACE, curplace);
     bun.putInt(ICE_VIS_MAIN, mainframe.getVisibility());
     bun.putInt(ICE_VIS_TOWN, townview.getVisibility());
-    bun.putInt(ICE_VIS_BUTV, butv.getVisibility());
     bun.putInt(ICE_VIS_BOOKVIEW, booklayout.getVisibility());
     bun.putInt(ICE_VIS_SPEECH, speech_layout.getVisibility());
     bun.putInt(ICE_VIS_HOG, hog.getVisibility());
@@ -593,8 +588,6 @@ public class SpellTap extends Activity {
   static Pit pit;
   static Dojo dojo;
   static School school;
-  static Button butclo;
-  static View butv;
   static Tubes tubes;
   static int state = 128;
   static int curplace;

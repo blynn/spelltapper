@@ -88,7 +88,7 @@
 
 <string name="lvl1teach1">Your spellbook now contains the last two more Level 1 spells.</string>
 <string name="lvl1teach2">
-<b>WWP</b> is <i>Protection From Evil</i>. It acts as a Shield that lasts for 4 turns, including the turn it is cast.</string>
+<b>WWP</b> is <i>Protection From Evil</i>. It acts as a <i>Shield</i> that lasts for 4 turns, including the turn it is cast.</string>
 <string name="lvl1teach3"><b>PSDF</b> is <i>Charm Person</i>, which forces the opponent to make a gesture of your choice on one hand. It also cancels with <i>Confusion</i>.</string>
 <string name="lvl1teach4">Your next challenger is waiting for you at the Arena. See me afterwards.</string>
 
@@ -118,41 +118,42 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 
 <string name="heading_spells"><u><b>Spells</b></u>\n</string>
 <string name="emptyspellbook">\n\n\nYou don\'t know any spells yet.</string>
-<string name="button_close">Close</string>
+<string name="book_nochoice">Tap a spell to learn more.</string>
 <string name="stabdesc">(Not a spell.) Attack target for 1 damage.</string>
 <string name="Pdesc">Prevents all physical damage: stabs, monster attacks, and missiles.</string>
 <string name="SDdesc">Fire projectile at target for 1 damage.</string>
-<string name="WFPdesc">2 magical damage to target. Ignores Shield.</string>
+<string name="WFPdesc">2 magical damage to target. Ignores <i>Shield</i>.</string>
 <string name="SFWdesc">Summon goblin to serve target spellcaster, or target monster's controller. A goblin can do 1 damage, and has 1 hit point.</string>
 <string name="DFWdesc">Restore up to 1 health.</string>
 <string name="DSFdesc">Target spellcaster must select same gesture for both hands. Target monster attacks its controller. Cancels with other psychological spells.</string>
 <string name="PSDFdesc">Control target spellcaster's hand next turn. No effect on monsters. Cancels with other psychological spells.</string>
-<string name="WWPdesc">4-turn Shield.</string>
+<string name="WWPdesc"><i>Shield</i> that lasts 4 turns, including this one.</string>
 
 <string name="PSFWdesc">Ogres can do 2 damage, and have 2 hit points.</string>
-<string name="SWDdesc">Target can only gesture P K or W next turn. Cancels with other psychological spells.</string>
+<string name="SWDdesc">Target can only gesture <b>P</b> <b>K</b> or <b>W</b> next turn. Cancels with other psychological spells.</string>
 <string name="DPPdesc">Target wizard must repeat gestures. Target monster attacks same target. Cancels with other psychological spells.</string>
-<string name="WPPdesc">Target is immune to all spells except Dispel Magic and Finger of Death.</string>
+<string name="WPPdesc">Target is immune to all spells except <i>Dispel Magic</i> and <i>Finger of Death</i>.</string>
 <string name="WWSdesc">Alternate sequence for Counter-spell</string>
 <string name="PDWPdesc">Removes all enchantments from target wizard. Unsummon target monster, who can still attack this round.</string>
-<string name="DFFDDdesc">5 electrical damage. Ignores Shield.</string>
+<string name="DFFDDdesc">5 electrical damage. Ignores <i>Shield</i>.</string>
 <string name="SPFPdesc">Interrupt spell combo. Starting next turn, target wizard must start spells anew.</string>
-<string name="FFFdesc">Target monster cannot attack next turn. Freeze target hand of wizard: F, S, W become C, D, P respectively. If already paralyzed, the same hand is paralyzed again, otherwise the caster chooses the hand. Cancels with other psychological spells.</string>
+<string name="FFFdesc">If already paralyzed, target hand is paralyzed again, otherwise the caster chooses hand to paralyze: <b>F</b>, <b>S</b>, <b>W</b> become <b>C</b>, <b>D</b>, <b>P</b>. Paralyzed monsters cannot attack next turn.
+Cancels with other psychological spells.</string>
 <string name="FPSFWdesc">Trolls can do 3 damage, and have 3 hit points.</string>
 <string name="cDPWdesc">No other spells can be cast this turn. Unsummon all monsters, who still attack this round, and remove all enchantments. Global effect: works even when aimed at nothing. Shields target if valid.</string>
 <string name="WPFDdesc">3 magical damage to target. Ignores <i>Shield</i>.</string>
 <string name="DFPWdesc">Heal up to 2 health points. Cures disease.</string>
-<string name="DSFFFcdesc">Target dies within 6 turns from disease. Can be cured with <i>Remove Enchantment</i>, <i>Cure Heavy Wounds</i> or <i>Dispel Magic</i>.</string>
+<string name="DSFFFcdesc">Target dies within 6 turns from disease. Can be cured with <i>Disenchant</i>, <i>Cure Heavy Wounds</i> or <i>Dispel Magic</i>.</string>
 <string name="FSSDDdesc">5 fire damage (ignores <i>Shield</i>). Protects target in an Ice Storm.</string>
 <string name="cwdesc">Spells cast at target are reflected back at caster.</string>
 
 <string name="WFPSFWdesc">Giants can do 4 damage, and have 4 hit points.</string>
 <string name="PSDDdesc">Control target monster. No effect on wizards. Cancels with other psychological spells.</string>
-<string name="DWWFWDdesc">Target dies within 6 turns from poison. Can be cured with <i>Remove Enchantment</i> or <i>Dispel Magic</i>.</string>
+<string name="DWWFWDdesc">Target dies within 6 turns from poison. Can be cured with <i>Disenchant</i> or <i>Dispel Magic</i>.</string>
 <string name="WWFPdesc">Target becomes immune to damage from <i>Fireball</i>, <i>Fire Storm</i> and <i>Fire Elementals</i> until enchantment is removed. Destroys <i>Fire Elementals</i>.</string>
 <string name="SSFPdesc">Target becomes immune to damage from <i>Ice Storm</i> and <i>Ice Elementals</i> until enchantment is removed. Destroys <i>Ice Elementals</i>.</string>
 <string name="SWWcdesc">Each being takes 5 fire damage unless protected by Resist Heat or Counter-spell. Cancels <i>Ice Storm</i> and <i>Ice Elemental</i>, merges with <i>Fire Storm</i>, absorbs <i>Fire Elemental</i>.</string>
-<string name="WSScdesc">Each being takes 5 fire damage unless protected by Resist Heat or Counter-spell, or is hit by a Fireball. Cancels <i>Ice Storm</i> and <i>Ice Elemental</i>, merges with <i>Fire Storm</i>, absorbs <i>Fire Elemental</i>.</string>
+<string name="WSScdesc">Each being takes 5 ice damage unless protected by Resist Cold or Counter-spell, or is hit by a Fireball. Cancels <i>Fire Storm</i> and <i>Fire Elemental</i>, merges with <i>Ice Storm</i>, absorbs <i>Ice Elemental</i>.</string>
 <string name="PWPFSSSDdesc">Target dies, even if protected by Counter-spell. Ignores <i>Shield</i>. Countered by <i>Raise Dead</i>.</string>
 <string name="DWWFWcdesc">Brings target corpse back to life. Restores up to 5 hit points on living target, but does not cure poison or disease.</string>
 

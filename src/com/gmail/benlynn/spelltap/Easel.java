@@ -91,7 +91,7 @@ class Easel {
     compass_background.setARGB(159, 0, 0, 0);
 
     book_background = new Paint();
-    book_background.setARGB(223, 63, 0, 63);
+    book_background.setARGB(223, 0, 0, 0);
 
     book_spell_text = new Paint(grey_text);
     book_spell_text.setTextSize(12);
