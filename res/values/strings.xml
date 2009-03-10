@@ -137,7 +137,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="PDWPdesc">Removes all enchantments from target wizard. Unsummon target monster, who can still attack this round.</string>
 <string name="DFFDDdesc">5 electrical damage. Ignores <i>Shield</i>.</string>
 <string name="SPFPdesc">Interrupt spell combo. Starting next turn, target wizard must start spells anew.</string>
-<string name="FFFdesc">If already paralyzed, target hand is paralyzed again, otherwise the caster chooses hand to paralyze: <b>F</b>, <b>S</b>, <b>W</b> become <b>C</b>, <b>D</b>, <b>P</b>. Paralyzed monsters cannot attack next turn.
+<string name="FFFdesc">If target wizard already paralyzed, same hand is paralyzed again, otherwise choose hand to paralyze: <b>F</b>, <b>S</b>, <b>W</b> become <b>C</b>, <b>D</b>, <b>P</b>. Paralyzed monsters cannot attack next turn.
 Cancels with other psychological spells.</string>
 <string name="FPSFWdesc">Trolls can do 3 damage, and have 3 hit points.</string>
 <string name="cDPWdesc">No other spells can be cast this turn. Unsummon all monsters, who still attack this round, and remove all enchantments. Global effect: works even when aimed at nothing. Shields target if valid.</string>

@@ -2311,6 +2311,13 @@ public class MainView extends View {
     }
     is_dispel_cast = false;
 
+    for(int i = 0; i < 2; i++) {
+      if (Being.list[i].antispell) {
+	history[i].fast_forward();
+	Being.list[i].antispell = false;
+      }
+    }
+
     for(int i = Being.list_count - 1; i >= 0; i--) {
       Being b = Being.list[i];
       if (b.raisedead) {
@@ -3318,8 +3325,9 @@ public class MainView extends View {
 	case 0:
 	  is_finished = true;
 	  // Only affects humans.
-	  if (target == 1) opphist.fast_forward();
-	  else hist.fast_forward();
+	  if (target == 1 || target == 0) {
+	    Being.list[target].antispell = true;
+	  }
 	  board.animate_spell(target, bitmap);
 	  return;
       }

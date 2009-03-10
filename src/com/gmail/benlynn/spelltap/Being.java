@@ -107,6 +107,7 @@ public class Being {
     poison = 0;
     disease = 0;
     shield = 0;
+    antispell = false;
     resist_heat = false;
     resist_cold = false;
     para_hand = -1;
@@ -194,4 +195,5 @@ public class Being {
   boolean resist_heat, resist_cold;
   boolean is_fireballed;
   boolean raisedead;
+  boolean antispell;
 }
