@@ -170,85 +170,127 @@ abstract public class Agent {
   // Level 1 boss.
   static class AlTeffor extends Agent {
     AlTeffor() {
-      rnd = new Random(3);
+      rnd = new Random();
       res = new SearchResult();
     }
     void reset() {
       first = true;
       shield = indexOfSpellGesture("P");
+      stab = indexOfSpellGesture("K");
+      is_charmed = false;
     }
     boolean flip() {
       if (rnd.nextInt(2) == 0) return false;
       return true;
     }
     int rand_start_gesture() {
-      switch(rnd.nextInt(3)) {
+      switch(rnd.nextInt(4)) {
 	case 0:
 	 return Gesture.WAVE;
 	case 1:
 	 return Gesture.DIGIT;
 	case 2:
 	 return Gesture.SNAP;
+	case 3:
+	 return Gesture.KNIFE;
       }
       return -1;  // Should not reach here!
+    }
+    void set_charm(int hand, int gesture) {
+      is_charmed = true;
+      charm_hand = hand;
+      charm_gesture = gesture;
+    }
+    void get_charm_hand() { reply_hand = rnd.nextInt(2); }
+    int get_charm_gesture() {
+      return flip() ? Gesture.PALM : Gesture.KNIFE;
+    }
+    void finalize_move(SpellTapMove turn) {
+      MainView.search_oppcomplete1(res, turn.gest);
+      for (int h = 0; h < 2; h++) {
+	if (res.count[h] > 0) {  // At least one spell completed.
+	  int i = rnd.nextInt(res.count[h]);
+	  turn.spell[h] = indexOfSpellGesture(res.spell[i][h]);
+	  turn.spell_target[h] = 1 - MainView.spell_list[turn.spell[h]].target;
+	  if (turn.gest[h] == Gesture.PALM && rnd.nextInt(5) < 1) {
+	    turn.spell[h] = shield;
+	    turn.spell_target[h] = 1;
+	  }
+	} else if (turn.gest[h] == Gesture.PALM) {
+	  turn.spell[h] = shield;
+	  turn.spell_target[h] = 1;
+	} else if (turn.gest[h] == Gesture.KNIFE) {
+	  turn.spell[h] = stab;
+	  turn.spell_target[h] = 0;
+	} else {
+	  turn.spell[h] = -1;
+	}
+      }
+      is_charmed = false;
     }
     void move(SpellTapMove turn) {
       if (first) {
 	first = false;
-	int h = flip() ? 0 : 1;
+	int h = rnd.nextInt(2);
 	turn.gest[h] = Gesture.PALM;
-	turn.spell[h] = shield;
-	turn.spell_target[h] = 1;
 	turn.gest[1 - h] = rand_start_gesture();
-	turn.spell[1 - h] = -1;
 	phand = h;
+	finalize_move(turn);
 	return;
       }
       MainView.search_opphist1(res);
-      // XXX Handle Charm Person, Confusion
-      // XXX
       // If WWP has been cast, don't need P.
-      if (Being.list[1].shield > 1) {
-	for (int h = 0; h < 2; h++) {
-	  if (0 == res.count[h]) {
-	    turn.gest[h] = rand_start_gesture();
-	    turn.spell[h] = -1;
-	    continue;
-	  }
-	  // XXX
-	  //int i = rnd.nextInt(res.count[h]);
-	}
+      if (Being.list[1].shield > 0) phand = -1;
+      else if (-1 == phand) {  // WWP wore off?
+	phand = rnd.nextInt(2);
       }
-      int h = 1 - phand;
-      // Continue random spell in non-Shielding hand.
-      int i = 0;
-      if (0 == res.count[h]) {
-	turn.gest[h] = rand_start_gesture();
-      } else {
-	do {
-	  i = rnd.nextInt(res.count[h]);
-	} while(0 == res.remain[i][h]);
-	turn.gest[h] = Gesture.find(res.spell[i][h].charAt(res.progress[i][h]));
-	// Don't want double P.
-	if (turn.gest[h] == Gesture.PALM) {
-	  turn.gest[phand] = Gesture.SNAP;
-	  turn.spell[phand] = -1;
-	  phand = h;
+
+      // Continue random spell in non-Shielding hand(s).
+      for (int h = 0; h < 2; h++) {
+	if (h == phand) {
+	  turn.gest[h] = Gesture.PALM;
+	  continue;
+	}
+	int i = 0;
+	if (0 == res.count[h]) {
+	  turn.gest[h] = rand_start_gesture();
 	} else {
-	  turn.gest[phand] = Gesture.PALM;
-	  turn.spell[phand] = shield;
-	  turn.spell_target[phand] = 1;
+	  do {
+	    i = rnd.nextInt(res.count[h]);
+	  } while(0 == res.remain[i][h]);
+	  turn.gest[h] = Gesture.find(res.spell[i][h].charAt(res.progress[i][h]));
 	}
       }
-      MainView.search_oppcomplete1(res, turn.gest);
-      if (res.count[h] > 0) {
-	i = rnd.nextInt(res.count[h]);
-	// Spell completed!
-	turn.spell[h] = indexOfSpellGesture(res.spell[i][h]);
-	turn.spell_target[h] = 1 - MainView.spell_list[turn.spell[h]].target;
+
+      if (Status.CONFUSED == Being.list[1].status) {
+	// Respect Confusion.
+	if (turn.gest[0] != Gesture.PALM) {
+	  turn.gest[1] = turn.gest[0];
+	} else if (turn.gest[1] != Gesture.PALM) {
+	  turn.gest[0] = turn.gest[1];
+	} else {
+	  turn.gest[0] = turn.gest[1] = rand_start_gesture();
+	}
+      } else if (is_charmed) {
+	// Respect Charm Person.
+	turn.gest[charm_hand] = charm_gesture;
+	if (Gesture.PALM == charm_gesture) {
+	  if (Gesture.PALM == turn.gest[1 - charm_hand]) {
+	    turn.gest[1 - charm_hand] = rand_start_gesture();
+	  }
+	}
       } else {
-	turn.spell[h] = -1;
+	// Don't want double P.
+	if (turn.gest[0] == Gesture.PALM && turn.gest[0] == turn.gest[1]) {
+	  int h = rnd.nextInt(2);
+	  if (phand != -1) {
+	    h = phand;
+	    phand = 1 - h;
+	  }
+	  turn.gest[h] = rand_start_gesture();
+	}
       }
+      finalize_move(turn);
     }
     String name() { return "Al Teffor"; }
     String name_full() { return "Al Teffor, Destroyer of Windows"; }
@@ -257,8 +299,10 @@ abstract public class Agent {
     Random rnd;
     SearchResult res;
     boolean first;
+    boolean is_charmed;
+    int charm_hand, charm_gesture;
     int phand;
-    int shield;
+    int shield, stab;
   }
 
   static Agent getDummy() { return new DummyAgent(); }

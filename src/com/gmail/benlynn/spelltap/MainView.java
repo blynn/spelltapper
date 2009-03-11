@@ -2707,10 +2707,10 @@ public class MainView extends View {
       res.count[h] = 0;
       for (int i = 0; i < spell_list_count; i++) {
 	Spell sp = spell_list[i];
-	if (sp.level != 1) continue;
-	if (1 == sp.gesture.length()) continue;
-	int len = opphist.cur - opphist.start[h];
+	if (!sp.learned) continue;
 	int splen = sp.gesture.length();
+	if (1 == splen) continue;
+	int len = opphist.cur - opphist.start[h];
 	if (len < splen) continue;
 	int k;
 	for (k = 1; k <= splen; k++) {
@@ -2732,10 +2732,10 @@ public class MainView extends View {
       res.count[h] = 0;
       for (int i = 0; i < spell_list_count; i++) {
 	Spell sp = spell_list[i];
-	if (sp.level != 1) continue;
-	if (1 == sp.gesture.length()) continue;
-	int len = opphist.cur - opphist.start[h];
+	if (!sp.learned) continue;
 	int splen = sp.gesture.length();
+	if (1 == splen) continue;
+	int len = opphist.cur - opphist.start[h];
 	// Look for longest spell match.
 	int progress = len < splen ? len : splen;
 	for(; progress >= 1; progress--) {
