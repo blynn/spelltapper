@@ -9,6 +9,9 @@
 //   Remove Enchantment
 //   Damaging spells, attacks
 //   Cures, Raise Dead
+//
+// TODO: Disenchant must happen sooner, so when Invisibility/Blindness
+// is removed, targeting works properly.
 
 package com.gmail.benlynn.spelltap;
 
@@ -2692,6 +2695,65 @@ public class MainView extends View {
     }
     ready_spell[ready_spell_count[h]][h] = sp;
     ready_spell_count[h]++;
+  }
+
+  static void search_oppcomplete1(Agent.SearchResult res, int fingest[]) {
+    opphist.gest[opphist.cur][0] = fingest[0];
+    opphist.gest[opphist.cur][1] = fingest[1];
+    opphist.cur++;
+
+    // TODO: Reuse code.
+    for (int h = 0; h < 2; h++) {
+      res.count[h] = 0;
+      for (int i = 0; i < spell_list_count; i++) {
+	Spell sp = spell_list[i];
+	if (sp.level != 1) continue;
+	if (1 == sp.gesture.length()) continue;
+	int len = opphist.cur - opphist.start[h];
+	int splen = sp.gesture.length();
+	if (len < splen) continue;
+	int k;
+	for (k = 1; k <= splen; k++) {
+	  if (Gesture.abbr(opphist.gest[opphist.cur - k][h]) !=
+	      sp.gesture.charAt(splen - k)) break;
+	}
+	if (k > splen) {
+	  res.spell[res.count[h]][h] = sp.gesture;
+	  res.count[h]++;
+	  break;
+	}
+      }
+    }
+    opphist.cur--;
+  }
+
+  static void search_opphist1(Agent.SearchResult res) {
+    for (int h = 0; h < 2; h++) {
+      res.count[h] = 0;
+      for (int i = 0; i < spell_list_count; i++) {
+	Spell sp = spell_list[i];
+	if (sp.level != 1) continue;
+	if (1 == sp.gesture.length()) continue;
+	int len = opphist.cur - opphist.start[h];
+	int splen = sp.gesture.length();
+	// Look for longest spell match.
+	int progress = len < splen ? len : splen;
+	for(; progress >= 1; progress--) {
+	  int k;
+	  for (k = 1; k <= progress; k++) {
+	    if (Gesture.abbr(opphist.gest[opphist.cur - k][h]) !=
+		sp.gesture.charAt(progress - k)) break;
+	  }
+	  if (k > progress) {
+	    res.spell[res.count[h]][h] = sp.gesture;
+	    res.progress[res.count[h]][h] = progress;
+	    res.remain[res.count[h]][h] = splen - progress;
+	    res.count[h]++;
+	    break;
+	  }
+	}
+      }
+    }
   }
 
   static Context con;  // Need this for styling strings.

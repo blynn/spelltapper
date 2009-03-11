@@ -470,7 +470,7 @@ public class SpellTap extends Activity {
     case 128:
       set_spell_knowledge(Wisdom.ALL_SPELLS);
       set_gesture_knowledge(Wisdom.ALL_GESTURES);
-      pit.set_state_duel(Agent.getBloodyRipper());
+      pit.set_state_duel(Agent.getAlTeffor());
       school.set_state_generic_advice();
       dojo.set_state_dummy(50);
       break;

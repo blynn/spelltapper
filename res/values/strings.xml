@@ -57,8 +57,9 @@
     <string name="SDtutpass4">Have fun! Come find me later.</string>
     <string name="SDtutwrong">That\'s not right. Let\'s start again.</string>
 
-    <string name="meetforwfp">Now, <i>Missile</i> is useful, but can be blocked by <i>Shield</i>.</string>
-    <string name="meetforwfp2">I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
+    <string name="meetforwfp">Having trouble remembering gestures? Then hold your finger on the bottom of the screen.</string>
+    <string name="meetforwfp2">Now, <i>Missile</i> is useful, but can be blocked by <i>Shield</i>.</string>
+    <string name="meetforwfp3">I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
 
     <string name="wavetut">To make a <b>Wave</b> gesture (<b>W</b>), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ).</string>
     <string name="wavetut1">Gesture <b>Wave</b> with both hands.</string>
@@ -130,7 +131,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="WWPdesc"><i>Shield</i> that lasts 4 turns, including this one.</string>
 
 <string name="PSFWdesc">Ogres can do 2 damage, and have 2 hit points.</string>
-<string name="SWDdesc">Target can only gesture <b>P</b> <b>K</b> or <b>W</b> next turn. Cancels with other psychological spells.</string>
+<string name="SWDdesc">Target can only gesture <b>P</b> <b>K</b> or <b>W</b> next turn. No effect on monsters. Cancels with other psychological spells.</string>
 <string name="DPPdesc">Target wizard must repeat gestures. Target monster attacks same target. Cancels with other psychological spells.</string>
 <string name="WPPdesc">Target is immune to all spells except <i>Dispel Magic</i> and <i>Finger of Death</i>.</string>
 <string name="WWSdesc">Alternate sequence for Counter-spell</string>

@@ -13,6 +13,13 @@ class Gesture {
     learned = false;
   }
 
+  static int find(char c) {
+    for (int i = 0; i < 9; i++) {
+      if (null != list[i] && c == list[i].initial) return i;
+    }
+    return -1;
+  }
+
   static final int flattenxy(int x, int y) {
     return (x + 1) + (y + 1) * 3;
   }
