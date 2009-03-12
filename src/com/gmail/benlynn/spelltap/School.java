@@ -79,7 +79,9 @@ class School extends SpellTapMachine {
   }
   void set_state_level5() {
     machine = new AdviceMachine(
-      R.string.lvl5teach1);
+      R.string.lvl5teach1,
+      R.string.talkabouttilt1,
+      R.string.talkabouttilt2);
   }
 
   class IntroMachine extends Machine {

@@ -84,9 +84,6 @@
 
 <string name="generic_advice">Best of luck in your next battle!</string>
 
-<string name="talkabouttilt1">There\'s a showier way to cast spells than tapping the bottom of the screen.</string>
-<string name="talkabouttilt2">After gesturing, tilt the screen up vertically. When the bottom line flashes, tilt the screen back to its original position.</string>
-
 <string name="lvl1teach1">Your spellbook now contains the last two more Level 1 spells.</string>
 <string name="lvl1teach2">
 <b>WWP</b> is <i>Protection From Evil</i>. It acts as a <i>Shield</i> that lasts for 4 turns, including the turn it is cast.</string>
@@ -108,6 +105,12 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="lvl3teach3">You also have access to spells that use both hands. Lowercase letters mean both hands must choose that gesture for the spell to work.</string>
 
 <string name="lvl5teach1">You now know all spells and gestures.</string>
+<string name="talkabouttilt1">Here\'s a secret: instead of casting spells by tapping the bottom of the screen...</string>
+<string name="talkabouttilt2">Tilt the screen up vertically after gesturing. When you see the flash, tilt the screen back to its original position.</string>
+
+<string name="limit1">I have yet to implement experience points. For now, you gain a level by just taking part in an online duel. Visit Jack for advice.</string>
+<string name="limit2">You are now at level 3.</string>
+<string name="limit3">Have 2 levels on the house! You are at the highest level.</string>
 
 <string name="bug">Oops! You\'ve uncovered a bug!</string>
 <string name="win">You win!</string>

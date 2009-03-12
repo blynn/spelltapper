@@ -347,6 +347,17 @@ public class SpellTap extends Activity {
   void next_state() {
     if (state < 17) state++;
     run();
+    switch(state) {
+      case 15:
+	ben_says(R.string.limit1);
+	break;
+      case 16:
+	ben_says(R.string.limit2);
+	break;
+      case 17:
+	ben_says(R.string.limit3);
+	break;
+    }
   }
 
   void run() {
@@ -519,31 +530,40 @@ public class SpellTap extends Activity {
     townview.unlock(place);
   }
 
-  void jack_tip_off() {
+  static void jack_tip_off() {
     speech_layout.setVisibility(View.GONE);
   }
-  void jack_tip(int string_constant) {
+  static void someone_tip(int img, String name, int string_constant) {
     speech_layout.setVisibility(View.VISIBLE);
     speech_box.setText(string_constant);
-    img_speaker.setImageResource(R.drawable.jack);
-    name_speaker.setText("One-eyed Jack");
+    img_speaker.setImageResource(img);
+    name_speaker.setText(name);
   }
-  void jack_says(int string_constant) {
-    jack_tip(string_constant);
+  static void someone_says(int img, String name, int string_constant) {
+    someone_tip(img, name, string_constant);
     hog.setVisibility(View.VISIBLE);
   }
-  void narrate(int string_constant) {
+  static void jack_tip(int string_constant) {
+    someone_tip(R.drawable.jack, "One-eyed Jack", string_constant);
+  }
+  static void jack_says(int string_constant) {
+    someone_says(R.drawable.jack, "One-eyed Jack", string_constant);
+  }
+  static void ben_says(int string_constant) {
+    someone_says(R.drawable.trace, "Two-eyed Ben", string_constant);
+  }
+  static void narrate(int string_constant) {
     show_tip(string_constant);
     hog.setVisibility(View.VISIBLE);
   }
-  void show_tip(int string_constant) {
+  static void show_tip(int string_constant) {
     narratortext.setText(string_constant);
     narrator.setVisibility(View.VISIBLE);
   }
-  void tip_off() {
+  static void tip_off() {
     narrator.setVisibility(View.GONE);
   }
-  void hogoff() {
+  static void hogoff() {
     speech_layout.setVisibility(View.GONE);
     narrator.setVisibility(View.GONE);
     hog.setVisibility(View.GONE);
