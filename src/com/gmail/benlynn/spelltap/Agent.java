@@ -88,72 +88,6 @@ abstract public class Agent {
     int hand;
   }
 
-  // An opponent who bets the game on WFP.
-  static class Sendin extends Agent {
-    Sendin() {}
-    void reset() { hand = 0; count = 0; }
-    void move(SpellTapMove turn) {
-      switch(count) {
-	case 0:
-	  turn.gest[0] = Gesture.PALM;
-	  turn.spell[0] = indexOfSpellGesture("P");
-	  turn.spell_target[0] = 1;
-	  turn.gest[1] = Gesture.WAVE;
-	  turn.spell[1] = -1;
-	  turn.spell_target[1] = -1;
-	  break;
-	case 1:
-	  turn.gest[0] = Gesture.PALM;
-	  turn.spell[0] = indexOfSpellGesture("P");
-	  turn.spell_target[0] = 1;
-	  turn.gest[1] = Gesture.FINGERS;
-	  turn.spell[1] = -1;
-	  turn.spell_target[1] = -1;
-	  break;
-	case 2:
-	  turn.gest[0] = Gesture.KNIFE;
-	  turn.spell[0] = indexOfSpellGesture("K");
-	  turn.spell_target[0] = 0;
-	  turn.gest[1] = Gesture.PALM;
-	  turn.spell[1] = indexOfSpellGesture("WFP");
-	  turn.spell_target[1] = 0;
-	  break;
-	case 3:
-	  turn.gest[0] = Gesture.WAVE;
-	  turn.spell[0] = -1;
-	  turn.spell_target[0] = -1;
-	  turn.gest[1] = Gesture.WAVE;
-	  turn.spell[1] = -1;
-	  turn.spell_target[1] = -1;
-	  break;
-	case 4:
-	  turn.gest[0] = Gesture.FINGERS;
-	  turn.spell[0] = -1;
-	  turn.spell_target[0] = -1;
-	  turn.gest[1] = Gesture.FINGERS;
-	  turn.spell[1] = -1;
-	  turn.spell_target[1] = -1;
-	  break;
-	case 5:
-	  turn.gest[0] = Gesture.PALM;
-	  turn.spell[0] = indexOfSpellGesture("WFP");
-	  turn.spell_target[0] = 0;
-	  turn.gest[1] = Gesture.PALM;
-	  turn.spell[1] = indexOfSpellGesture("WFP");
-	  turn.spell_target[1] = 0;
-	  break;
-	  // Do or die! By now, we've lost or won.
-      }
-      count++;
-    }
-    String name() { return "Sen Din"; }
-    String name_full() { return "Sen Din the Clown"; }
-    int life() { return 5; }
-    int bitmap_id() { return R.drawable.clown; }
-    int hand;
-    int count;
-  }
-
   class SearchResult {
     SearchResult() {
       count = new int[2];
@@ -167,9 +101,8 @@ abstract public class Agent {
     String spell[][];
   }
 
-  // Level 1 boss.
-  static class AlTeffor extends Agent {
-    AlTeffor() {
+  static abstract class BasicAgent extends Agent {
+    void basic_init() {
       rnd = new Random();
       res = new SearchResult();
     }
@@ -294,10 +227,7 @@ abstract public class Agent {
       }
       finalize_move(turn);
     }
-    String name() { return "Al Teffor"; }
-    String name_full() { return "Al Teffor, Destroyer of Windows"; }
     int life() { return Player.life[Player.level]; }
-    int bitmap_id() { return R.drawable.alteffor; }
     Random rnd;
     SearchResult res;
     boolean first;
@@ -305,6 +235,25 @@ abstract public class Agent {
     int charm_hand, charm_gesture;
     int phand;
     int shield, stab;
+  }
+
+  static class Sendin extends BasicAgent {
+    Sendin() {
+      basic_init();
+    }
+    String name() { return "Sen Din"; }
+    String name_full() { return "Sen Din the Clown"; }
+    int bitmap_id() { return R.drawable.clown; }
+  }
+
+  // Level 1 boss.
+  static class AlTeffor extends BasicAgent {
+    AlTeffor() {
+      basic_init();
+    }
+    String name() { return "Al Teffor"; }
+    String name_full() { return "Al Teffor, Destroyer of Windows"; }
+    int bitmap_id() { return R.drawable.alteffor; }
   }
 
   static Agent getDummy() { return new DummyAgent(); }
