@@ -27,9 +27,6 @@ public class SpellTap extends Activity {
 
     Easel.init();
     setContentView(R.layout.main);
-    narrator = findViewById(R.id.narrator);
-    narrator.setVisibility(View.GONE);
-    narratortext = (TextView) findViewById(R.id.narratortext);
     booklayout = findViewById(R.id.booklayout);
     booklayout.setVisibility(View.GONE);
     bookview = (BookView) findViewById(R.id.bookview);
@@ -48,6 +45,10 @@ public class SpellTap extends Activity {
     speech_box = (TextView) findViewById(R.id.speech_box);
     img_speaker = (ImageView) findViewById(R.id.img_speaker);
     name_speaker = (TextView) findViewById(R.id.name_speaker);
+    portrait = findViewById(R.id.portrait);
+
+    about_text = findViewById(R.id.about_text);
+    about_text.setVisibility(View.GONE);
 
     mainframe = findViewById(R.id.mainframe);
     mainframe.setVisibility(View.GONE);
@@ -91,7 +92,6 @@ public class SpellTap extends Activity {
       mainframe.setVisibility(bun.getInt(ICE_VIS_MAIN));
       speech_layout.setVisibility(bun.getInt(ICE_VIS_SPEECH));
       hog.setVisibility(bun.getInt(ICE_VIS_HOG));
-      narrator.setVisibility(bun.getInt(ICE_VIS_NARRATOR));
       booklayout.setVisibility(bun.getInt(ICE_VIS_BOOKVIEW));
       netconfig.setVisibility(bun.getInt(ICE_VIS_NETCONFIG));
     } else {
@@ -197,7 +197,6 @@ public class SpellTap extends Activity {
   static final String ICE_VIS_SPEECH = "game-vis-speech";
   static final String ICE_VIS_HOG = "game-vis-hog";
   static final String ICE_VIS_NETCONFIG = "game-vis-netconfig";
-  static final String ICE_VIS_NARRATOR = "game-vis-narrator";
 
   @Override
   public void onSaveInstanceState(Bundle bun) {
@@ -207,9 +206,9 @@ public class SpellTap extends Activity {
     bun.putInt(ICE_VIS_TOWN, townview.getVisibility());
     bun.putInt(ICE_VIS_BOOKVIEW, booklayout.getVisibility());
     bun.putInt(ICE_VIS_SPEECH, speech_layout.getVisibility());
+    // TODO: Save speech contents too?
     bun.putInt(ICE_VIS_HOG, hog.getVisibility());
     bun.putInt(ICE_VIS_NETCONFIG, netconfig.getVisibility());
-    bun.putInt(ICE_VIS_NARRATOR, narrator.getVisibility());
     Tubes.save_bundle(bun);
     MainView.save_bundle(bun);
     Log.i("SpellTap", "Saving " + state);
@@ -257,6 +256,10 @@ public class SpellTap extends Activity {
     switch(keyCode) {
       case KeyEvent.KEYCODE_BACK:
 	Log.i("SpellTap", "BACK " + curplace);
+	if (View.VISIBLE == hog.getVisibility()) {
+	  hogoff();
+	  return true;
+	}
 	if (spellbook_is_open) {
 	  close_spellbook();
 	  return true;
@@ -530,7 +533,7 @@ public class SpellTap extends Activity {
     townview.unlock(place);
   }
 
-  static void jack_tip_off() {
+  static void tip_off() {
     speech_layout.setVisibility(View.GONE);
   }
   static void someone_tip(int img, String name, int string_constant) {
@@ -538,6 +541,7 @@ public class SpellTap extends Activity {
     speech_box.setText(string_constant);
     img_speaker.setImageResource(img);
     name_speaker.setText(name);
+    portrait.setVisibility(View.VISIBLE);
   }
   static void someone_says(int img, String name, int string_constant) {
     someone_tip(img, name, string_constant);
@@ -553,25 +557,24 @@ public class SpellTap extends Activity {
     someone_says(R.drawable.trace, "Two-eyed Ben", string_constant);
   }
   static void narrate(int string_constant) {
-    show_tip(string_constant);
+    someone_tip(R.drawable.trace, "Bug if you can read this!", string_constant);
+    portrait.setVisibility(View.INVISIBLE);
     hog.setVisibility(View.VISIBLE);
   }
   static void show_tip(int string_constant) {
-    narratortext.setText(string_constant);
-    narrator.setVisibility(View.VISIBLE);
-  }
-  static void tip_off() {
-    narrator.setVisibility(View.GONE);
+    someone_tip(R.drawable.trace, "Bug if you can read this!", string_constant);
+    portrait.setVisibility(View.INVISIBLE);
   }
   static void hogoff() {
     speech_layout.setVisibility(View.GONE);
-    narrator.setVisibility(View.GONE);
+    about_text.setVisibility(View.GONE);
     hog.setVisibility(View.GONE);
     curmach.run();
   }
 
   void open_about() {
-    narrate(R.string.about);
+    about_text.setVisibility(View.VISIBLE);
+    hog.setVisibility(View.VISIBLE);
   }
 
   void open_spellbook() {
@@ -609,10 +612,8 @@ public class SpellTap extends Activity {
   static MainView mainview;
   static View netconfig;
   static View mainframe;
-  static View narrator;
   static View booklayout;
   static BookView bookview;
-  static TextView narratortext;
   static final int PLACE_SCHOOL = 0;
   static final int PLACE_DOJO = 1;
   static final int PLACE_PIT = 2;
@@ -636,4 +637,6 @@ public class SpellTap extends Activity {
   static boolean allow_confirm_one;
   static ImageView img_speaker;
   static TextView name_speaker;
+  static View portrait;
+  static View about_text;
 }

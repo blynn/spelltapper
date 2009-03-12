@@ -83,24 +83,6 @@
 	/>
 </LinearLayout>
 <LinearLayout
- android:id="@+id/narrator"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingTop="100px"
-    >
-  <TextView
-   android:id="@+id/narratortext"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      android:background="#ff0000aa"
-      android:textColor="#ffffffff"
-      android:textSize="18sp"
-      android:paddingLeft="5dip"
-      android:singleLine="false"
-      />
-</LinearLayout>
-<LinearLayout
  android:id="@+id/speech_layout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -108,7 +90,7 @@
     android:paddingTop="16dip"
     >
 
-  <LinearLayout
+  <LinearLayout android:id="@+id/portrait"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:paddingLeft="16dip"
@@ -202,4 +184,12 @@
     android:text="Close" />
   </LinearLayout>
 </FrameLayout>
+<TextView android:id="@+id/about_text"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:text="@string/about"
+    android:background="#dd000000"
+    android:textSize="16dip"
+    android:autoLink="all"
+    />
 </FrameLayout>

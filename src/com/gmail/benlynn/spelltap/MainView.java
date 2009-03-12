@@ -152,8 +152,8 @@ public class MainView extends View {
     int attack_target[];
   }
 
-  void jack_tip_off() {
-    spelltap.jack_tip_off();
+  void tip_off() {
+    spelltap.tip_off();
   }
   void jack_tip(int string_constant) {
     spelltap.jack_tip(string_constant);
@@ -357,7 +357,7 @@ public class MainView extends View {
 	}
 	return;
       case 101:
-	jack_tip_off();
+	tip_off();
 	set_main_state(STATE_ON_END_ROUND);
 	state = 102;
 	return;
@@ -440,7 +440,7 @@ public class MainView extends View {
 	    spell_target[1] = -1;
 	  }
 	  if (-1 == h) return;
-	  jack_tip_off();
+	  tip_off();
 	  arr_y0 = MainView.yicon + 24;
 	  Being b = Being.list[2 + h];
 	  arr_x1 = b.x + b.midw;
@@ -461,7 +461,7 @@ public class MainView extends View {
 	state = 4;
 	return;
       case 4:
-	jack_tip_off();
+	tip_off();
 	set_main_state(STATE_ON_END_ROUND);
 	state = 5;
         return;
@@ -702,7 +702,7 @@ public class MainView extends View {
 	  }
 	  return;
 	case 5:
-	  jack_tip_off();
+	  tip_off();
 	  set_main_state(STATE_ON_END_ROUND);
 	  state = 6;
 	  return;
@@ -770,7 +770,7 @@ public class MainView extends View {
 	  }
 	  return;
 	case 3:
-	  jack_tip_off();
+	  tip_off();
 	  jack_tip(R.string.fingerstut);
 	  arr_x0 = 0;
 	  arr_y0 = ylower + 32;
@@ -791,7 +791,7 @@ public class MainView extends View {
 	  }
 	  return;
 	case 5:
-	  jack_tip_off();
+	  tip_off();
 	  set_main_state(STATE_ON_END_ROUND);
 	  state = 500;
 	  return;
