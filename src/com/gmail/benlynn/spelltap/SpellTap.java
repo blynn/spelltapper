@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.MenuItem;
 import android.view.Menu;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Button;
 import android.hardware.SensorListener;
@@ -45,6 +46,8 @@ public class SpellTap extends Activity {
     speech_layout = findViewById(R.id.speech_layout);
     speech_layout.setVisibility(View.GONE);
     speech_box = (TextView) findViewById(R.id.speech_box);
+    img_speaker = (ImageView) findViewById(R.id.img_speaker);
+    name_speaker = (TextView) findViewById(R.id.name_speaker);
 
     mainframe = findViewById(R.id.mainframe);
     mainframe.setVisibility(View.GONE);
@@ -245,9 +248,8 @@ public class SpellTap extends Activity {
 
   void warp(int n) {
     state = n;
-    // When the G1 is opened/closed, this entire object is recreated thus
-    // there is no more to do. TODO(blynn): detect opening/closing of the
-    // device and ignore it, and then warp will have to do more work.
+    run();
+    curmach.run();
   }
 
   @Override
@@ -299,9 +301,13 @@ public class SpellTap extends Activity {
     static public final int UP_TO_WFP = 3;
     static public final int UP_TO_DSF = 4;
     static public final int UP_TO_DFW = 5;
-    static final int ALL_LEVEL_1 = 6;
-    static final int ALL_LEVEL_2 = 16;
-    static final int ALL_SPELLS = 128;
+    static final int ALL_LEVEL_0 = 8;
+    static final int ALL_LEVEL_1 = 9;
+    static final int ALL_LEVEL_2 = 10;
+    static final int ALL_LEVEL_3 = 11;
+    static final int ALL_LEVEL_4 = 12;
+    static final int ALL_LEVEL_5 = 13;
+    static final int ALL_SPELLS = ALL_LEVEL_5;
 
     static final int NONE = -1;
     static final int KNIFE_ONLY = 0;
@@ -335,20 +341,16 @@ public class SpellTap extends Activity {
     add_gsk(3, Wisdom.KNIFE_AND_PALM);
     add_gsk(5, Wisdom.DKPS);
     add_gsk(7, Wisdom.ALL_BUT_C);
+    add_gsk(15, Wisdom.ALL_GESTURES);
   }
 
   void next_state() {
-    state++;
+    if (state < 17) state++;
     run();
   }
 
   void run() {
     // Fragile code. Take care!
-    if (state < 16) {
-      mainview.has_circles = false;
-    } else {
-      mainview.has_circles = true;
-    }
     if (state > 13) {
       allow_confirm_one = false;
     } else {
@@ -357,6 +359,8 @@ public class SpellTap extends Activity {
     if (state > 0) {
       unlock_place(SpellTap.PLACE_DOJO);
       townview.set_state_normal();
+    } else {
+      townview.set_state_first();
     }
     if (state > 2) {
       unlock_place(SpellTap.PLACE_PIT);
@@ -366,10 +370,20 @@ public class SpellTap extends Activity {
     }
     if (state < 14) {
       Player.level = 0;
-    } else if (state < 16) {
+    } else if (state < 15) {
       Player.level = 1;
+    } else if (state < 16) {
+      Player.level = 2;
+    } else if (state < 17) {
+      Player.level = 3;
     } else {
       Player.level = 5;
+    }
+    set_spell_knowledge(Wisdom.ALL_LEVEL_0 + Player.level);
+    if (Player.level < 2) {
+      mainview.has_circles = false;
+    } else {
+      mainview.has_circles = true;
     }
 
     int i;
@@ -456,21 +470,29 @@ public class SpellTap extends Activity {
       dojo.set_state_dummy(5);
       break;
     case 14:  // Net play.
-      set_spell_knowledge(Wisdom.ALL_LEVEL_1);
-      pit.set_state_closed();
+      pit.set_state_exhibition(Agent.getAlTeffor());
       school.set_state_generic_advice();
       dojo.set_state_dummy(5);
       break;
+    case 15:
+      pit.set_state_exhibition(Agent.getAlTeffor());
+      school.set_state_level2();
+      dojo.set_state_dummy(12);
+      break;
     case 16:
-      set_spell_knowledge(Wisdom.ALL_LEVEL_2);
       pit.set_state_closed();
-      school.set_state_generic_advice();
-      dojo.set_state_dummy(8);
+      school.set_state_level3();
+      dojo.set_state_dummy(25);
+      break;
+    case 17:
+      pit.set_state_closed();
+      school.set_state_level5();
+      dojo.set_state_dummy(50);
       break;
     case 128:
       set_spell_knowledge(Wisdom.ALL_SPELLS);
       set_gesture_knowledge(Wisdom.ALL_GESTURES);
-      pit.set_state_duel(Agent.getAlTeffor());
+      pit.set_state_closed();
       school.set_state_generic_advice();
       dojo.set_state_dummy(50);
       break;
@@ -503,6 +525,8 @@ public class SpellTap extends Activity {
   void jack_tip(int string_constant) {
     speech_layout.setVisibility(View.VISIBLE);
     speech_box.setText(string_constant);
+    img_speaker.setImageResource(R.drawable.jack);
+    name_speaker.setText("One-eyed Jack");
   }
   void jack_says(int string_constant) {
     jack_tip(string_constant);
@@ -527,9 +551,7 @@ public class SpellTap extends Activity {
   }
 
   void open_about() {
-    //spellbook.setText(getText(R.string.about));
-    //booklayout.setVisibility(View.VISIBLE);
-    //spellbook_is_open = true;
+    narrate(R.string.about);
   }
 
   void open_spellbook() {
@@ -592,4 +614,6 @@ public class SpellTap extends Activity {
   static int state = 128;
   static int curplace;
   static boolean allow_confirm_one;
+  static ImageView img_speaker;
+  static TextView name_speaker;
 }

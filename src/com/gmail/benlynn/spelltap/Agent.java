@@ -212,7 +212,9 @@ abstract public class Agent {
 	  int i = rnd.nextInt(res.count[h]);
 	  turn.spell[h] = indexOfSpellGesture(res.spell[i][h]);
 	  turn.spell_target[h] = 1 - MainView.spell_list[turn.spell[h]].target;
-	  if (turn.gest[h] == Gesture.PALM && rnd.nextInt(5) < 1) {
+	  if (turn.gest[h] == Gesture.PALM &&
+	      res.spell[i][h] != "WWP" &&
+	      rnd.nextInt(5) < 1) {
 	    turn.spell[h] = shield;
 	    turn.spell_target[h] = 1;
 	  }
@@ -294,7 +296,7 @@ abstract public class Agent {
     }
     String name() { return "Al Teffor"; }
     String name_full() { return "Al Teffor, Destroyer of Windows"; }
-    int life() { return 5; }
+    int life() { return Player.life[Player.level]; }
     int bitmap_id() { return R.drawable.alteffor; }
     Random rnd;
     SearchResult res;

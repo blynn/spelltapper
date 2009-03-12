@@ -124,16 +124,14 @@
 	android:layout_height="68px"
 	android:src="#ff5555aa"
 	  />
-      <ImageView
-       android:id="@+id/img_speaker"
+      <ImageView android:id="@+id/img_speaker"
 	android:layout_width="64px"
 	android:layout_height="64px"
 	android:paddingTop="4px"
 	android:paddingLeft="4px"
-	android:src="@drawable/jack"
 	  />
     </FrameLayout>
-    <TextView
+    <TextView android:id="@+id/name_speaker"
 	android:paddingLeft="10dip"
 	android:paddingRight="10dip"
 	android:layout_width="wrap_content"
@@ -141,7 +139,6 @@
 	android:background="#ff5555aa"
 	android:textColor="#ffffffff"
 	android:textSize="18sp"
-	android:text="One-eyed Jack"
 	android:layout_gravity="center_vertical"
 	/>
   </LinearLayout>

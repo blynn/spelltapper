@@ -104,6 +104,7 @@ public class TownView extends View {
   class NormalMachine extends Machine {
     void run() {}
   }
+  void set_state_first() { machine = new FirstMachine(); }
   void set_state_normal() { machine = new NormalMachine(); }
 
   @Override

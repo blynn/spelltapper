@@ -11,6 +11,9 @@ class Pit extends SpellTapMachine {
   void set_state_closed() {
     machine = new ClosedMachine();
   }
+  void set_state_exhibition(Agent a) {
+    machine = new ExhibitionMachine(a);
+  }
 
   class DuelMachine extends Machine {
     DuelMachine(Agent a) { agent = a; }
@@ -26,6 +29,14 @@ class Pit extends SpellTapMachine {
       spelltap.narrate(R.string.arenashut);
       spelltap.goto_town();
     }
+  }
+  class ExhibitionMachine extends Machine {
+    ExhibitionMachine(Agent a) { agent = a; }
+    void run() {
+      spelltap.mainview.set_state_exhibition_match(agent);
+      spelltap.goto_mainframe();
+    }
+    Agent agent;
   }
 
   static Machine machine;

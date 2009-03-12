@@ -53,13 +53,13 @@
     <string name="SDtutpass1">Next, the <b>Digit</b> gesture (<b>D</b>) is the same except you go toward to center (L: &#x2197; R: &#x2196; ).</string>
     <string name="SDtutpass100">Make <b>D</b> with both hands.</string>
     <string name="SDtutpass2">Surprise! <b>S</b> then <b>D</b> casts <i>Missile</i>. Unlike <i>Shield</i>, most spells take several turns to cast.</string>
-    <string name="SDtutpass3">At any time, press [MENU] to access your spellbook and review all you have learned so far.</string>
-    <string name="SDtutpass4">Have fun! Come find me later.</string>
+    <string name="SDtutpass3">You can hold your finger on the bottom of the screen for a moment to show all the gestures you know.</string>
+    <string name="SDtutpass4">Also, press [MENU] to review the spells you know.</string>
+    <string name="SDtutpass5">Find me when you are done here.</string>
     <string name="SDtutwrong">That\'s not right. Let\'s start again.</string>
 
-    <string name="meetforwfp">Having trouble remembering gestures? Then hold your finger on the bottom of the screen.</string>
-    <string name="meetforwfp2">Now, <i>Missile</i> is useful, but can be blocked by <i>Shield</i>.</string>
-    <string name="meetforwfp3">I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
+    <string name="meetforwfp">Now, <i>Missile</i> is useful, but can be blocked by <i>Shield</i>.</string>
+    <string name="meetforwfp2">I\'ll teach you <i>Cause Light Wounds</i>, which deals 2 damage even to shielded targets. Meet me at the Training Hall.</string>
 
     <string name="wavetut">To make a <b>Wave</b> gesture (<b>W</b>), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ).</string>
     <string name="wavetut1">Gesture <b>Wave</b> with both hands.</string>
@@ -84,8 +84,8 @@
 
 <string name="generic_advice">Best of luck in your next battle!</string>
 
-    <string name="talkabouttilt1">There\'s a showier way to cast spells than tapping the bottom of the screen.</string>
-    <string name="talkabouttilt2">After gesturing, tilt the screen up vertically. When the bottom line flashes, tilt the screen back to its original position.</string>
+<string name="talkabouttilt1">There\'s a showier way to cast spells than tapping the bottom of the screen.</string>
+<string name="talkabouttilt2">After gesturing, tilt the screen up vertically. When the bottom line flashes, tilt the screen back to its original position.</string>
 
 <string name="lvl1teach1">Your spellbook now contains the last two more Level 1 spells.</string>
 <string name="lvl1teach2">
@@ -99,9 +99,15 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="graduate3">No doubt you found yourself disadvantaged whenever you failed to select a gesture for one or both hands.</string>
 <string name="graduate4">From now on, this game will help you by insisting you have a gesture in each hand.</string>
 
-<string name="lvl2teach1">Welcome to Level 2! Your Summon spells are now stronger.</string>
-<string name="lvl2teach2">Monsters can attack the turn they are summoned. Spells may also target monsters as they materialize.</string>
+<string name="lvl2teach1">Welcome to Level 2! You are now more adept with Summon spells.</string>
+<string name="lvl2teach2">Monsters can attack the turn they are summoned. You may also target monsters as they materialize.</string>
 <string name="lvl2teach3">Experiment with the summoning circles to see what I mean.</string>
+
+<string name="lvl3teach1">Welcome to Level 3! You can now <b>Clap</b> by drawing towards the center.</string>
+<string name="lvl3teach2">You must <b>Clap</b> with both hands for it to work. To remind you, we write the gesture in lowercase: <b>c</b>.</string>
+<string name="lvl3teach3">You also have access to spells that use both hands. Lowercase letters mean both hands must choose that gesture for the spell to work.</string>
+
+<string name="lvl5teach1">You now know all spells and gestures.</string>
 
 <string name="bug">Oops! You\'ve uncovered a bug!</string>
 <string name="win">You win!</string>
@@ -133,7 +139,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="PSFWdesc">Ogres can do 2 damage, and have 2 hit points.</string>
 <string name="SWDdesc">Target can only gesture <b>P</b> <b>K</b> or <b>W</b> next turn. No effect on monsters. Cancels with other psychological spells.</string>
 <string name="DPPdesc">Target wizard must repeat gestures. Target monster attacks same target. Cancels with other psychological spells.</string>
-<string name="WPPdesc">Target is immune to all spells except <i>Dispel Magic</i> and <i>Finger of Death</i>.</string>
+<string name="WPPdesc">Target is immune to all spells except <i>Dispel Magic</i> and <i>Finger of Death</i>. Also <i>Shields</i> target.</string>
 <string name="WWSdesc">Alternate sequence for Counter-spell</string>
 <string name="PDWPdesc">Removes all enchantments from target wizard. Unsummon target monster, who can still attack this round.</string>
 <string name="DFFDDdesc">5 electrical damage. Ignores <i>Shield</i>.</string>

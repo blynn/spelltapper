@@ -116,6 +116,9 @@ public class MainView extends View {
   void set_state_win_to_advance(Agent a) {
     tut = new WinToAdvance(a);
   }
+  void set_state_exhibition_match(Agent a) {
+    tut = new ExhibitionMatch(a);
+  }
   void set_state_practicemode(int hp) {
     dummyhp = hp;
     tut = new PracticeMode();
@@ -213,24 +216,18 @@ public class MainView extends View {
   }
 
   void set_spell_knowledge(int level) {
-    if (Wisdom.ALL_SPELLS == level) {
-      for (int i = 0; i < spell_list_count; i++) spell_list[i].learned = true;
+    if (Wisdom.ALL_LEVEL_0 < level) {
+      level -= Wisdom.ALL_LEVEL_0;
+      for (int i = 0; i < spell_list_count; i++) {
+	Spell sp = spell_list[i];
+	sp.learned = level >= sp.level ? true : false;
+      }
       return;
     }
+
     for (int i = 0; i < spell_list_count; i++) spell_list[i].learned = false;
     // Exploits fall-through.
     switch(level) {
-      case Wisdom.ALL_LEVEL_2:
-        learn(spellAtGesture("PSFW"));
-        learn(spellAtGesture("SWD"));
-        learn(spellAtGesture("DPP"));
-        learn(spellAtGesture("WPP"));
-        learn(spellAtGesture("WWS"));
-        learn(spellAtGesture("DFFDD"));
-        learn(spellAtGesture("PDWP"));
-      case Wisdom.ALL_LEVEL_1:
-        learn(spellAtGesture("WWP"));
-        learn(spellAtGesture("PSDF"));
       case Wisdom.UP_TO_DFW:
         learn(spellAtGesture("DFW"));
         learn(spellAtGesture("SFW"));
@@ -418,7 +415,7 @@ public class MainView extends View {
 	Being.list[2].start_life(1);
 	Being.list[2].target = 0;
 
-	Being.list[3] = new Being("Dedmit", bmgoblin, 1);
+	Being.list[3] = new Being("Dedmeet", bmgoblin, 1);
 	Being.list[3].bitmap_dead = bmcorpse;
 	Being.list[3].start_life(1);
 	Being.list[3].target = 0;
@@ -621,6 +618,28 @@ public class MainView extends View {
     Agent agent;
   }
 
+  // Exhibition Match.
+  class ExhibitionMatch extends Tutorial {
+    ExhibitionMatch(Agent a) {
+      state = 0;
+      agent = a;
+    }
+    void run() {
+      for(;;) switch(state) {
+      case 0:
+	new_game(agent);
+	state = 1;
+	return;
+      case 1:
+        spelltap.goto_town();
+	state = 0;
+	return;
+      }
+    }
+    int state;
+    Agent agent;
+  }
+
   // Introduce SD.
   class SDTutorial extends Tutorial {
     SDTutorial() {
@@ -700,10 +719,14 @@ public class MainView extends View {
 	  state = 9;
 	  return;
 	case 9:
-	  set_main_state(STATE_NORMAL);
+	  jack_says(R.string.SDtutpass5);
 	  state = 10;
 	  return;
 	case 10:
+	  set_main_state(STATE_NORMAL);
+	  state = 11;
+	  return;
+	case 11:
 	  spelltap.next_state();
 	  spelltap.goto_town();
 	  return;
@@ -966,8 +989,13 @@ public class MainView extends View {
     public void handleMessage(Message msg) {
       // Valid reply received from network.
       try {
-	Tubes.net_thread.join();
-	Tubes.net_thread = null;
+	if (null == Tubes.net_thread) {
+	  // TODO: It crashed here once. Work out why.
+	  Log.e("NetHandler", "Bug! net_thread == null.");
+	} else {
+	  Tubes.net_thread.join();
+	  Tubes.net_thread = null;
+	}
       } catch (InterruptedException e) {
       }
       Log.i("Reply", Tubes.reply);
@@ -1093,6 +1121,7 @@ public class MainView extends View {
           state = 1;
 	  return;
 	case 1:
+	  spelltap.next_state();
 	  spelltap.goto_town();
 	  return;
       }
@@ -2246,7 +2275,7 @@ public class MainView extends View {
       Being b = Being.list[target];
       if (b.dead && raise_dead_spell != sc.spell) {
 	print("Dead target. Nothing happens.");
-      } else if (b.counterspell) {
+      } else if (b.counterspell && sc.spell.level > 0) {
 	print("Counter-spell blocks the spell.");
 	sc.spell.fizzle(target);
       } else if (b.mirror && sc.source != target && sc.spell.level > 0) {

@@ -16,6 +16,7 @@ class Tubes extends SpellTapMachine {
   Tubes(SpellTap st) {
     super(st);
     is_abandoned = false;
+    Log.i("Tubes", "cons");
     net_thread = null;
   }
   abstract class Machine { abstract void run(); }
@@ -123,38 +124,33 @@ class Tubes extends SpellTapMachine {
     String s = (char) ('a' + netid) + "-";
     return send(s);
   }
+  static void net_send(String s) {
+    if (null != net_thread) {
+      Log.e("Tubes", "Bug! net_thread != null.");
+    }
+    net_thread = new NetThread(s);
+    net_thread.run();
+  }
 
   static void send_move(String move) {
-    String s = (char) ('a' + netid) + "M" + move;
-    net_thread = new NetThread(s);
-    net_thread.run();
+    net_send((char) ('a' + netid) + "M" + move);
   }
   static void send_set_para(int target, int hand) {
-    String s = (char) ('a' + netid) + "P" + (char) ('0' + target) +
-        (char) ('0' + hand);
-    net_thread = new NetThread(s);
-    net_thread.run();
+    net_send((char) ('a' + netid) + "P" + (char) ('0' + target) +
+        (char) ('0' + hand));
   }
   static void send_set_charm(int hand, int gesture) {
-    String s = (char) ('a' + netid) + "C" + (char) ('0' + hand) +
-        (char) ('0' + gesture);
-    net_thread = new NetThread(s);
-    net_thread.run();
+    net_send((char) ('a' + netid) + "C" + (char) ('0' + hand) +
+        (char) ('0' + gesture));
   }
   static void send_get_charm_gesture() {
-    String s = (char) ('a' + netid) + "G";
-    net_thread = new NetThread(s);
-    net_thread.run();
+    net_send( (char) ('a' + netid) + "G");
   }
   static void send_get_para(int target) {
-    String s = (char) ('a' + netid) + "Q" +(char) ('0' + target);
-    net_thread = new NetThread(s);
-    net_thread.run();
+    net_send((char) ('a' + netid) + "Q" +(char) ('0' + target));
   }
   static void send_get_charm_hand() {
-    String s = (char) ('a' + netid) + "H";
-    net_thread = new NetThread(s);
-    net_thread.run();
+    net_send((char) ('a' + netid) + "H");
   }
 
   private static String send(String msg) {
@@ -171,7 +167,6 @@ class Tubes extends SpellTapMachine {
       in = new DataInputStream(sock.getInputStream());
       out.writeBytes(msg);
       int count = in.read(buf, 0, 16);
-      Log.i("Tubes", "read count: " + count);
       if (count < 1) return null;
       String response = new String(buf, 0, count);
       Log.i("Tubes", "response: " + response);
