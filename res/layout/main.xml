@@ -3,7 +3,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-<com.gmail.benlynn.spelltap.TownView
+<com.benlynn.spelltapper.TownView
  android:id="@+id/townview"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -13,17 +13,17 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-  <com.gmail.benlynn.spelltap.MainView
+  <com.benlynn.spelltapper.MainView
    android:id="@+id/mainview"
       android:layout_width="fill_parent"
       android:layout_height="fill_parent"
       />
-  <com.gmail.benlynn.spelltap.Board
+  <com.benlynn.spelltapper.Board
    android:id="@+id/board"
       android:layout_width="fill_parent"
       android:layout_height="fill_parent"
       />
-  <com.gmail.benlynn.spelltap.ArrowView
+  <com.benlynn.spelltapper.ArrowView
    android:id="@+id/arrow_view"
       android:layout_width="fill_parent"
       android:layout_height="fill_parent"
@@ -136,7 +136,7 @@
       android:singleLine="false"
       />
 </LinearLayout>
-<com.gmail.benlynn.spelltap.InputHog
+<com.benlynn.spelltapper.InputHog
  android:id="@+id/inputhog"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -146,7 +146,7 @@
  android:layout_width="fill_parent"
  android:layout_height="fill_parent"
  >
-  <com.gmail.benlynn.spelltap.BookView android:id="@+id/bookview"
+  <com.benlynn.spelltapper.BookView android:id="@+id/bookview"
       android:layout_width="fill_parent"
       android:layout_height="fill_parent"
       />

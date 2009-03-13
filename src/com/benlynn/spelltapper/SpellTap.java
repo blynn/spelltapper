@@ -1,4 +1,4 @@
-package com.gmail.benlynn.spelltap;
+package com.benlynn.spelltapper;
 
 import android.app.Activity;
 import android.os.Bundle;

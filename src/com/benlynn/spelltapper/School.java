@@ -1,4 +1,4 @@
-package com.gmail.benlynn.spelltap;
+package com.benlynn.spelltapper;
 
 class School extends SpellTapMachine {
   School(SpellTap st) {

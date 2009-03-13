@@ -13,7 +13,7 @@
 // TODO: Disenchant must happen sooner, so when Invisibility/Blindness
 // is removed, targeting works properly.
 
-package com.gmail.benlynn.spelltap;
+package com.benlynn.spelltapper;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -34,8 +34,8 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
 
-import com.gmail.benlynn.spelltap.SpellTap.Wisdom;
-import com.gmail.benlynn.spelltap.Being.Status;
+import com.benlynn.spelltapper.SpellTap.Wisdom;
+import com.benlynn.spelltapper.Being.Status;
 
 public class MainView extends View {
   static float x0, y0, x1, y1;
@@ -3409,7 +3409,7 @@ public class MainView extends View {
 
   public class AntiSpellSpell extends Spell {
     AntiSpellSpell() {
-      init("Anti-spell", "SPFP", R.drawable.confusion, R.string.SPFPdesc, 1);
+      init("Anti-spell", "SPFP", R.drawable.antispell, R.string.SPFPdesc, 1);
     }
     public void cast(int source, int target) {
       switch(state) {

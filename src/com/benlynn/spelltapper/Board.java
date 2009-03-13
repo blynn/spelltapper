@@ -1,5 +1,5 @@
 // Board: where the action happens. Handles animation.
-package com.gmail.benlynn.spelltap;
+package com.benlynn.spelltapper;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -12,7 +12,7 @@ import android.view.View;
 import android.os.Handler;
 import android.os.Message;
 
-import com.gmail.benlynn.spelltap.Being.Status;
+import com.benlynn.spelltapper.Being.Status;
 
 public class Board extends View {
   public Board(Context context, AttributeSet attrs) {

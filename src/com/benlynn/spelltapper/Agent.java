@@ -1,10 +1,10 @@
-package com.gmail.benlynn.spelltap;
+package com.benlynn.spelltapper;
 
 import java.util.Random;
 import android.util.Log;
 
-import com.gmail.benlynn.spelltap.MainView.SpellTapMove;
-import com.gmail.benlynn.spelltap.Being.Status;
+import com.benlynn.spelltapper.MainView.SpellTapMove;
+import com.benlynn.spelltapper.Being.Status;
 
 abstract public class Agent {
   abstract String name();

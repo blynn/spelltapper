@@ -1,4 +1,4 @@
-package com.gmail.benlynn.spelltap;
+package com.benlynn.spelltapper;
 
 import java.io.*;
 import java.net.*;

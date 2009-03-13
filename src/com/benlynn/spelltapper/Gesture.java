@@ -1,4 +1,4 @@
-package com.gmail.benlynn.spelltap;
+package com.benlynn.spelltapper;
 
 class Gesture {
   Gesture(String i_name, int i_x, int i_y) {

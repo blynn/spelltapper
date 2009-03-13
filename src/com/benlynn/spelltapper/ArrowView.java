@@ -3,7 +3,7 @@
 // MainView/Board handles this).
 //
 // TODO: Arrowheads.
-package com.gmail.benlynn.spelltap;
+package com.benlynn.spelltapper;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -12,7 +12,7 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 import android.util.Log;
-import com.gmail.benlynn.spelltap.Being.Status;
+import com.benlynn.spelltapper.Being.Status;
 
 public class ArrowView extends View {
   public ArrowView(Context context, AttributeSet attrs) {

@@ -1,4 +1,4 @@
-package com.gmail.benlynn.spelltap;
+package com.benlynn.spelltapper;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -10,7 +10,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
-import com.gmail.benlynn.spelltap.MainView.Spell;
+import com.benlynn.spelltapper.MainView.Spell;
 
 public class BookView extends View {
   // Constructor.

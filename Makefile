@@ -5,7 +5,7 @@ ADB=$(SDKDIR)/tools/adb
 AAPT=$(SDKDIR)/tools/aapt
 DX=$(SDKDIR)/tools/dx
 APKBUILDER=$(SDKDIR)/tools/apkbuilder
-MUCK=com/gmail/benlynn/spelltap/
+MUCK=com/benlynn/spelltapper/
 
 target: bin/out.apk
 
@@ -27,11 +27,11 @@ bin/out.apk : bin/resources.ap_ bin/classes.dex
 	$(APKBUILDER) bin/out.apk -z bin/resources.ap_ -f bin/classes.dex -rf src
 
 red : bin/out.apk
-	$(ADB) -d uninstall com.gmail.benlynn.spelltap
+	$(ADB) -d uninstall com.benlynn.spelltapper
 	$(ADB) -d install bin/out.apk
 
 ree : bin/out.apk
-	$(ADB) -e uninstall com.gmail.benlynn.spelltap
+	$(ADB) -e uninstall com.benlynn.spelltapper
 	$(ADB) -e install bin/out.apk
 
 server : server.c

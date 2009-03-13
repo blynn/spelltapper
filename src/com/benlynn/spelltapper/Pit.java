@@ -1,4 +1,4 @@
-package com.gmail.benlynn.spelltap;
+package com.benlynn.spelltapper;
 
 class Pit extends SpellTapMachine {
   Pit(SpellTap st) { super(st); }
