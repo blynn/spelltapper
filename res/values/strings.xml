@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Spell Tap</string>
+    <string name="app_name">Spelltapper</string>
 
-<string name="town0">Welcome to Spell Tap!\n[Tap the screen to continue.]</string>
+<string name="town0">Welcome to Spelltapper!\n[Tap the screen to continue.]</string>
 <string name="town1">You\'ve travelled for days, but your journey has just begun. At last, you stand before the world\'s top magic academy: The School of Thought.\n[Tap the screen to continue.]</string>
     <string name="academynag">[Tap on the academy.]</string>
     <string name="academynag2">[Tap the academy again to enter.]</string>
@@ -172,8 +172,8 @@ Cancels with other psychological spells.</string>
 
 <string name="oppmoved">Opponent has moved. Tap to continue.</string>
 
-<string name="about"><b>Spell Tap</b>\n<i>Ben Lynn</i>\n\n
-http://cs.stanford.edu/~blynn/spelltap/
+<string name="about"><b>Spelltapper</b>\n<i>Ben Lynn</i>\n\n
+http://cs.stanford.edu/~blynn/spelltapper/
 \n\nAdaption of Richard Bartle\'s <i>Spellbinder</i>, aka <i>Waving Hands</i>: http://www.mud.co.uk/richard/spellbnd.htm
 \n\n[Press BACK to leave.]
 </string>

@@ -77,7 +77,7 @@
     <TextView
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
-	android:text="Download server from http://cs.stanford.edu/~blynn/spelltap."
+	android:text="Download server from http://cs.stanford.edu/~blynn/spelltapper"
 	android:textSize="16dip"
 	android:autoLink="all"
 	/>

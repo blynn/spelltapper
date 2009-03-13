@@ -975,12 +975,11 @@ public class MainView extends View {
     Tubes.send_get_charm_hand();
   }
 
-  int net_get_charm_gesture() {
+  void net_get_charm_gesture() {
     opp_ready = false;
     invalidate();
     handler_state = HANDLER_GET_CHARM_GESTURE;
     Tubes.send_get_charm_gesture();
-    return -1;
   }
 
   static NetHandler net_handler;
@@ -1028,7 +1027,7 @@ public class MainView extends View {
 	  {
 	    int g = Tubes.reply.charAt(0) - '0';
 	    if (g >= 0 && g <= 8 && g != Gesture.NONE && Gesture.list[g] != null) {
-	      choice[charmed_hand] = g;
+	      agent.reply_gesture = g;
 	    } else {
 	      Log.e("TODO", "Handle bad messages");
 	      break;
@@ -1106,8 +1105,8 @@ public class MainView extends View {
     void get_charm_hand() {
       net_get_charm_hand();
     }
-    int get_charm_gesture() {
-      return net_get_charm_gesture();
+    void get_charm_gesture() {
+      net_get_charm_gesture();
     }
   }
 
@@ -1966,7 +1965,7 @@ public class MainView extends View {
       if (!freeze_gesture) {
 	tilt_state = TILT_AWAIT_UP;
 	opp_ready = true;
-	choice[charmed_hand] = agent.get_charm_gesture();
+	agent.get_charm_gesture();
 	if (opp_ready) {
 	  apply_charm();
 	} else  {
@@ -1980,6 +1979,7 @@ public class MainView extends View {
   }
 
   void apply_charm() {
+    choice[charmed_hand] = agent.reply_gesture;
     handle_new_choice(charmed_hand);
     freeze_gesture = true;
   }

@@ -24,8 +24,8 @@ abstract public class Agent {
   void set_charm(int hand, int gesture) {}
   void reset() {}
   void get_charm_hand() { reply_hand = 0; }
-  int get_charm_gesture() {
-    return Gesture.PALM;
+  void get_charm_gesture() {
+    reply_gesture = Gesture.PALM;
   }
 
   static class DummyAgent extends Agent {
@@ -135,8 +135,8 @@ abstract public class Agent {
       charm_gesture = gesture;
     }
     void get_charm_hand() { reply_hand = rnd.nextInt(2); }
-    int get_charm_gesture() {
-      return flip() ? Gesture.PALM : Gesture.KNIFE;
+    void get_charm_gesture() {
+      reply_gesture = flip() ? Gesture.PALM : Gesture.KNIFE;
     }
     void finalize_move(SpellTapMove turn) {
       MainView.search_oppcomplete1(res, turn.gest);
@@ -160,6 +160,10 @@ abstract public class Agent {
 	} else {
 	  turn.spell[h] = -1;
 	}
+      }
+      // Can't stab with both hands.
+      if (turn.gest[0] == Gesture.KNIFE && turn.gest[0] == turn.gest[1]) {
+	turn.spell[0] = -1;
       }
       is_charmed = false;
     }
@@ -263,4 +267,5 @@ abstract public class Agent {
   static Agent getAlTeffor() { return new AlTeffor(); }
 
   int reply_hand;
+  int reply_gesture;
 }
