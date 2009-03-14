@@ -42,6 +42,7 @@ public class BookView extends View {
     for (int i = 0; i < MainView.spell_list_count; i++) {
       Spell sp = MainView.spell_list[i];
       if (sp.level == level && sp.learned) {
+	if ("WWS" == sp.gesture) continue;
 	list[list_count] = sp;
 	list_count++;
       }
@@ -65,8 +66,12 @@ public class BookView extends View {
 	canvas.drawRect(x, y, x + 50, y + 50, Easel.sel_paint);
       }
       Spell sp = list[i];
+      String g = sp.gesture;
+      if ("WPP" == sp.gesture) {
+	g += ", WWS";
+      }
       canvas.drawBitmap(sp.bitmap, x + 1, y + 1, Easel.paint);
-      canvas.drawText(sp.gesture, x + 50, y + 24, Easel.white_text);
+      canvas.drawText(g, x + 50, y + 24, Easel.white_text);
       //Easel.book_spell_text.getTextBounds(sp.name, 0, sp.name.length(), r);
       //r.offset(x + 160, y + 44);
       //canvas.drawRect(r, Easel.book_background);

@@ -1240,25 +1240,25 @@ public class MainView extends View {
     add_spell(new ProtectionSpell(), 11);
     add_spell(new CharmPersonSpell(), 31);
     spell_level = 2;
-    add_spell(new SummonOgreSpell(), 5);
     add_spell(new AmnesiaSpell(), 29);
     add_spell(new FearSpell(), 30);
     add_spell(new AntiSpellSpell(), 27);
     add_spell(new CounterSpellSpell(), 1);
     add_spell(new CounterSpellAltSpell(), 1);
     add_spell(new RemoveEnchantmentSpell(), 32);
+    add_spell(new SummonOgreSpell(), 5);
     add_spell(new LightningSpell(), 61);
+    add_spell(new FireballSpell(), 59);
     spell_level = 3;
     add_spell(new SummonTrollSpell(), 4);
     magic_mirror_spell = new MagicMirrorSpell();
     add_spell(magic_mirror_spell, 2);
     add_spell(new ParalysisSpell(), 30);
-    dispel_spell = new DispelMagicSpell();
-    add_spell(dispel_spell, 0);
+    add_spell(lightning_clap = new LightningClapSpell(), 61);
+    add_spell(dispel_spell = new DispelMagicSpell(), 0);
     add_spell(new CauseHeavyWoundsSpell(), 62);
     add_spell(new CureHeavyWoundsSpell(), 129);
     add_spell(new DiseaseSpell(), 25);
-    add_spell(new FireballSpell(), 59);
     spell_level = 4;
     add_spell(new SummonGiantSpell(), 3);
     add_spell(new CharmMonsterSpell(), 31);
@@ -2061,6 +2061,12 @@ public class MainView extends View {
     fut_confirm[0][1] = fut_choice[1];
     if (spell_is_twohanded) {
       if (-1 != spell_choice[0]) {
+	if (lightning_clap == ready_spell[spell_choice[0]][2]) {
+	  if (WDDc_cast) {
+	    Log.e("MV", "Bug! WDDc already cast.");
+	  }
+	  WDDc_cast = true;
+	}
 	SpellCast sc = new SpellCast(
 	    0, ready_spell[spell_choice[0]][2], 0, spell_target[0]);
 	insert_spell(sc);
@@ -2441,6 +2447,7 @@ public class MainView extends View {
     set_main_state(STATE_NORMAL);
     net_state = NET_IDLE;
     tilt_state = TILT_AWAIT_UP;
+    WDDc_cast = false;
   }
 
   // Start new round.
@@ -2655,6 +2662,7 @@ public class MainView extends View {
 	for (int i = 0; i < spell_list_count; i++) {
 	  Spell sp = spell_list[i];
 	  if (!sp.learned) continue;
+	  if (lightning_clap == sp && WDDc_cast) continue;
 	  String g = sp.gesture;
 	  int k = g.length() - 1;
 	  char ch = g.charAt(k);
@@ -3096,6 +3104,24 @@ public class MainView extends View {
     }
   }
 
+  public class LightningClapSpell extends Spell {
+    LightningClapSpell() {
+      init("Lightning", "WDDc", R.drawable.lightningclap, R.string.WDDcdesc, 1);
+    }
+    public void cast(int source, int target) {
+      switch(state) {
+	case 0:
+	  board.animate_spell(target, bitmap);
+	  return;
+	case 1:
+	  is_finished = true;
+	  Being.list[target].get_hurt(5);
+	  board.animate_damage(target, 5);
+	  return;
+      }
+    }
+  }
+
   public class FingerOfDeathSpell extends Spell {
     FingerOfDeathSpell() {
       init("Finger of Death", "PWPFSSSD", R.drawable.wound, R.string.PWPFSSSDdesc, 1);
@@ -3172,21 +3198,21 @@ public class MainView extends View {
 
   public class SummonOgreSpell extends SummonSpell {
     SummonOgreSpell() {
-      init_summon("Ogre", "PSFW", R.drawable.summon1, R.string.PSFWdesc,
+      init_summon("Ogre", "PSFW", R.drawable.summon2, R.string.PSFWdesc,
 	  R.drawable.goblin, R.drawable.corpse, 2);
     }
   }
 
   public class SummonTrollSpell extends SummonSpell {
     SummonTrollSpell() {
-      init_summon("Troll", "FPSFW", R.drawable.summon1, R.string.FPSFWdesc,
+      init_summon("Troll", "FPSFW", R.drawable.summon2, R.string.FPSFWdesc,
 	  R.drawable.goblin, R.drawable.corpse, 3);
     }
   }
 
   public class SummonGiantSpell extends SummonSpell {
     SummonGiantSpell() {
-      init_summon("Giant", "WFPSFW", R.drawable.summon1, R.string.WFPSFWdesc,
+      init_summon("Giant", "WFPSFW", R.drawable.summon4, R.string.WFPSFWdesc,
 	  R.drawable.goblin, R.drawable.corpse, 4);
     }
   }
@@ -3591,6 +3617,7 @@ public class MainView extends View {
   static final int NET_REPLY = 2;
   static boolean is_dispel_cast;
   static StabSpell stab_spell;
+  static LightningClapSpell lightning_clap;
   static DispelMagicSpell dispel_spell;
   static MagicMirrorSpell magic_mirror_spell;
   static RaiseDeadSpell raise_dead_spell;
@@ -3616,4 +3643,5 @@ public class MainView extends View {
   static int fireice_i;
   static SpellCast monster_resolve, fireice_resolve;
   static int gesture_help;
+  static boolean WDDc_cast;
 }

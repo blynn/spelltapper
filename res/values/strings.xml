@@ -156,6 +156,7 @@ Cancels with other psychological spells.</string>
 <string name="DSFFFcdesc">Target dies within 6 turns from disease. Can be cured with <i>Disenchant</i>, <i>Cure Heavy Wounds</i> or <i>Dispel Magic</i>.</string>
 <string name="FSSDDdesc">5 fire damage (ignores <i>Shield</i>). Protects target in an Ice Storm.</string>
 <string name="cwdesc">Spells cast at target are reflected back at caster.</string>
+<string name="WDDcdesc">5 electrical damage. Ignores <i>Shield</i>. Each wizard can only cast this version of lightning once per duel. (This lightning never strikes twice!)</string>
 
 <string name="WFPSFWdesc">Giants can do 4 damage, and have 4 hit points.</string>
 <string name="PSDDdesc">Control target monster. No effect on wizards. Cancels with other psychological spells.</string>
