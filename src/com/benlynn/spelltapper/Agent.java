@@ -4,6 +4,7 @@ import java.util.Random;
 import android.util.Log;
 
 import com.benlynn.spelltapper.MainView.SpellTapMove;
+import com.benlynn.spelltapper.MainView.History;
 import com.benlynn.spelltapper.Being.Status;
 
 abstract public class Agent {
@@ -111,6 +112,7 @@ abstract public class Agent {
       shield = indexOfSpellGesture("P");
       stab = indexOfSpellGesture("K");
       is_charmed = false;
+      history.reset();
     }
     boolean flip() {
       if (rnd.nextInt(2) == 0) return false;
@@ -139,7 +141,7 @@ abstract public class Agent {
       reply_gesture = flip() ? Gesture.PALM : Gesture.KNIFE;
     }
     void finalize_move(SpellTapMove turn) {
-      MainView.search_oppcomplete1(res, turn.gest);
+      MainView.search_complete(history, res, turn.gest);
       for (int h = 0; h < 2; h++) {
 	if (res.count[h] > 0) {  // At least one spell completed.
 	  int i = rnd.nextInt(res.count[h]);
@@ -166,6 +168,7 @@ abstract public class Agent {
 	turn.spell[0] = -1;
       }
       is_charmed = false;
+      history.add(turn.gest);
     }
     void move(SpellTapMove turn) {
       if (first) {
@@ -177,7 +180,9 @@ abstract public class Agent {
 	finalize_move(turn);
 	return;
       }
-      MainView.search_opphist1(res);
+      // Respect Anti-spell.
+      if (MainView.opphist.was_fast_forwarded()) history.fast_forward();
+      MainView.search_partial(history, res);
       // If WWP has been cast, don't need P.
       if (Being.list[1].shield > 0) phand = -1;
       else if (-1 == phand) {  // WWP wore off?
@@ -268,4 +273,6 @@ abstract public class Agent {
 
   int reply_hand;
   int reply_gesture;
+  // Because of Invisibility and Blindness we need our own gesture history.
+  static History history;
 }

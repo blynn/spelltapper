@@ -272,7 +272,11 @@ public class Board extends View {
 
   public void drawBeing(int i, int mx, int my, Canvas canvas) {
     Being b = Being.list[i];
-    canvas.drawBitmap(b.bitmap, mx, my, paint);
+    if (b.invisibility > 0) {
+      canvas.drawBitmap(b.bitmap, mx, my, Easel.invisipaint);
+    } else {
+      canvas.drawBitmap(b.bitmap, mx, my, paint);
+    }
     if (b.shield > 0) {
       int n = b.shield - 1;
       if (n > 3) n = 3;

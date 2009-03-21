@@ -1163,6 +1163,9 @@ public class MainView extends View {
     void fast_forward() {
       start[0] = start[1] = cur;
     }
+    boolean was_fast_forwarded() {
+      return start[0] == cur && start[1] == cur;
+    }
     void reset() {
       cur = 0;
       start[0] = start[1] = 0;
@@ -1259,6 +1262,7 @@ public class MainView extends View {
     add_spell(new CauseHeavyWoundsSpell(), 62);
     add_spell(new CureHeavyWoundsSpell(), 129);
     add_spell(new DiseaseSpell(), 25);
+    add_spell(new InvisibilitySpell(), 21);
     spell_level = 4;
     add_spell(new SummonGiantSpell(), 3);
     add_spell(new CharmMonsterSpell(), 31);
@@ -1348,7 +1352,12 @@ public class MainView extends View {
     if (Being.list_count > 1) {
       y = 16;
       for (int i = opphist.start[0]; i < opphist.cur; i++) {
-	s += " " + Gesture.abbr(opphist.gest[i][0]);
+	int g = opphist.gest[i][0];
+	if (Gesture.HIDDEN == g) {
+	  s += " ?";
+	} else {
+	  s += " " + Gesture.abbr(g);
+	}
       }
       if (Status.PARALYZED == Being.list[1].status &&
 	  0 == Being.list[1].para_hand) pa = Easel.para_text;
@@ -1357,7 +1366,12 @@ public class MainView extends View {
       canvas.drawText(s, 0, y, pa);
       s = "";
       for (int i = opphist.start[1]; i < opphist.cur; i++) {
-	s += Gesture.abbr(opphist.gest[i][1]) + " ";
+	int g = opphist.gest[i][1];
+	if (Gesture.HIDDEN == g) {
+	  s += "? ";
+	} else {
+	  s += Gesture.abbr(g) + " ";
+	}
       }
       if (Status.PARALYZED == Being.list[1].status &&
 	  1 == Being.list[1].para_hand) pa = Easel.para_rtext;
@@ -2042,7 +2056,13 @@ public class MainView extends View {
     is_animating = true;
     for (int i = 0; i < 4; i++) comments[i] = null;
     para_count = 0;
-    opphist.add(oppturn.gest);
+    // TODO: Invisiblility and Blindness should be handled earlier than here,
+    // otherwise it's possible to cheat.
+    if (Being.list[1].invisibility > 0) {
+      opphist.add(Gesture.both_hidden);
+    } else {
+      opphist.add(oppturn.gest);
+    }
 
     global_spell = GLOBAL_NONE;
     fireice_i = 0;
@@ -2271,16 +2291,21 @@ public class MainView extends View {
     } else if (is_dispel_cast && sc.spell.level > 0) {
       print("Dispel Magic negates the spell.");
       sc.spell.just_wait();
+    } else if (sc.spell.is_global) {
+      // Global spells always work. TODO: Compare with Andrew Plotkin's
+      // implementation: what if you cast, say, Fire Storm on a Counter-spelled
+      // target?
+      sc.run();
     } else if (-1 == target) {
-      if (sc.spell.is_global) {
-	sc.run();
-      } else {
-	sc.spell.just_wait();
-      }
+      sc.spell.just_wait();
     } else {
       Being b = Being.list[target];
       if (b.dead && raise_dead_spell != sc.spell) {
 	print("Dead target. Nothing happens.");
+	sc.spell.just_wait();
+      } else if (b.invisibility > 0 && sc.target != sc.source) {
+	print("Missed! Target is invisible.");
+	sc.spell.just_wait();
       } else if (b.counterspell && sc.spell.level > 0) {
 	print("Counter-spell blocks the spell.");
 	sc.spell.fizzle(target);
@@ -2317,6 +2342,7 @@ public class MainView extends View {
   }
 
   // End of round. Check for death, shield expiration, etc.
+  // TODO: Move some of this to Being class?
   void end_round() {
     boolean gameover = false;
     for(int i = Being.list_count - 1; i >= 0; i--) {
@@ -2325,6 +2351,11 @@ public class MainView extends View {
       b.mirror = false;
       if (b.shield > 0) b.shield--;
       // TODO: Shield off animation.
+      if (b.invisibility > 0) b.invisibility--;
+      if (b.cast_invisibility) {
+	b.cast_invisibility = false;
+	b.invisibility = 3;
+      }
       if (b.disease > 0) {
 	b.disease++;
 	if (b.disease > 6) b.die();
@@ -2337,15 +2368,7 @@ public class MainView extends View {
 	b.doomed = false;
 	b.die();
       }
-      if (b.unsummon) {
-	if (i < 2) Log.e("MV", "Bug! Cannot unsummon player!");
-	Being.pos[b.index].being = null;
-	for(int j = Being.list_count - 1; j > i; j--) {
-	  Being.list[j - 1] = Being.list[j];
-	}
-	Being.list_count--;
-	// TODO: Unsummon animation.
-      }
+      if (b.unsummoned) b.unsummon(i);
     }
     is_dispel_cast = false;
 
@@ -2734,10 +2757,11 @@ public class MainView extends View {
     ready_spell_count[h]++;
   }
 
-  static void search_oppcomplete1(Agent.SearchResult res, int fingest[]) {
-    opphist.gest[opphist.cur][0] = fingest[0];
-    opphist.gest[opphist.cur][1] = fingest[1];
-    opphist.cur++;
+  static void search_complete(History hi, Agent.SearchResult res,
+      int fingest[]) {
+    hi.gest[hi.cur][0] = fingest[0];
+    hi.gest[hi.cur][1] = fingest[1];
+    hi.cur++;
 
     // TODO: Reuse code.
     for (int h = 0; h < 2; h++) {
@@ -2747,11 +2771,11 @@ public class MainView extends View {
 	if (!sp.learned) continue;
 	int splen = sp.gesture.length();
 	if (1 == splen) continue;
-	int len = opphist.cur - opphist.start[h];
+	int len = hi.cur - hi.start[h];
 	if (len < splen) continue;
 	int k;
 	for (k = 1; k <= splen; k++) {
-	  if (Gesture.abbr(opphist.gest[opphist.cur - k][h]) !=
+	  if (Gesture.abbr(hi.gest[hi.cur - k][h]) !=
 	      sp.gesture.charAt(splen - k)) break;
 	}
 	if (k > splen) {
@@ -2761,10 +2785,10 @@ public class MainView extends View {
 	}
       }
     }
-    opphist.cur--;
+    hi.cur--;
   }
 
-  static void search_opphist1(Agent.SearchResult res) {
+  static void search_partial(History hi, Agent.SearchResult res) {
     for (int h = 0; h < 2; h++) {
       res.count[h] = 0;
       for (int i = 0; i < spell_list_count; i++) {
@@ -2772,13 +2796,13 @@ public class MainView extends View {
 	if (!sp.learned) continue;
 	int splen = sp.gesture.length();
 	if (1 == splen) continue;
-	int len = opphist.cur - opphist.start[h];
+	int len = hi.cur - hi.start[h];
 	// Look for longest spell match.
 	int progress = len < splen ? len : splen;
 	for(; progress >= 1; progress--) {
 	  int k;
 	  for (k = 1; k <= progress; k++) {
-	    if (Gesture.abbr(opphist.gest[opphist.cur - k][h]) !=
+	    if (Gesture.abbr(hi.gest[hi.cur - k][h]) !=
 		sp.gesture.charAt(progress - k)) break;
 	  }
 	  if (k > progress) {
@@ -3462,7 +3486,7 @@ public class MainView extends View {
 	  b.remove_enchantments();
 	  if (target > 1) {
 	    // Destroy monster.
-	    b.unsummon = true;
+	    b.unsummoned = true;
 	  }
 	  is_finished = true;
 	  board.animate_spell(target, bitmap);
@@ -3485,14 +3509,18 @@ public class MainView extends View {
 	  if (i < 2) {
 	    b.remove_enchantments();
 	  } else {
-	    b.unsummon = true;
+	    b.unsummoned = true;
 	  }
 	}
       }
       if (target != -1) {
 	Being b = Being.list[target];
-	b.shield = 1;
-	board.animate_shield(target);
+	if (0 == b.invisibility || source == target) {
+	  b.shield = 1;
+	  board.animate_shield(target);
+	} else {
+	  print("Dispel Magic's Shield misses.");
+	}
       } else {
 	board.animate_delay();
       }
@@ -3529,6 +3557,22 @@ public class MainView extends View {
 	  finish_spell();
 	  return;
       }
+    }
+  }
+
+  public class InvisibilitySpell extends Spell {
+    InvisibilitySpell() {
+      init("Invisibility", "PPws", R.drawable.protection, R.string.PPwsdesc, 0);
+    }
+    public void cast(int source, int target) {
+      is_finished = true;
+      if (target > 1) {
+	// Instantly destroy monster.
+	Being.list[target].unsummon(target);
+      } else {
+	Being.list[target].cast_invisibility = true;
+      }
+      board.animate_spell(target, bitmap);
     }
   }
 

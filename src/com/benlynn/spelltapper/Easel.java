@@ -18,6 +18,9 @@ class Easel {
     green_paint = new Paint();
     green_paint.setARGB(255, 127, 255, 125);
 
+    invisipaint = new Paint();
+    invisipaint.setARGB(63, 0, 0, 0);
+
     red_paint = new Paint();
     red_paint.setARGB(255, 255, 63, 63);
     dark_red_paint = new Paint(red_paint);
@@ -122,4 +125,5 @@ class Easel {
   static Paint compass_background;
   static Paint book_background;
   static Paint book_spell_text;
+  static Paint invisipaint;
 }

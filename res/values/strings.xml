@@ -157,6 +157,7 @@ Cancels with other psychological spells.</string>
 <string name="FSSDDdesc">5 fire damage (ignores <i>Shield</i>). Protects target in an Ice Storm.</string>
 <string name="cwdesc">Spells cast at target are reflected back at caster.</string>
 <string name="WDDcdesc">5 electrical damage. Ignores <i>Shield</i>. Each wizard can only cast this version of lightning once per duel. (This lightning never strikes twice!)</string>
+<string name="PPwsdesc">Target wizard goes invisible for 3 turns starting next turn. While invisible, opponent spells and attacks miss the wizard. Due to its unstable nature, <i>Invisibility</i> destroys monsters even before they attack.</string>
 
 <string name="WFPSFWdesc">Giants can do 4 damage, and have 4 hit points.</string>
 <string name="PSDDdesc">Control target monster. No effect on wizards. Cancels with other psychological spells.</string>

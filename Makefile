@@ -1,4 +1,4 @@
-.PHONY: target red ree
+.PHONY: target release red ree
 
 SDKDIR=~/android-sdk-linux_x86-1.1_r1
 ADB=$(SDKDIR)/tools/adb
@@ -6,8 +6,11 @@ AAPT=$(SDKDIR)/tools/aapt
 DX=$(SDKDIR)/tools/dx
 APKBUILDER=$(SDKDIR)/tools/apkbuilder
 MUCK=com/benlynn/spelltapper/
+CROSS=$(HOME)/cross/
 
 target: bin/out.apk
+
+release: bin/spelltapper.apk
 
 src/$(MUCK)/R.java : res/*/* AndroidManifest.xml
 	$(AAPT) p -m -J src -M AndroidManifest.xml -S res -I $(SDKDIR)/android.jar
@@ -26,6 +29,11 @@ bin/resources.ap_ : src/$(MUCK)/R.java AndroidManifest.xml
 bin/out.apk : bin/resources.ap_ bin/classes.dex
 	$(APKBUILDER) bin/out.apk -z bin/resources.ap_ -f bin/classes.dex -rf src
 
+bin/spelltapper.apk : bin/resources.ap_ bin/classes.dex
+	$(APKBUILDER) $@ -u -z bin/resources.ap_ -f bin/classes.dex -rf src
+	jarsigner -keystore ~/android.keystore $@ android
+	scp bin/spelltapper.apk tl1.stanford.edu:www/spelltapper/
+
 red : bin/out.apk
 	$(ADB) -d uninstall com.benlynn.spelltapper
 	$(ADB) -d install bin/out.apk
@@ -35,4 +43,7 @@ ree : bin/out.apk
 	$(ADB) -e install bin/out.apk
 
 server : server.c
-	 gcc -Wall `sdl-config --cflags` $^ -o $@ `sdl-config --libs` -lSDL_net
+	gcc -Wall `sdl-config --cflags` $^ -o $@ `sdl-config --libs` -lSDL_net
+
+server.exe : server.c
+	i586-mingw32msvc-gcc $^ -o $@ $(CROSS)/SDL.dll $(CROSS)/SDL_net.dll -I $(CROSS)/SDL-1.2.13/include/SDL -I $(CROSS)/SDL_net-1.2.7/include -L $(CROSS)/SDL-1.2.13/lib -lmingw32 -lSDLmain -mwindows

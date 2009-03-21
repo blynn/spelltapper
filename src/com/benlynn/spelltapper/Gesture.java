@@ -11,6 +11,9 @@ class Gesture {
     arrow[0] = get_arrow(x, y);
     arrow[1] = get_arrow(-x, y);
     learned = false;
+    both_hidden = new int[2];
+    both_hidden[0] = Gesture.HIDDEN;
+    both_hidden[1] = Gesture.HIDDEN;
   }
 
   static int find(char c) {
@@ -98,5 +101,7 @@ class Gesture {
   static final int FINGERS = flattenxy(1, 1);
   static final int CLAP = flattenxy(1, 0);
   static final int NONE = flattenxy(0, 0);
+  static final int HIDDEN = -128;
+  static int both_hidden[];
   static Gesture[] list;
 }

@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 public class Being {
+  // TODO: Add new Being to list (rather than have MainView do this),
+  // and store its list index in a field.
   public Being(String i_name, Bitmap i_bitmap, int owner) {
     switch(owner) {
       case -1:  // This being is the player.
@@ -45,7 +47,7 @@ public class Being {
       summon_count[controller]++;
     }
     status = Status.OK;
-    unsummon = false;
+    unsummoned = false;
     remove_enchantments();
     counterspell = false;
     mirror = false;
@@ -106,6 +108,8 @@ public class Being {
   void remove_enchantments() {
     poison = 0;
     disease = 0;
+    invisibility = 0;
+    cast_invisibility = false;
     shield = 0;
     antispell = false;
     resist_heat = false;
@@ -122,6 +126,18 @@ public class Being {
     }
     int x, y;
     Being being;
+  }
+
+  // TODO: Once the Being's list index is stored in a field, change this
+  // to void unsummon().
+  void unsummon(int i) {
+    if (index < 0) Log.e("Being", "Bug! Cannot unsummon wizard!");
+    pos[index].being = null;
+    for(int j = list_count - 1; j > i; j--) {
+      list[j - 1] = list[j];
+    }
+    list_count--;
+    // TODO: Unsummon animation.
   }
 
   // Summoned creatures should appear close to their owner, hence this mess.
@@ -182,7 +198,7 @@ public class Being {
   // could represent the source of a Charm Person spell. For now we know
   // it must be the other player.
   short controller;
-  boolean dead, doomed, unsummon;
+  boolean dead, doomed, unsummoned;
   boolean counterspell;  // True if protected by counter-spell.
   boolean mirror;  // True if protected by mirror.
   int para_hand;
@@ -192,6 +208,8 @@ public class Being {
   int id;
   int disease;
   int poison;
+  int invisibility;
+  boolean cast_invisibility;
   boolean resist_heat, resist_cold;
   boolean is_fireballed;
   boolean raisedead;
