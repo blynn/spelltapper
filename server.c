@@ -11,6 +11,7 @@ void handle(char *input) {
   static int id = 0;
   static int gotmove[2];
   static int sent[2];
+  static int level;
   static int charm_gesture[2] = { -1, -1 };
   static int charm_hand[2] = { -1, -1 };
   static int para_hand[2][2] = {{ -1, -1 } , { -1, -1 }};
@@ -28,8 +29,18 @@ void handle(char *input) {
   }
 
   switch(*s) {
-    case 'N':
+    case 'p':  // Ping.
+      add_char('p');
+      fin();
+      break;
+    case 'N':  // New game.
+      // Whoever connects to the server first determines the level of the game.
+      s++;
+      if (!id) {
+	level = *s - '0';
+      }
       add_char('a' + id);
+      add_char('0' + level);
       fin();
       id++;
       if (id > 1) id = 0;

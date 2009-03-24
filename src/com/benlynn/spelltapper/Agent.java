@@ -4,7 +4,6 @@ import java.util.Random;
 import android.util.Log;
 
 import com.benlynn.spelltapper.MainView.SpellTapMove;
-import com.benlynn.spelltapper.MainView.History;
 import com.benlynn.spelltapper.Being.Status;
 
 abstract public class Agent {
@@ -106,6 +105,7 @@ abstract public class Agent {
     void basic_init() {
       rnd = new Random();
       res = new SearchResult();
+      history = new History();
     }
     void reset() {
       first = true;

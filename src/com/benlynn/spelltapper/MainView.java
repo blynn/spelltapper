@@ -397,9 +397,8 @@ public class MainView extends View {
     int state;
   }
 
-  // Now we're talking! Two goblins and a dummy. Since the dummy is the
-  // default target, the player is must retarget their stabs if they are
-  // to win.
+  // Two goblins and a dummy. Since the dummy is the default target, the player
+  // is must retarget their stabs if they are to win.
   class TargetTutorial extends Tutorial {
     TargetTutorial() {
       state = 0;
@@ -946,6 +945,7 @@ public class MainView extends View {
   static final int HANDLER_GET_CHARM_GESTURE = 3;
   static final int HANDLER_SET_PARA = 4;
   static final int HANDLER_GET_PARA = 5;
+  static final int HANDLER_NEW_GAME = 6;
 
   void net_set_para(int target, int hand) {
     opp_ready = false;
@@ -997,8 +997,15 @@ public class MainView extends View {
 	}
       } catch (InterruptedException e) {
       }
-      Log.i("Reply", Tubes.reply);
+      //Log.i("Reply", Tubes.reply);
       switch(handler_state) {
+	case HANDLER_NEW_GAME:
+	  Tubes.netid = Tubes.reply.charAt(0) - 'a';
+	  Player.level = Tubes.reply.charAt(1) - '0';
+	  spelltap.netconfig.setVisibility(View.GONE);
+	  set_tutorial(MACHINE_NET);
+	  spelltap.goto_mainframe();
+	  break;
 	case HANDLER_DECODE:
 	  decode_move(oppturn, Tubes.reply);
 	  break;
@@ -1154,52 +1161,6 @@ public class MainView extends View {
     spell_is_twohanded = false;
   }
 
-  class History {
-    History() {
-      gest = new int[128][2];
-      start = new int[2];
-      reset();
-    }
-    void fast_forward() {
-      start[0] = start[1] = cur;
-    }
-    boolean was_fast_forwarded() {
-      return start[0] == cur && start[1] == cur;
-    }
-    void reset() {
-      cur = 0;
-      start[0] = start[1] = 0;
-    }
-    boolean is_doubleP() {
-      if (cur == 0) Log.e("History", "is_doubleP called with no history");
-      return gest[cur - 1][0] == Gesture.PALM && gest[cur - 1][1] == Gesture.PALM;
-    }
-    int last_gesture(int h) {
-      if (0 == cur) return Gesture.NONE;
-      return gest[cur - 1][h];
-    }
-    void add(int g[]) {
-      gest[cur][0] = g[0];
-      gest[cur][1] = g[1];
-      // Stabs and null gestures break combos.
-      if (cur > 0) {
-	if (gest[cur - 1][0] == Gesture.KNIFE) start[0] = cur;
-	if (gest[cur - 1][1] == Gesture.KNIFE) start[1] = cur;
-      }
-      if (g[0] == Gesture.KNIFE) start[0] = cur;
-      if (g[1] == Gesture.KNIFE) start[1] = cur;
-      cur++;
-      if (g[0] == Gesture.NONE) start[0] = cur;
-      if (g[1] == Gesture.NONE) start[1] = cur;
-      // No spell needs more than 7 turns.
-      if (cur > start[0] + 6) start[0]++;
-      if (cur > start[1] + 6) start[1]++;
-    }
-    int[][] gest;
-    int cur;
-    int[] start;
-  }
-
   void init_opponent(Agent a) {
     Being.list[1] = new Being(a.name(), get_bitmap(a.bitmap_id()), -2);
     Being.list[1].start_life(a.life());
@@ -1210,7 +1171,6 @@ public class MainView extends View {
   // Constructor.
   public MainView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    Log.i("MainView", "cons");
     con = context;
     drag_i = -1;
     is_animating = false;
@@ -1807,7 +1767,6 @@ public class MainView extends View {
 	  }
 	  if (STATE_ON_CONFIRM == main_state) return false;
 	  if (y1 >= yspellrow && y1 < yspellrow + 2 * 50) {
-	    Log.i("MV", "coord " + x1 + " " + y1);
 	    // Could be choosing a ready spell.
 	    int i = 0, h = 0;  // Initial values suppress bogus warnings.
 	    if (y1 > yspellrow + 50) {
@@ -1903,6 +1862,11 @@ public class MainView extends View {
     public void handleMessage(Message msg) {
       if (TILT_DISABLED != tilt_state) tilt_state = TILT_AWAIT_UP;
     }
+  }
+
+  static void new_game() {
+    handler_state = HANDLER_NEW_GAME;
+    Tubes.net_send("N" + (char) ('0' + Player.level));
   }
 
   class SpellCast {
@@ -2284,7 +2248,7 @@ public class MainView extends View {
       s += tgtname + ".";
     }
     print(s);
-    Log.i("MV", s);
+    //Log.i("MV", s);
     if (sc.spell == dispel_spell) {
       // Dispel Magic always works.
       sc.run();
@@ -2962,7 +2926,7 @@ public class MainView extends View {
 	    b.get_hurt(1);
 	    board.animate_move_damage(target, 1);
 	  } else {
-	    Log.i("TODO", "block animation");
+	    //Log.i("TODO", "block animation");
 	    board.animate_move_damage(target, 0);
 	  }
 	  return;
@@ -2990,7 +2954,7 @@ public class MainView extends View {
 	    b.get_hurt(1);
 	    board.animate_damage(target, 1);
 	  } else {
-	    Log.i("TODO", "block animation");
+	    //Log.i("TODO", "block animation");
 	    board.animate_damage(target, 0);
 	  }
 	  return;
@@ -3005,7 +2969,7 @@ public class MainView extends View {
     }
     public void cast(int source, int target) {
       is_finished = true;
-      Log.i("TODO", "fire storm animation");
+      //Log.i("TODO", "fire storm animation");
       board.animate_delay();
       switch(global_spell) {
         case GLOBAL_NONE:
@@ -3029,7 +2993,7 @@ public class MainView extends View {
     }
     public void cast(int source, int target) {
       is_finished = true;
-      Log.i("TODO", "ice storm animation");
+      //Log.i("TODO", "ice storm animation");
       board.animate_delay();
       switch(global_spell) {
         case GLOBAL_NONE:
@@ -3048,7 +3012,7 @@ public class MainView extends View {
 
   public class FireballSpell extends Spell {
     FireballSpell() {
-      init("Fireball", "FSSDD", R.drawable.missile, R.string.FSSDDdesc, 1);
+      init("Fireball", "FSSDD", R.drawable.fireball, R.string.FSSDDdesc, 1);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -3060,13 +3024,13 @@ public class MainView extends View {
 	  Being b = Being.list[target];
 	  b.is_fireballed = true;
 	  if (global_spell != GLOBAL_ICE_STORM) {
-	    Log.i("TODO", "Ice Storm + Fireball animation");
+	    //Log.i("TODO", "Ice Storm + Fireball animation");
 	    board.animate_damage(target, 0);
 	  } else if (!b.resist_heat) {
 	    b.get_hurt(5);
 	    board.animate_damage(target, 5);
 	  } else {
-	    Log.i("TODO", "resist heat animation");
+	    //Log.i("TODO", "resist heat animation");
 	    board.animate_damage(target, 0);
 	  }
 	  return;
@@ -3148,7 +3112,7 @@ public class MainView extends View {
 
   public class FingerOfDeathSpell extends Spell {
     FingerOfDeathSpell() {
-      init("Finger of Death", "PWPFSSSD", R.drawable.wound, R.string.PWPFSSSDdesc, 1);
+      init("Finger of Death", "PWPFSSSD", R.drawable.fod, R.string.PWPFSSSDdesc, 1);
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -3355,7 +3319,7 @@ public class MainView extends View {
 
   public class CharmPersonSpell extends Spell {
     CharmPersonSpell() {
-      init("Charm Person", "PSDF", R.drawable.confusion, R.string.PSDFdesc, 1);
+      init("Charm Person", "PSDF", R.drawable.charm, R.string.PSDFdesc, 1);
       set_is_psych();
     }
     public void cast(int source, int target) {
@@ -3374,7 +3338,7 @@ public class MainView extends View {
 
   public class CharmMonsterSpell extends Spell {
     CharmMonsterSpell() {
-      init("Charm Monster", "PSDD", R.drawable.confusion, R.string.PSDDdesc, 1);
+      init("Charm Monster", "PSDD", R.drawable.charm, R.string.PSDDdesc, 1);
       set_is_psych();
     }
     public void cast(int source, int target) {
@@ -3438,7 +3402,7 @@ public class MainView extends View {
 
   public class ParalysisSpell extends Spell {
     ParalysisSpell() {
-      init("Paralysis", "FFF", R.drawable.confusion, R.string.FFFdesc, 1);
+      init("Paralysis", "FFF", R.drawable.para, R.string.FFFdesc, 1);
       set_is_psych();
     }
     public void cast(int source, int target) {
@@ -3530,7 +3494,7 @@ public class MainView extends View {
 
   public class MagicMirrorSpell extends Spell {
     MagicMirrorSpell() {
-      init("Magic Mirror", "cw", R.drawable.protection, R.string.cwdesc, 0);
+      init("Magic Mirror", "cw", R.drawable.mirror, R.string.cwdesc, 0);
     }
     public void cast(int source, int target) {
       is_finished = true;
@@ -3592,7 +3556,7 @@ public class MainView extends View {
 	    b.get_hurt(power);
 	    board.animate_move_damage(target, 1);
 	  } else {
-	    Log.i("TODO", "block animation");
+	    //Log.i("TODO", "block animation");
 	    board.animate_move_damage(target, 0);
 	  }
 	  return;

@@ -45,12 +45,10 @@ class Tubes extends SpellTapMachine {
       }
       if (badport) {
 	spelltap.narrate(R.string.badport);
-      } else if (0 != Tubes.newgame()) {
+      } else if (0 != ping()) {
 	spelltap.narrate(R.string.servererror);
       } else {
-	spelltap.netconfig.setVisibility(View.GONE);
-        spelltap.mainview.set_tutorial(MainView.MACHINE_NET);
-        spelltap.goto_mainframe();
+        spelltap.mainview.new_game();
       }
     }
   }
@@ -111,12 +109,10 @@ class Tubes extends SpellTapMachine {
   }
   static Handler retry_handler;
 
-  static int newgame() {
-    String r = send("N");
-    if (null == r) {
-      return 1;
-    }
-    netid = r.charAt(0) - 'a';
+  static int ping() {
+    String r = send("p");
+    if (null == r) return 1;
+    if (!r.equals("p")) return 1;
     return 0;
   }
 
@@ -169,11 +165,11 @@ class Tubes extends SpellTapMachine {
       int count = in.read(buf, 0, 16);
       if (count < 1) return null;
       String response = new String(buf, 0, count);
-      Log.i("Tubes", "response: " + response);
+      //Log.i("Tubes", "response: " + response);
       out.close();
       in.close();
       sock.close();
-      Log.i("Tubes", response);
+      //Log.i("Tubes", response);
       return response;
     } catch (UnknownHostException e) {
       Log.e("Tubes", "UnknownHostException");
