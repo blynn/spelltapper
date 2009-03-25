@@ -64,11 +64,11 @@
     <string name="wavetut">To make a <b>Wave</b> gesture (<b>W</b>), run your finger diagonally downwards and away from the center (L: &#x2199; R: &#x2198; ).</string>
     <string name="wavetut1">Gesture <b>Wave</b> with both hands.</string>
     <string name="wavetut2">Tap the bottom of the screen.</string>
-    <string name="fingerstut">Now make the <b>Fingers</b> gesture (<b>F</b>) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ).</string>
-    <string name="fingerstutpass1">Perfect! Gesture <b>Palm</b> with both hands. Normally this loses, but since <b>WFP</b> is <i>Cause Light Wounds</i>, you\'ll do 4 points of damage and kill your opponent!</string>
-    <string name="fingerstutpass2">Well done! Notice a gesture can only complete 1 spell, explaining why no <i>Shield</i> was cast.</string>
+    <string name="fingerstut">Make the <b>Fingers</b> gesture (<b>F</b>) on both hands: run a finger diagonally downwards and towards the center (L: &#x2198; R: &#x2199; ).</string>
+    <string name="fingerstut2">Gesture <b>Palm</b> with both hands.</string>
+    <string name="fingerstut3">Tap the bottom of the screen. Trust me!</string>
+    <string name="fingerstutpass2">Good. Despite surendering, you win because your opponent died.</string>
     <string name="fingerstutpass3">I\'ll see you back at school.</string>
-    <string name="fingerstutfail">Almost. Try again.</string>
 
     <string name="DSFteach1"><b>DSF</b> casts <i>Confusion</i>. The victim must gesture identically with both hands next turn.</string>
     <string name="DSFteach2">Observe a confused opponent who gestures <b>P</b> must do so with both hands, and thus surrenders!</string>
@@ -80,7 +80,7 @@
 <string name="cureteach1">Impressive! You\'re ready for more spells.</string>
 <string name="cureteach2"><b>DFW</b> is <i>Cure Light Wounds</i>, which restores up to one point of health.</string>
 <string name="cureteach3">And <b>SFW</b> is <i>Summon Goblin</i>, which summons a goblin to fight for you.</string>
-<string name="cureteach4">You encountered two goblins before. Each has 1 point of health and attacks for 1 damage.</string>
+<string name="cureteach4">Your next opponent knows the same spells you do.</string>
 
 <string name="generic_advice">Best of luck in your next battle!</string>
 
@@ -99,6 +99,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="lvl2teach1">Welcome to Level 2! You are now more adept with Summon spells.</string>
 <string name="lvl2teach2">Monsters can attack the turn they are summoned. You may also target monsters as they materialize.</string>
 <string name="lvl2teach3">Experiment with the summoning circles to see what I mean.</string>
+<string name="lvl2teach4">Your spellbook now contains all Level 2 spells.</string>
 
 <string name="lvl3teach1">Welcome to Level 3! You can now <b>Clap</b> by drawing towards the center.</string>
 <string name="lvl3teach2">You must <b>Clap</b> with both hands for it to work. To remind you, we write the gesture in lowercase: <b>c</b>.</string>
@@ -108,7 +109,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="talkabouttilt1">Here\'s a secret: instead of casting spells by tapping the bottom of the screen...</string>
 <string name="talkabouttilt2">Tilt the screen up vertically after gesturing. When you see the flash, tilt the screen back to its original position.</string>
 
-<string name="limit1">I have yet to implement experience points. For now, you gain a level by just taking part in an online duel. Visit Jack for advice.</string>
+<string name="limit1">Congratulations! You gain a level for dueling one-on-one. Visit Jack for advice.</string>
 <string name="limit2">You are now at level 3.</string>
 <string name="limit3">Have 2 levels on the house! You are at the highest level.</string>
 
@@ -137,7 +138,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="DFWdesc">Restore up to 1 health.</string>
 <string name="DSFdesc">Target spellcaster must select same gesture for both hands. Target monster attacks its controller. Cancels with other psychological spells.</string>
 <string name="PSDFdesc">Control target spellcaster's hand next turn. No effect on monsters. Cancels with other psychological spells.</string>
-<string name="WWPdesc"><i>Shield</i> that lasts 4 turns, including this one.</string>
+<string name="WWPdesc"><i>Shield</i> that lasts 4 turns, including the turn the spell is cast.</string>
 
 <string name="PSFWdesc">Ogres can do 2 damage, and have 2 hit points.</string>
 <string name="SWDdesc">Target can only gesture <b>P</b> <b>K</b> or <b>W</b> next turn. No effect on monsters. Cancels with other psychological spells.</string>
@@ -166,6 +167,7 @@ Cancels with other psychological spells.</string>
 <string name="SSFPdesc">Target becomes immune to damage from <i>Ice Storm</i> and <i>Ice Elementals</i> until enchantment is removed. Destroys <i>Ice Elementals</i>.</string>
 <string name="SWWcdesc">Each being takes 5 fire damage unless protected by Resist Heat or Counter-spell. Cancels <i>Ice Storm</i> and <i>Ice Elemental</i>, merges with <i>Fire Storm</i>, absorbs <i>Fire Elemental</i>.</string>
 <string name="WSScdesc">Each being takes 5 ice damage unless protected by Resist Cold or Counter-spell, or is hit by a Fireball. Cancels <i>Fire Storm</i> and <i>Fire Elemental</i>, merges with <i>Ice Storm</i>, absorbs <i>Ice Elemental</i>.</string>
+<string name="cSWWSdesc">Each turn, Ice Elemental does 3 damage to each being not protected by <i>Shield</i> or <i>Resist Cold</i>. Destroyed after taking 3 points of damage. Also absorbed or destroyed by <i>Resist Cold</i>, <i>Fireball</i>, storms, elementals and spells that destroy monsters. Does not attack on the turn it is destroyed.</string>
 <string name="PWPFSSSDdesc">Target dies, even if protected by Counter-spell. Ignores <i>Shield</i>. Countered by <i>Raise Dead</i>.</string>
 <string name="DWWFWcdesc">Brings target corpse back to life. Restores up to 5 hit points on living target, but does not cure poison or disease.</string>
 

@@ -632,7 +632,7 @@ public class SpellTap extends Activity {
   static Dojo dojo;
   static School school;
   static Tubes tubes;
-  static int state = 128;
+  static int state = 0;
   static int curplace;
   static boolean allow_confirm_one;
   static ImageView img_speaker;

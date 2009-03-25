@@ -2,16 +2,39 @@
 //
 //   Dispel Magic
 //   Counter-spell, Magic Mirror
-//   Summon (cannot cast on future monsters)
+//   Summon (cannot cast on future monsters), including Elementals.
 //   Counter-spell, Magic Mirror on fresh monsters.
 //   Shield, Protection From Evil
 //   Enchantments
 //   Remove Enchantment
+//   Storms
 //   Damaging spells, attacks
 //   Cures, Raise Dead
 //
-// TODO: Disenchant must happen sooner, so when Invisibility/Blindness
-// is removed, targeting works properly.
+// This follows Andrew Plotkin's implementation in that Invisibility/Blindness
+// spells still causes targeting to fail in the same turn they are removed
+// by Disenchant.
+//
+// Fire/ice effects can be complex. Some examples:
+//
+// 1. Fire Elemental, Resist Heat, Fireball, Ice Storm:
+//   The Fire Elemental and Ice Storm destroy each other, even though Resist
+//   Heat alone is enough to kill the Fire Elemental. Since the Ice Storm did
+//   not prevail, the Fireball damages its target.
+//
+// 2. Fire Elemental, Ice Elemental, Ice Storm, Fireball:
+//   Elementals and Storm cancel, thus Fireball does damage.
+//
+// 3. Ice Elemental with 1 remaining hit point, Stab or non-fire damage spell:
+//   The Ice Elemental still attacks despite being destroyed this turn.
+//
+// 4. Ice Elemental, Resist Fire/Fire Storm/Fireball
+//   The Ice Elemental is destroyed and does not attack.
+//
+// Elementals replace any existing elementals, but will be hit by spells
+// targeted at the old and new incarnations.
+//
+// Invisibility is no defence against Elementals, though Shield is.
 
 package com.benlynn.spelltapper;
 
@@ -769,7 +792,6 @@ public class MainView extends View {
 	  }
 	  return;
 	case 3:
-	  tip_off();
 	  jack_tip(R.string.fingerstut);
 	  arr_x0 = 0;
 	  arr_y0 = ylower + 32;
@@ -790,32 +812,31 @@ public class MainView extends View {
 	  }
 	  return;
 	case 5:
-	  tip_off();
-	  set_main_state(STATE_ON_END_ROUND);
-	  state = 500;
-	  return;
-	case 500:
-	  jack_says(R.string.fingerstutpass1);
-	  state = 501;
-	  return;
-	case 501:
+	  jack_tip(R.string.fingerstut2);
+	  set_main_state(STATE_GESTURE_TEACH);
 	  state = 6;
 	  return;
 	case 6:
-	  if (hist.gest[2][0] == Gesture.PALM &&
-	      hist.gest[2][1] == Gesture.PALM && 0 == winner) {
-	    jack_says(R.string.fingerstutpass2);
+	  if (Gesture.PALM == choice[0] && Gesture.PALM == choice[1]) {
+	    jack_tip(R.string.fingerstut3);
+	    set_main_state(STATE_ON_CONFIRM);
 	    state = 7;
-	  } else {
-	    jack_says(R.string.fingerstutfail);
-	    state = 0;
 	  }
 	  return;
 	case 7:
-	  jack_says(R.string.fingerstutpass3);
+	  tip_off();
+	  set_main_state(STATE_NORMAL);
 	  state = 8;
 	  return;
 	case 8:
+	  jack_says(R.string.fingerstutpass2);
+	  state = 9;
+	  return;
+	case 9:
+	  jack_says(R.string.fingerstutpass3);
+	  state = 10;
+	  return;
+	case 10:
 	  spelltap.next_state();
 	  spelltap.goto_town();
 	  return;
@@ -2028,7 +2049,8 @@ public class MainView extends View {
       opphist.add(oppturn.gest);
     }
 
-    global_spell = GLOBAL_NONE;
+    global_ice_storm = false;
+    global_fire_storm = false;
     fireice_i = 0;
     // Expire status effects.
     for (int i = 0; i < Being.list_count; i++) {
@@ -2180,26 +2202,64 @@ public class MainView extends View {
 
     // Handle fire and ice spells at the appropriate moment
     if (fireice_resolve == cur_sc) {
-      if (GLOBAL_NONE != global_spell && fireice_i < Being.list_count) {
+      if (0 == fireice_i) {
+	// Resolve global spell conflicts.
+	if (global_fire_storm && global_fire_elemental) {
+	  global_fire_elemental = false;
+	  print("The Fire Storm absorbs the Fire Elemental.");
+	}
+	if (global_ice_storm && global_ice_elemental) {
+	  global_ice_elemental = false;
+	  print("The Ice Storm absorbs the Ice Elemental.");
+	}
+	boolean canceled = false;
+	if (global_fire_elemental && global_ice_elemental) {
+	  global_fire_elemental = false;
+	  global_ice_elemental = false;
+	  print("The Fire and Ice Elementals cancel.");
+	  canceled = true;
+	}
+	if (global_fire_elemental && global_ice_storm) {
+	  global_fire_elemental = false;
+	  print("The Fire Elemental and Ice Storm cancel.");
+	  canceled = true;
+	}
+	if (global_ice_elemental && global_fire_storm) {
+	  global_ice_elemental = false;
+	  print("The Ice Elemental and Fire Storm cancel.");
+	  canceled = true;
+	}
+	if (global_fire_storm && global_ice_storm) {
+	  print("The Fire and Ice Storms cancel.");
+	  canceled = true;
+	}
+	if (!global_fire_storm && !global_ice_storm &&
+	    !global_fire_elemental && !global_ice_elemental) {
+	  canceled = true;
+	}
+	if (canceled) {
+	  exec_cursor++;
+	  next_spell();
+	  return;
+	}
+      }
+      if (fireice_i < Being.list_count) {
 	Being b = Being.list[fireice_i];
-	switch(global_spell) {
-	  case GLOBAL_ICE_STORM:
-	    if (b.is_fireballed ||
-		b.resist_cold || b.counterspell) {
-	      board.animate_damage(fireice_i, 0);
-	    } else {
-	      b.get_hurt(5);
-	      board.animate_damage(fireice_i, 5);
-	    }
-	    break;
-	  case GLOBAL_FIRE_STORM:
-	    if (b.resist_heat || b.counterspell) {
-	      board.animate_damage(fireice_i, 0);
-	    } else {
-	      b.get_hurt(5);
-	      board.animate_damage(fireice_i, 5);
-	    }
-	    break;
+	if (global_ice_storm) {
+	  if (b.is_fireballed ||
+	      b.resist_cold || b.counterspell) {
+	    board.animate_damage(fireice_i, 0);
+	  } else {
+	    b.get_hurt(5);
+	    board.animate_damage(fireice_i, 5);
+	  }
+	} else if (global_fire_storm) {
+	  if (b.resist_heat || b.counterspell) {
+	    board.animate_damage(fireice_i, 0);
+	  } else {
+	    b.get_hurt(5);
+	    board.animate_damage(fireice_i, 5);
+	  }
 	}
 	fireice_i++;
       } else {
@@ -2435,6 +2495,8 @@ public class MainView extends View {
     net_state = NET_IDLE;
     tilt_state = TILT_AWAIT_UP;
     WDDc_cast = false;
+    global_ice_elemental = false;
+    global_fire_elemental = false;
   }
 
   // Start new round.
@@ -2971,18 +3033,8 @@ public class MainView extends View {
       is_finished = true;
       //Log.i("TODO", "fire storm animation");
       board.animate_delay();
-      switch(global_spell) {
-        case GLOBAL_NONE:
-	  global_spell = GLOBAL_FIRE_STORM;
-	  break;
-	case GLOBAL_ICE_STORM:
-	  print("Fire Storm cancels with Ice Storm.");
-	  global_spell = GLOBAL_NONE;
-	  break;
-        case GLOBAL_FIRE_STORM:
-	  print("Fire Storm merges with Fire Storm");
-	  break;
-      }
+      if (global_fire_storm) print("Fire Storm merges with Fire Storm");
+      global_fire_storm = true;
     }
   }
 
@@ -2995,18 +3047,8 @@ public class MainView extends View {
       is_finished = true;
       //Log.i("TODO", "ice storm animation");
       board.animate_delay();
-      switch(global_spell) {
-        case GLOBAL_NONE:
-	  global_spell = GLOBAL_ICE_STORM;
-	  break;
-	case GLOBAL_ICE_STORM:
-	  print("Ice Storm merges with Ice Storm");
-	  break;
-        case GLOBAL_FIRE_STORM:
-	  print("Ice Storm cancels with Fire Storm.");
-	  global_spell = GLOBAL_NONE;
-	  break;
-      }
+      if (global_ice_storm) print("Ice Storm merges with Ice Storm");
+      global_ice_storm = true;
     }
   }
 
@@ -3023,7 +3065,7 @@ public class MainView extends View {
 	  is_finished = true;
 	  Being b = Being.list[target];
 	  b.is_fireballed = true;
-	  if (global_spell != GLOBAL_ICE_STORM) {
+	  if (global_ice_storm) {
 	    //Log.i("TODO", "Ice Storm + Fireball animation");
 	    board.animate_damage(target, 0);
 	  } else if (!b.resist_heat) {
@@ -3132,6 +3174,19 @@ public class MainView extends View {
 	  return;
 	  */
       }
+    }
+  }
+
+  public class IceElementalSpell extends Spell {
+    IceElementalSpell() {
+      init("Ice Elemental", "cSWWS", R.drawable.summon1, R.string.cSWWSdesc, 1);
+      set_is_global();
+    }
+    public void cast(int source, int target) {
+      is_finished = true;
+      board.animate_delay();
+      if (global_ice_elemental) print("The Ice Elementals merge into one.");
+      global_ice_elemental = true;
     }
   }
 
@@ -3644,10 +3699,11 @@ public class MainView extends View {
   static final int MACHINE_COUNT = 2;
   static Tutorial machines[];
 
-  static final int GLOBAL_NONE = 0;
-  static final int GLOBAL_FIRE_STORM = 1;
-  static final int GLOBAL_ICE_STORM = 2;
-  static int global_spell;
+  static boolean global_fire_storm;
+  static boolean global_ice_storm;
+  static boolean global_fire_elemental;
+  static boolean global_ice_elemental;
+
   static int fireice_i;
   static SpellCast monster_resolve, fireice_resolve;
   static int gesture_help;

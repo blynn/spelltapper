@@ -69,7 +69,8 @@ class School extends SpellTapMachine {
     machine = new AdviceMachine(
       R.string.lvl2teach1,
       R.string.lvl2teach2,
-      R.string.lvl2teach3);
+      R.string.lvl2teach3,
+      R.string.lvl2teach4);
   }
   void set_state_level3() {
     machine = new AdviceMachine(
@@ -172,6 +173,14 @@ class School extends SpellTapMachine {
       strlist[1] = m1;
       strlist[2] = m2;
       strcount = 3;
+      state = 0;
+    }
+    AdviceMachine(int m0, int m1, int m2, int m3) {
+      strlist[0] = m0;
+      strlist[1] = m1;
+      strlist[2] = m2;
+      strlist[3] = m3;
+      strcount = 4;
       state = 0;
     }
     void run() {
