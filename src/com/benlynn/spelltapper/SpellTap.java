@@ -14,6 +14,8 @@ import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.os.SystemClock;
 import android.view.KeyEvent;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
 
 import android.util.Log;
 
@@ -21,7 +23,7 @@ public class SpellTap extends Activity {
   @Override
   public void onCreate(Bundle bun) {
     super.onCreate(bun);
-    Log.i("SpellTap", "onCreate");
+    //Log.i("SpellTap", "onCreate");
     // No title bar.
     requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -95,6 +97,15 @@ public class SpellTap extends Activity {
       booklayout.setVisibility(bun.getInt(ICE_VIS_BOOKVIEW));
       netconfig.setVisibility(bun.getInt(ICE_VIS_NETCONFIG));
     } else {
+      try {
+	FileInputStream in = mainview.con.openFileInput("save");
+	if (0 == in.read()) {
+	  state = in.read();
+	}
+	in.close();
+      } catch(Exception e) {
+	// Leave state at 0.
+      }
       // Start in town.
       townview.setVisibility(View.VISIBLE);
       run();
@@ -113,7 +124,7 @@ public class SpellTap extends Activity {
       first = true;
     }
     public void onAccuracyChanged(int sensor, int accuracy) {
-      Log.i("TiltListener", "Accuracy change: " + Float.toString(accuracy));
+      //Log.i("TiltListener", "Accuracy change: " + Float.toString(accuracy));
     }
 
     public void onSensorChanged(int sensor, float[] values) {
@@ -169,7 +180,7 @@ public class SpellTap extends Activity {
     super.onResume();
     Tubes.is_abandoned = false;
     if (null != Tubes.net_thread) {
-      Log.i("SpellTap", "Restaring nethread");
+      //Log.i("SpellTap", "Restaring nethread");
       Tubes.net_thread.run();
     }
     senseman.registerListener(tilt_listener,
@@ -211,12 +222,12 @@ public class SpellTap extends Activity {
     bun.putInt(ICE_VIS_NETCONFIG, netconfig.getVisibility());
     Tubes.save_bundle(bun);
     MainView.save_bundle(bun);
-    Log.i("SpellTap", "Saving " + state);
+    //Log.i("SpellTap", "Saving " + state);
   }
 
   @Override
   public void onPause() {
-    Log.i("SpellTap", "Pause");
+    //Log.i("SpellTap", "Pause");
     Tubes.is_abandoned = true;
     super.onPause();
   }
@@ -255,7 +266,6 @@ public class SpellTap extends Activity {
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     switch(keyCode) {
       case KeyEvent.KEYCODE_BACK:
-	Log.i("SpellTap", "BACK " + curplace);
 	if (View.VISIBLE == hog.getVisibility()) {
 	  hogoff();
 	  return true;
@@ -348,7 +358,17 @@ public class SpellTap extends Activity {
   }
 
   void next_state() {
-    if (state < 17) state++;
+    if (state < 17) {
+      state++;
+      try {
+	FileOutputStream os = mainview.con.openFileOutput("save", 0);
+	os.write(0);  // Save version number.
+	os.write(state);
+	os.close();
+      } catch (Exception e) {
+	Log.e("SpellTapper", "Proceeding without saving state.");
+      }
+    }
     run();
     switch(state) {
       case 15:

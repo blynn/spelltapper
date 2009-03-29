@@ -16,7 +16,6 @@ class Tubes extends SpellTapMachine {
   Tubes(SpellTap st) {
     super(st);
     is_abandoned = false;
-    Log.i("Tubes", "cons");
     net_thread = null;
   }
   abstract class Machine { abstract void run(); }
