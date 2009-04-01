@@ -38,23 +38,11 @@
     <TextView
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
-	android:text="Spell Tap server:"
+	android:text="Game name (optional):"
 	android:textSize="18dip"
 	/>
     <EditText
-	android:id="@+id/netconfig_server"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:singleLine="true"
-	/>
-    <TextView
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:text="Port:"
-	android:textSize="18dip"
-	/>
-    <EditText
-	android:id="@+id/netconfig_port"
+	android:id="@+id/gamename"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
 	android:singleLine="true"
@@ -77,8 +65,8 @@
     <TextView
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
-	android:text="Download server from http://cs.stanford.edu/~blynn/spelltapper"
-	android:textSize="16dip"
+	android:text="You can either leave the name blank to play someone else who also left the name blank, or choose a name and tell it to a friend."
+	android:textSize="18dip"
 	android:autoLink="all"
 	/>
 </LinearLayout>

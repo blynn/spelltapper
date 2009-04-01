@@ -77,8 +77,7 @@ public class SpellTap extends Activity {
     netconfig.setVisibility(View.GONE);
     Tubes.init((Button) findViewById(R.id.netconfig_ok),
 	(Button) findViewById(R.id.netconfig_cancel),
-	(EditText) findViewById(R.id.netconfig_server),
-	(EditText) findViewById(R.id.netconfig_port));
+	(EditText) findViewById(R.id.gamename));
 
     init_gesture_state_knowledge();
     spellbook_is_open = false;

@@ -968,6 +968,8 @@ public class MainView extends View {
   static final int HANDLER_SET_PARA = 6;
   static final int HANDLER_GET_PARA = 7;
   static final int HANDLER_NEW_GAME = 8;
+  static final int HANDLER_START_GAME = 9;
+  static final int HANDLER_FINISH_GAME = 10;
 
   void net_set_para(int target, int hand) {
     opp_ready = false;
@@ -1022,15 +1024,24 @@ public class MainView extends View {
       //Log.i("Reply", Tubes.reply);
       switch(handler_state) {
 	case HANDLER_NEW_GAME:
+	  if (Tubes.reply.startsWith("Error: ")) {
+	    spelltap.narrate(R.string.nameconflict);
+	    return;
+	  }
 	  Tubes.netid = Tubes.reply.substring(0, 1);
-	  // XXX
-	  //Player.level = Tubes.reply.charAt(1) - '0';
-	  Tubes.gameid = Tubes.reply.substring(1, 1 + 8);
-	  Log.i("Game", Tubes.gameid);
-	  Player.level = 5;
+	  Player.level = Tubes.reply.charAt(1) - '0';
+	  Tubes.gameid = Tubes.reply.substring(2, 2 + 16);
+	  spelltap.show_tip(R.string.waitchallenge);
+	  handler_state = HANDLER_START_GAME;
+	  Tubes.send_start();
+	  break;
+	case HANDLER_START_GAME:
+	  tip_off();
 	  spelltap.netconfig.setVisibility(View.GONE);
 	  set_tutorial(MACHINE_NET);
 	  spelltap.goto_mainframe();
+	  break;
+	case HANDLER_FINISH_GAME:
 	  break;
 	case HANDLER_GETMOVE:
 	  handler_state = HANDLER_DECODE;
@@ -1158,6 +1169,8 @@ public class MainView extends View {
           state = 1;
 	  return;
 	case 1:
+	  handler_state = HANDLER_FINISH_GAME;
+	  Tubes.send_finish();
 	  spelltap.next_state();
 	  spelltap.goto_town();
 	  return;
@@ -1895,11 +1908,6 @@ public class MainView extends View {
     }
   }
 
-  static void new_game() {
-    handler_state = HANDLER_NEW_GAME;
-    Tubes.net_send("?n=foo&v=1&l=" + Player.level);
-  }
-
   class SpellCast {
     SpellCast(int i_hand, Spell i_spell, int i_source, int i_target) {
       hand = i_hand;
@@ -2621,6 +2629,7 @@ public class MainView extends View {
       if (-1 == h) Log.e("MV", "Bug! Paralyzed hand not chosen!");
       int lastg = hist.last_gesture(h);
       choice[h] = Gesture.paralyze(lastg);
+      spell_search(h);
     }
 
     // Handle amnesia.
