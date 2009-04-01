@@ -956,17 +956,18 @@ public class MainView extends View {
     opp_ready = false;
     // Spawn a thread to send move over the network, so we can keep handling
     // user input.
-    handler_state = HANDLER_DECODE;
+    handler_state = HANDLER_GETMOVE;
     Tubes.send_move(s);
   }
   static int handler_state;
-  static final int HANDLER_DECODE = 0;
-  static final int HANDLER_CHARM_CHOSEN = 1;
-  static final int HANDLER_GET_CHARM_HAND = 2;
-  static final int HANDLER_GET_CHARM_GESTURE = 3;
-  static final int HANDLER_SET_PARA = 4;
-  static final int HANDLER_GET_PARA = 5;
-  static final int HANDLER_NEW_GAME = 6;
+  static final int HANDLER_GETMOVE = 1;
+  static final int HANDLER_DECODE = 2;
+  static final int HANDLER_CHARM_CHOSEN = 3;
+  static final int HANDLER_GET_CHARM_HAND = 4;
+  static final int HANDLER_GET_CHARM_GESTURE = 5;
+  static final int HANDLER_SET_PARA = 6;
+  static final int HANDLER_GET_PARA = 7;
+  static final int HANDLER_NEW_GAME = 8;
 
   void net_set_para(int target, int hand) {
     opp_ready = false;
@@ -1021,11 +1022,19 @@ public class MainView extends View {
       //Log.i("Reply", Tubes.reply);
       switch(handler_state) {
 	case HANDLER_NEW_GAME:
-	  Tubes.netid = Tubes.reply.charAt(0) - 'a';
-	  Player.level = Tubes.reply.charAt(1) - '0';
+	  Tubes.netid = Tubes.reply.substring(0, 1);
+	  // XXX
+	  //Player.level = Tubes.reply.charAt(1) - '0';
+	  Tubes.gameid = Tubes.reply.substring(1, 1 + 8);
+	  Log.i("Game", Tubes.gameid);
+	  Player.level = 5;
 	  spelltap.netconfig.setVisibility(View.GONE);
 	  set_tutorial(MACHINE_NET);
 	  spelltap.goto_mainframe();
+	  break;
+	case HANDLER_GETMOVE:
+	  handler_state = HANDLER_DECODE;
+	  Tubes.send_getmove();
 	  break;
 	case HANDLER_DECODE:
 	  decode_move(oppturn, Tubes.reply);
@@ -1093,6 +1102,7 @@ public class MainView extends View {
   void decode_move(SpellTapMove turn, String r) {
     if (null == r || r.length() < 7) {
       // TODO: Do something for invalid messages!
+      Log.e("TODO", "Invalid server reply.");
       return;
     }
     // TODO: Check message is valid!
@@ -1887,7 +1897,7 @@ public class MainView extends View {
 
   static void new_game() {
     handler_state = HANDLER_NEW_GAME;
-    Tubes.net_send("N" + (char) ('0' + Player.level));
+    Tubes.net_send("?n=foo&v=1&l=" + Player.level);
   }
 
   class SpellCast {

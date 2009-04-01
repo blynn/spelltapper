@@ -12,11 +12,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.HttpClient;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.DefaultHttpClient;
+
 class Tubes extends SpellTapMachine {
   Tubes(SpellTap st) {
     super(st);
     is_abandoned = false;
     net_thread = null;
+    inbuf = new byte[64];
   }
   abstract class Machine { abstract void run(); }
   void run() {
@@ -44,10 +50,16 @@ class Tubes extends SpellTapMachine {
       }
       if (badport) {
 	spelltap.narrate(R.string.badport);
-      } else if (0 != ping()) {
-	spelltap.narrate(R.string.servererror);
-      } else {
-        spelltap.mainview.new_game();
+      } else switch(ping()) {
+	case 2:
+	  spelltap.narrate(R.string.needupdate);
+	  break;
+	case 1:
+	  spelltap.narrate(R.string.servererror);
+	  break;
+	case 0:
+	  spelltap.mainview.new_game();
+	  break;
       }
     }
   }
@@ -87,13 +99,14 @@ class Tubes extends SpellTapMachine {
       public void handleMessage(Message msg) {
 	if (is_abandoned) return;
 	if ('-' == message.charAt(1)) {
-	  reply = send_retry();
+	  reply = net_retry();
 	} else {
 	  reply = send(message);
 	}
 	handle_reply();
       }
       public void handle_reply() {
+	Log.i("rep", reply);
 	if (null == reply) {
 	  sendEmptyMessageDelayed(0, 3000);
 	} else if ('-' == reply.charAt(0)) {
@@ -109,15 +122,17 @@ class Tubes extends SpellTapMachine {
   static Handler retry_handler;
 
   static int ping() {
-    String r = send("p");
+    String r = send("");
     if (null == r) return 1;
-    if (!r.equals("p")) return 1;
+    if (!r.equals("1")) return 2;
     return 0;
   }
 
-  static String send_retry() {
-    String s = (char) ('a' + netid) + "-";
-    return send(s);
+  static String net_retry() {
+    return send("?g=" + gameid + "&i=" + netid + "&c=g");
+  }
+  static void send_getmove() {
+    net_send("?g=" + gameid + "&i=" + netid + "&c=g");
   }
   static void net_send(String s) {
     if (null != net_thread) {
@@ -128,55 +143,52 @@ class Tubes extends SpellTapMachine {
   }
 
   static void send_move(String move) {
-    net_send((char) ('a' + netid) + "M" + move);
+    net_send("?g=" + gameid + "&i=" + netid + "&c=m&a=" + move);
   }
   static void send_set_para(int target, int hand) {
+    /*
     net_send((char) ('a' + netid) + "P" + (char) ('0' + target) +
         (char) ('0' + hand));
+    */
   }
   static void send_set_charm(int hand, int gesture) {
+    /*
     net_send((char) ('a' + netid) + "C" + (char) ('0' + hand) +
         (char) ('0' + gesture));
+    */
   }
   static void send_get_charm_gesture() {
-    net_send( (char) ('a' + netid) + "G");
+    //net_send( (char) ('a' + netid) + "G");
   }
   static void send_get_para(int target) {
-    net_send((char) ('a' + netid) + "Q" +(char) ('0' + target));
+    //net_send((char) ('a' + netid) + "Q" +(char) ('0' + target));
   }
   static void send_get_charm_hand() {
-    net_send((char) ('a' + netid) + "H");
+    //net_send((char) ('a' + netid) + "H");
   }
 
   private static String send(String msg) {
-    Socket sock = null;
-    DataOutputStream out = null;
-    DataInputStream in = null;
-    byte[] buf = new byte[16];
-
-    try {
-      sock = new Socket();
-      sock.bind(null);
-      sock.connect(new InetSocketAddress(server, port), 2000);
-      out = new DataOutputStream(sock.getOutputStream());
-      in = new DataInputStream(sock.getInputStream());
-      out.writeBytes(msg);
-      int count = in.read(buf, 0, 16);
-      if (count < 1) return null;
-      String response = new String(buf, 0, count);
-      //Log.i("Tubes", "response: " + response);
-      out.close();
-      in.close();
-      sock.close();
-      //Log.i("Tubes", response);
-      return response;
-    } catch (UnknownHostException e) {
+String url = server + msg;
+HttpClient client = new DefaultHttpClient();
+HttpGet request = new HttpGet(url);
+try
+{
+HttpResponse response = client.execute(request);
+InputStream in = response.getEntity().getContent();
+int count = in.read(inbuf, 0, 64);
+if (count < 1) return null;
+in.close();
+String r = new String(inbuf, 0, count);
+  return r;
+}
+    catch (UnknownHostException e) {
       Log.e("Tubes", "UnknownHostException");
       return null;
     } catch (IOException e) {
       Log.e("Tubes", "IOException");
       return null;
     }
+
   }
 
   static void load_bundle(Bundle bun) {
@@ -192,14 +204,16 @@ class Tubes extends SpellTapMachine {
   static final String ICE_SERVER = "game-server";
   static final String ICE_PORT = "game-port";
 
-  static int netid;
+  static String netid;
+  static String gameid;
   static int state;
   static Button ok_button;
   static Button cancel_button;
-  static String server = "192.168.1.101";
+  static String server = "http://192.168.1.101:8080/";
   static int port = 3333;
   static EditText server_edittext;
   static EditText port_edittext;
   static boolean is_abandoned;
   static Thread net_thread;
+  static byte[] inbuf;
 }
