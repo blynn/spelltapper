@@ -6,7 +6,6 @@ AAPT=$(SDKDIR)/tools/aapt
 DX=$(SDKDIR)/tools/dx
 APKBUILDER=$(SDKDIR)/tools/apkbuilder
 MUCK=com/benlynn/spelltapper/
-CROSS=$(HOME)/cross/
 
 target: bin/out.apk
 
@@ -41,9 +40,3 @@ red : bin/out.apk
 ree : bin/out.apk
 	$(ADB) -e uninstall com.benlynn.spelltapper
 	$(ADB) -e install bin/out.apk
-
-server : server.c
-	gcc -Wall `sdl-config --cflags` $^ -o $@ `sdl-config --libs` -lSDL_net
-
-server.exe : server.c
-	i586-mingw32msvc-gcc $^ -o $@ $(CROSS)/SDL.dll $(CROSS)/SDL_net.dll -I $(CROSS)/SDL-1.2.13/include/SDL -I $(CROSS)/SDL_net-1.2.7/include -L $(CROSS)/SDL-1.2.13/lib -lmingw32 -lSDLmain -mwindows

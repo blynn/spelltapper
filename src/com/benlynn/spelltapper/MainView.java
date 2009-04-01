@@ -876,14 +876,14 @@ public class MainView extends View {
 
   private char encode_target(int target) {
     if (target <= 1) {  // Player, opponent, thin air, or fresh monster.
-      return (char) ('A' + target);
+      return (char) ('H' + target);
     } else {
-      return (char) ('A' + 2 + Being.list[target].id);
+      return (char) ('H' + 2 + Being.list[target].id);
     }
   }
 
   private int decode_target(char c) {
-    int raw = c - 'A';
+    int raw = c - 'H';
     // Just as "me" and "you" are relative to the speaker, so are 0 and 1,
     // -2 and -4, -3 and -5, and the odd monster IDs and even monster IDs.
     switch(raw) {

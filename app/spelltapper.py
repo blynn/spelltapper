@@ -56,20 +56,20 @@ class MainPage(webapp.RequestHandler):
 	game.received_count = 0
 	game.ready_count = 0
 	game.level = level
-	s = ''
+	nonce = ''
 	for i in range(16):
-	  s += random.choice('0123456789ABCDEF')
-	game.id = s
-	game.put()
-	self.response.out.write('0' + game.level + s)
+	  nonce += random.choice('0123456789ABCDEF')
+	game.id = nonce
+	game.put()  # TODO: Fix race.
+	self.response.out.write('0' + game.level + nonce)
       else:
 	if 0 == game.player_i:
 	  game.player_i = 1
 	  if "" == game.name:
 	    game.name = game.id
-	  game.put()
+	  game.put()  # TODO: Fix race.
 	  self.response.out.write('1' + game.level + game.id)
-	else:  # XXX: If 10 mins have elapsed since mtime, erase old game.
+	else:  # TODO: If 10 mins have elapsed since mtime, erase old game.
 	  self.response.out.write('Error: Game "' +
 	      name + '" already in progress.')
       return;
@@ -79,8 +79,10 @@ class MainPage(webapp.RequestHandler):
     if None == game:
       self.response.out.write("Error: No such game.")
       return
-    game.ctime = datetime.now()
-    game.put()  # TODO: Move this to end and only call once?
+    game.mtime = datetime.now()
+    # Ignore race for once. The winner of this race will be
+    # close enough to the right value of the current time for my purposes.
+    game.put()
     playerid = self.request.get("i")
     if ('0' != playerid) and ('1' != playerid):
       self.response.out.write("Error: Bad player ID.")
@@ -95,6 +97,7 @@ class MainPage(webapp.RequestHandler):
 	  psy.delete()
       game.ready_count = 0
       game.received_count = 0
+      game.put()  # TODO: Is a race possible here?
     def CommandStart():
       if 1 == game.player_i:
 	self.response.out.write("OK")
@@ -103,8 +106,10 @@ class MainPage(webapp.RequestHandler):
     def CommandFinish():
       self.response.out.write("OK")
       if "" == game.finished:
-	game.finished = playerid
-	game.put()
+	def set_finished(game):
+	  game.finished = playerid
+	  game.put()
+	db.run_in_transaction(set_finished, game)
       elif playerid != game.finished:
 	# Delete this game.
 	move = Move.gql("WHERE id = :1", '0' + gameid).get()
@@ -130,8 +135,10 @@ class MainPage(webapp.RequestHandler):
 	move.move = a
 	move.put()
 	self.response.out.write("OK")
-	game.received_count = game.received_count + 1
-	game.put()
+        def increment_received_count(game):
+	  game.received_count = game.received_count + 1
+	  game.put()
+	db.run_in_transaction(increment_received_count, game)
       else:
 	self.response.out.write("Error: Already received move.")
       return
@@ -142,15 +149,17 @@ class MainPage(webapp.RequestHandler):
 	if None == move:
 	  self.response.out.write('Error: Cannot find move!')
 	else:
+	  self.response.out.write(move.move)
 	  if 0 == move.is_ready:
 	    move.is_ready = 1
 	    move.put()
-	    game.ready_count = game.ready_count + 1
+	    def increment_ready_count(game):
+	      game.ready_count = game.ready_count + 1
+	      game.put()
+	    db.run_in_transaction(increment_ready_count, game)
 	    # All players ready for next turn?
 	    if 2 == game.ready_count:
 	      NextTurn()
-	    game.put()
-	  self.response.out.write(move.move)
       else:
 	self.response.out.write('-')
       return
@@ -163,7 +172,7 @@ class MainPage(webapp.RequestHandler):
       if "" == gesture:
 	self.response.out.write("Error: Bad paralysis gesture.")
 	return
-      moveid = target + gameid
+      moveid = unicode(1 - int(target)) + gameid
       psy = Psych.gql("WHERE id = :1", moveid).get()
       if None != psy:
 	if (1 == psy.has_para):
@@ -199,7 +208,7 @@ class MainPage(webapp.RequestHandler):
       if "" == s:
 	self.response.out.write("Error: Bad charm choices.")
 	return
-      moveid = target + gameid
+      moveid = unicode(1 - int(target)) + gameid
       psy = Psych.gql("WHERE id = :1", moveid).get()
       if None != psy:
 	if (1 == psy.has_charm):
