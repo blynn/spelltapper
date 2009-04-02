@@ -196,8 +196,7 @@ class Tubes extends SpellTapMachine {
   static Button cancel_button;
   static String gamename;
   //static String server = "http://spelltap.appspot.com/";
-  //static String server = "http://4.latest.spelltap.appspot.com/";
-  static String server = "http://192.168.1.101:8080/";
+  static String server = "http://4.latest.spelltap.appspot.com/";
   static EditText server_edittext;
   static boolean is_abandoned;
   static Thread net_thread;

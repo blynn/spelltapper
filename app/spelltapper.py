@@ -8,20 +8,14 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
 from google.appengine.ext.db import Key
 
-class Psych(db.Model):
-  id = db.StringProperty()
+class Move(db.Model):
+  move = db.StringProperty()
   para = db.StringProperty()
   charm_hand = db.StringProperty()
   charm_gesture = db.StringProperty()
+  has_move = db.IntegerProperty()
   has_para = db.IntegerProperty()
   has_charm = db.IntegerProperty()
-  ctime = db.DateTimeProperty(auto_now_add=True)
-
-class Move(db.Model):
-  id = db.StringProperty()
-  move = db.StringProperty()
-  ctime = db.DateTimeProperty(auto_now_add=True)
-  has_move = db.IntegerProperty()
 
 class Game(db.Model):
   name = db.StringProperty()
@@ -96,6 +90,15 @@ class MainPage(webapp.RequestHandler):
 		  ready_count = 0)
       game.put()
 
+      for i in range(2):
+	moveid = "m:" + ng.nonce + unicode(i)
+	move = Move(key_name = moveid,
+		    has_charm = 0,
+		    has_para = 0,
+		    has_move = 0)
+	move.put()
+      return;
+
     gamename = self.request.get("g")
     game = Game.get_by_key_name("g:" + gamename)
 
@@ -120,19 +123,6 @@ class MainPage(webapp.RequestHandler):
     if ('0' != playerid) and ('1' != playerid):
       self.response.out.write("Error: Bad player ID.")
       return
-    def NextTurn():
-      for i in range(2):
-	moveid = unicode(i) + gamename
-	# TODO: Fix Psych races.
-	psy = Psych.gql("WHERE id = :1", moveid).get()
-	if None != psy:
-	  psy.delete()
-      def zero_counts():
-	game = db.get(gamekey)
-	game.ready_count = 0
-	game.received_count = 0
-	game.put()
-      db.run_in_transaction(zero_counts)
     def CommandFinish():
       self.response.out.write("OK")
       if "" == game.finished:
@@ -143,14 +133,9 @@ class MainPage(webapp.RequestHandler):
 	db.run_in_transaction(set_finished)
       elif playerid != game.finished:
 	# Delete this game.
-	move = Move.gql("WHERE id = :1", '0' + gamename).get()
-	if (None != move): move.delete();
-	move = Move.gql("WHERE id = :1", '1' + gamename).get()
-	if (None != move): move.delete();
-	psy = Psych.gql("WHERE id = :1", '0' + gamename).get()
-	if (None != psy): psy.delete();
-	psy = Psych.gql("WHERE id = :1", '1' + gamename).get()
-	if (None != psy): psy.delete();
+	for i in range(2):
+	  moveid = "m:" + ng.nonce + unicode(i)
+	  Move.get_by_key_name(moveid).delete()
 	game.delete()
     def CommandMove():
       a = self.request.get("a")
@@ -158,20 +143,21 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write("Error: Bad move.")
 	return
       logging.info("Got move " + gamename + ":" + playerid + " " + a)
-      moveid = playerid + gamename
-      move = Move.gql("WHERE id = :1", moveid).get()
-      if None != move:
-	if 0 == move.is_ready:
-	  logging.error("Error: Move sent twice.")
-	  self.response.out.write("Error: Move sent twice.")
-	move.delete()
+      moveid = "m:" + gamename + playerid
+      move = Move.get_by_key_name(moveid)
+      if not move:
+	logging.error("Missing move!")
+	self.response.out.write("Error: Missing move.")
+	return
 
-      move = Move()
-      move.id = moveid
+      if 1 == move.has_move:
+	logging.error("Move sent twice.")
+	self.response.out.write("Error: Move sent twice.")
+	return
+
       move.has_move = 1
       move.move = a
       move.put()
-      self.response.out.write("OK")
       def increment_received_count():
 	game = db.get(gamekey)
 	if 2 == game.received_count:
@@ -179,26 +165,29 @@ class MainPage(webapp.RequestHandler):
 	game.received_count = game.received_count + 1
 	game.put()
       db.run_in_transaction(increment_received_count)
+      self.response.out.write("OK")
     def CommandGetMove():
       if 2 == game.received_count:
-	moveid = unicode(1 - int(playerid)) + gamename
-	move = Move.gql("WHERE id = :1", moveid).get()
-	if None == move:
+	moveid = "m:" + gamename + unicode(1 - int(playerid))
+	move = Move.get_by_key_name(moveid)
+	if not move:
 	  self.response.out.write('Error: Cannot find move!')
 	else:
 	  self.response.out.write(move.move)
 	  if 1 == move.has_move:
 	    move.has_move = 0
+	    move.has_charm = 0
+	    move.has_para = 0
 	    move.put()
 	    def increment_ready_count():
 	      game = db.get(gamekey)
 	      game.ready_count = game.ready_count + 1
+	      # All players ready for next turn?
+	      if (2 == game.ready_count):
+		game.ready_count = 0
+		game.received_count = 0
 	      game.put()
 	    db.run_in_transaction(increment_ready_count)
-	    # All players ready for next turn?
-	    if 2 == db.get(gamekey).ready_count:
-	      logging.info("NextTurn()")
-	      NextTurn()
       else:
 	self.response.out.write('-')
       return
@@ -211,19 +200,20 @@ class MainPage(webapp.RequestHandler):
       if "" == gesture:
 	self.response.out.write("Error: Bad paralysis gesture.")
 	return
-      moveid = unicode(1 - int(target)) + gamename
-      psy = Psych.gql("WHERE id = :1", moveid).get()
-      if None != psy:
-	if (1 == psy.has_para):
-	  self.response.out.write("Error: Already received paralysis.")
-	  return;
-      else:
-	psy = Psych()
-	psy.has_charm = 0;
-	psy.id = moveid
-      psy.para = gesture
-      psy.has_para = 1;
-      psy.put()
+      moveid = "m:" + gamename + unicode(1 - int(playerid))
+      move = Move.get_by_key_name(moveid)
+
+      if not move:
+	self.response.out.write('Error: Cannot find move!')
+	return
+
+      if (1 == move.has_para):
+	self.response.out.write("Error: Already received paralysis.")
+	return
+
+      move.para = gesture
+      move.has_para = 1;
+      move.put()
       self.response.out.write("OK")
       return
     def CommandGetPara():
@@ -231,12 +221,15 @@ class MainPage(webapp.RequestHandler):
       if "" == target:
 	self.response.out.write("Error: Bad paralysis target.")
 	return
-      moveid = target + gamename
-      psy = Psych.gql("WHERE id = :1", moveid).get()
-      if None == psy or 0 == psy.has_para:
+      moveid = "m:" + gamename + target
+      move = Move.get_by_key_name(moveid)
+      if not move:
+	self.response.out.write('Error: Cannot find move!')
+	return
+      if 0 == move.has_para:
 	self.response.out.write("-")
       else:
-	self.response.out.write(psy.para)
+	self.response.out.write(move.para)
       return
     def CommandSetCharm():
       target = self.request.get("a")
@@ -247,37 +240,43 @@ class MainPage(webapp.RequestHandler):
       if "" == s:
 	self.response.out.write("Error: Bad charm choices.")
 	return
-      moveid = unicode(1 - int(target)) + gamename
-      psy = Psych.gql("WHERE id = :1", moveid).get()
-      if None != psy:
-	if (1 == psy.has_charm):
-	  self.response.out.write("Error: Already received charm.")
-	  return;
-      else:
-	psy = Psych()
-	psy.has_para = 0
-	psy.id = moveid
-      psy.charm_hand = s[0]
-      psy.charm_gesture = s[1]
-      psy.has_charm = 1
-      psy.put()
+      moveid = "m:" + gamename + target
+      move = Move.get_by_key_name(moveid)
+      if not move:
+	self.response.out.write('Error: Cannot find move!')
+	return
+      if (1 == move.has_charm):
+	self.response.out.write("Error: Already received charm.")
+	return;
+
+      move.charm_hand = s[0]
+      move.charm_gesture = s[1]
+      move.has_charm = 1
+      move.put()
       self.response.out.write("OK")
       return
     def CommandGetCharmHand():
-      moveid = playerid + gamename
-      psy = Psych.gql("WHERE id = :1", moveid).get()
-      if None == psy or 0 == psy.has_charm:
+      moveid = "m:" + gamename + playerid
+      move = Move.get_by_key_name(moveid)
+      if not move:
+	self.response.out.write('Error: Cannot find move!')
+	return
+
+      if 0 == move.has_charm:
 	self.response.out.write("-")
       else:
-	self.response.out.write(psy.charm_hand)
+	self.response.out.write(move.charm_hand)
       return
     def CommandGetCharmGesture():
-      moveid = playerid + gamename
-      psy = Psych.gql("WHERE id = :1", moveid).get()
-      if None == psy or 0 == psy.has_charm:
+      moveid = "m:" + gamename + playerid
+      move = Move.get_by_key_name(moveid)
+      if not move:
+	self.response.out.write('Error: Cannot find move!')
+	return
+      if 0 == move.has_charm:
 	self.response.out.write("-")
       else:
-	self.response.out.write(psy.charm_gesture)
+	self.response.out.write(move.charm_gesture)
       return
     def CommandBad():
       self.response.out.write("Error: Bad command.")
