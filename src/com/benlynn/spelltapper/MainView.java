@@ -982,7 +982,7 @@ public class MainView extends View {
     opp_ready = false;
     invalidate();
     handler_state = HANDLER_GET_PARA;
-    Tubes.send_get_para(1 - target);
+    Tubes.send_get_para(target);
   }
 
   void net_set_charm(int hand, int gesture) {

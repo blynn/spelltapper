@@ -28,7 +28,6 @@ class Game(db.Model):
 class NewGame(db.Model):
   ctime = db.DateTimeProperty(auto_now_add=True)
   nonce = db.StringProperty()
-  player_count = db.IntegerProperty()
   level = db.StringProperty()
 
 # For anonymous duels.
@@ -63,42 +62,40 @@ class MainPage(webapp.RequestHandler):
 
       # Use a 64-bit random ID to make it harder to interfere with existing
       # games.
-      ng = NewGame.get_or_insert("n:" + name,
-	  level=level, nonce="%X" % random.getrandbits(64), player_count=0)
 
-      def add_player(key):
-	ng = db.get(key)
-	ng.player_count = ng.player_count + 1
-	ng.put()
-	return ng.player_count
-      count = db.run_in_transaction(add_player, ng.key())
+      def add_player():
+	ng = db.get(Key.from_path("NewGame", "n:" + name))
+	if not ng:
+	  ng = NewGame(key_name="n:" + name, level=level,
+	      nonce="%X" % random.getrandbits(64), player_count=0)
+	  ng.put()
+	  return 0, ng.level, ng.nonce
+	else:
+	  ng.delete()
+	  return 1, ng.level, ng.nonce
 
-      if 2 < count:
-	self.response.out.write('Error: Game "' +
-	    name + '" already in progress.')
-	return
+      player_i, s1, s2 = db.run_in_transaction(add_player)
+      self.response.out.write(unicode(player_i) + s1 + s2)
+      logging.info("Response: " + unicode(player_i) + ":" + s1 + "  " + s2)
+      if 1 == player_i:
+	gameid = "g:" + s2
+	# TODO: Although unlikely, check game with this nonce does not exist.
+	game = Game(key_name = gameid,
+		    name = name,
+		    received_count = 0,
+		    ready_count = 0)
+	game.put()
 
-      self.response.out.write(unicode(count - 1) + ng.level + ng.nonce)
-
-      if 2 > count: return
-
-      gameid = "g:" + ng.nonce
-      # TODO: Although unlikely, check game with this nonce does not exist.
-      game = Game(key_name = gameid,
-		  name = name,
-		  received_count = 0,
-		  ready_count = 0)
-      game.put()
-
-      for i in range(2):
-	moveid = "m:" + ng.nonce + unicode(i)
-	move = Move(key_name = moveid,
-		    has_charm = 0,
-		    has_para = 0,
-		    has_move = 0)
-	move.put()
+	for i in range(2):
+	  moveid = "m:" + s2 + unicode(i)
+	  move = Move(key_name = moveid,
+		      has_charm = 0,
+		      has_para = 0,
+		      has_move = 0)
+	  move.put()
       return;
 
+    # Not a request for a new game.
     gamename = self.request.get("g")
     game = Game.get_by_key_name("g:" + gamename)
 
@@ -134,7 +131,7 @@ class MainPage(webapp.RequestHandler):
       elif playerid != game.finished:
 	# Delete this game.
 	for i in range(2):
-	  moveid = "m:" + ng.nonce + unicode(i)
+	  moveid = "m:" + gamename + unicode(i)
 	  Move.get_by_key_name(moveid).delete()
 	game.delete()
     def CommandMove():
@@ -196,13 +193,18 @@ class MainPage(webapp.RequestHandler):
       if "" == target:
 	self.response.out.write("Error: Bad paralysis target.")
 	return
+      if "0" == target:
+	targetid = playerid
+      else:
+	targetid = unicode(1 - int(playerid))
+
       gesture = self.request.get("b")
       if "" == gesture:
 	self.response.out.write("Error: Bad paralysis gesture.")
 	return
-      moveid = "m:" + gamename + unicode(1 - int(playerid))
+      moveid = "m:" + gamename + targetid
+      logging.info("SetPara " + moveid)
       move = Move.get_by_key_name(moveid)
-
       if not move:
 	self.response.out.write('Error: Cannot find move!')
 	return
@@ -221,7 +223,13 @@ class MainPage(webapp.RequestHandler):
       if "" == target:
 	self.response.out.write("Error: Bad paralysis target.")
 	return
-      moveid = "m:" + gamename + target
+
+      if "0" == target:
+	targetid = playerid
+      else:
+	targetid = unicode(1 - int(playerid))
+
+      moveid = "m:" + gamename + targetid
       move = Move.get_by_key_name(moveid)
       if not move:
 	self.response.out.write('Error: Cannot find move!')
@@ -232,6 +240,7 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write(move.para)
       return
     def CommandSetCharm():
+      # This is unnecessary as we always assume target is opponent.
       target = self.request.get("a")
       if "" == target:
 	self.response.out.write("Error: Bad charm target.")
@@ -240,7 +249,8 @@ class MainPage(webapp.RequestHandler):
       if "" == s:
 	self.response.out.write("Error: Bad charm choices.")
 	return
-      moveid = "m:" + gamename + target
+      moveid = "m:" + gamename + unicode(1 - int(playerid))
+      logging.info("Charm " + moveid)
       move = Move.get_by_key_name(moveid)
       if not move:
 	self.response.out.write('Error: Cannot find move!')
