@@ -21,22 +21,26 @@ class Move(db.Model):
   id = db.StringProperty()
   move = db.StringProperty()
   ctime = db.DateTimeProperty(auto_now_add=True)
-  is_ready = db.IntegerProperty()
+  has_move = db.IntegerProperty()
 
 class Game(db.Model):
   name = db.StringProperty()
-  id = db.StringProperty()
   ctime = db.DateTimeProperty(auto_now_add=True)
   mtime = db.DateTimeProperty(auto_now_add=True)
-  level = db.StringProperty()
   received_count = db.IntegerProperty()
   ready_count = db.IntegerProperty()
   finished = db.StringProperty()
-  player_count = db.IntegerProperty()
 
 class NewGame(db.Model):
+  ctime = db.DateTimeProperty(auto_now_add=True)
   nonce = db.StringProperty()
   player_count = db.IntegerProperty()
+  level = db.StringProperty()
+
+# For anonymous duels.
+class Anon(db.Model):
+  nonce = db.StringProperty()
+  ctime = db.DateTimeProperty(auto_now_add=True)
 
 class MainPage(webapp.RequestHandler):
   def get(self):
@@ -50,45 +54,63 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write("Error: No level supplied.")
 	return
       name = self.request.get("a")
+
+      if "" == name:
+        def handle_anon():
+	  anon = db.get(Key.from_path("Anon", "meh"))
+	  if not anon:
+	    anon = Anon(key_name="meh", nonce="%X" % random.getrandbits(64))
+	    anon.put()
+	    name = anon.nonce
+	  else:
+	    name = anon.nonce
+	    anon.delete()
+	db.run_in_transaction(handle_anon)
+
       # Use a 64-bit random ID to make it harder to interfere with existing
       # games.
-      NewGame.get_or_insert(
-	  "n:" + name, nonce=hex(random.getrandbits(64)), player_count=0)
+      ng = NewGame.get_or_insert("n:" + name,
+	  level=level, nonce="%X" % random.getrandbits(64), player_count=0)
 
+      def add_player(key):
+	ng = db.get(key)
+	ng.player_count = ng.player_count + 1
+	ng.put()
+	return ng.player_count
+      count = db.run_in_transaction(add_player, ng.key())
 
-      gameid = "g:" + name
-      gamekey = Key.from_path("Game", gameid)
-      def get_game():
-	game = db.get(gamekey)
-	if not game:
-	  game = Game(key_name = gameid,
-		      name = name,
-		      player_count = 0,
-		      received_count = 0,
-		      ready_count = 0,
-		      level = level)
-	  game.put()
-	return game
-      game = db.run_in_transaction(get_game)
-      if 2 == game.player_count:
+      if 2 < count:
 	self.response.out.write('Error: Game "' +
 	    name + '" already in progress.')
 	return
 
-      self.response.out.write(unicode(game.player_count) + game.level + name)
-      def add_game_player(gamekey):
-	game = db.get(gamekey)
-	game.player_count = game.player_count + 1
-	game.put()
-      db.run_in_transaction(add_game_player, game.key())
-      return;
+      self.response.out.write(unicode(count - 1) + ng.level + ng.nonce)
 
-    gameid = self.request.get("g")
-    game = Game.get_by_key_name("g:" + gameid)
+      if 2 > count: return
+
+      gameid = "g:" + ng.nonce
+      # TODO: Although unlikely, check game with this nonce does not exist.
+      game = Game(key_name = gameid,
+		  name = name,
+		  received_count = 0,
+		  ready_count = 0)
+      game.put()
+
+    gamename = self.request.get("g")
+    game = Game.get_by_key_name("g:" + gamename)
+
+    if "s" == cmd:  # Await for start of game.
+      if not game:
+	self.response.out.write("-")
+      else:
+	self.response.out.write("OK")
+      return
+
     if not game:
-      logging.error("No such game: " + gameid)
+      logging.error("No such game: " + gamename)
       self.response.out.write("Error: No such game.")
       return
+
     gamekey = game.key()
     game.mtime = datetime.now()
     # Ignore race for once. The winner of this race will be
@@ -100,7 +122,7 @@ class MainPage(webapp.RequestHandler):
       return
     def NextTurn():
       for i in range(2):
-	moveid = unicode(i) + gameid
+	moveid = unicode(i) + gamename
 	# TODO: Fix Psych races.
 	psy = Psych.gql("WHERE id = :1", moveid).get()
 	if None != psy:
@@ -111,11 +133,6 @@ class MainPage(webapp.RequestHandler):
 	game.received_count = 0
 	game.put()
       db.run_in_transaction(zero_counts)
-    def CommandStart():
-      if 2 == game.player_count:
-	self.response.out.write("OK")
-      else:
-	self.response.out.write("-")
     def CommandFinish():
       self.response.out.write("OK")
       if "" == game.finished:
@@ -126,13 +143,13 @@ class MainPage(webapp.RequestHandler):
 	db.run_in_transaction(set_finished)
       elif playerid != game.finished:
 	# Delete this game.
-	move = Move.gql("WHERE id = :1", '0' + gameid).get()
+	move = Move.gql("WHERE id = :1", '0' + gamename).get()
 	if (None != move): move.delete();
-	move = Move.gql("WHERE id = :1", '1' + gameid).get()
+	move = Move.gql("WHERE id = :1", '1' + gamename).get()
 	if (None != move): move.delete();
-	psy = Psych.gql("WHERE id = :1", '0' + gameid).get()
+	psy = Psych.gql("WHERE id = :1", '0' + gamename).get()
 	if (None != psy): psy.delete();
-	psy = Psych.gql("WHERE id = :1", '1' + gameid).get()
+	psy = Psych.gql("WHERE id = :1", '1' + gamename).get()
 	if (None != psy): psy.delete();
 	game.delete()
     def CommandMove():
@@ -140,8 +157,8 @@ class MainPage(webapp.RequestHandler):
       if "" == a:
 	self.response.out.write("Error: Bad move.")
 	return
-      logging.info("Got move " + gameid + ":" + playerid + " " + a)
-      moveid = playerid + gameid
+      logging.info("Got move " + gamename + ":" + playerid + " " + a)
+      moveid = playerid + gamename
       move = Move.gql("WHERE id = :1", moveid).get()
       if None != move:
 	if 0 == move.is_ready:
@@ -151,7 +168,7 @@ class MainPage(webapp.RequestHandler):
 
       move = Move()
       move.id = moveid
-      move.is_ready = 0
+      move.has_move = 1
       move.move = a
       move.put()
       self.response.out.write("OK")
@@ -164,14 +181,14 @@ class MainPage(webapp.RequestHandler):
       db.run_in_transaction(increment_received_count)
     def CommandGetMove():
       if 2 == game.received_count:
-	moveid = unicode(1 - int(playerid)) + gameid
+	moveid = unicode(1 - int(playerid)) + gamename
 	move = Move.gql("WHERE id = :1", moveid).get()
 	if None == move:
 	  self.response.out.write('Error: Cannot find move!')
 	else:
 	  self.response.out.write(move.move)
-	  if 0 == move.is_ready:
-	    move.is_ready = 1
+	  if 1 == move.has_move:
+	    move.has_move = 0
 	    move.put()
 	    def increment_ready_count():
 	      game = db.get(gamekey)
@@ -194,7 +211,7 @@ class MainPage(webapp.RequestHandler):
       if "" == gesture:
 	self.response.out.write("Error: Bad paralysis gesture.")
 	return
-      moveid = unicode(1 - int(target)) + gameid
+      moveid = unicode(1 - int(target)) + gamename
       psy = Psych.gql("WHERE id = :1", moveid).get()
       if None != psy:
 	if (1 == psy.has_para):
@@ -214,7 +231,7 @@ class MainPage(webapp.RequestHandler):
       if "" == target:
 	self.response.out.write("Error: Bad paralysis target.")
 	return
-      moveid = target + gameid
+      moveid = target + gamename
       psy = Psych.gql("WHERE id = :1", moveid).get()
       if None == psy or 0 == psy.has_para:
 	self.response.out.write("-")
@@ -230,7 +247,7 @@ class MainPage(webapp.RequestHandler):
       if "" == s:
 	self.response.out.write("Error: Bad charm choices.")
 	return
-      moveid = unicode(1 - int(target)) + gameid
+      moveid = unicode(1 - int(target)) + gamename
       psy = Psych.gql("WHERE id = :1", moveid).get()
       if None != psy:
 	if (1 == psy.has_charm):
@@ -247,7 +264,7 @@ class MainPage(webapp.RequestHandler):
       self.response.out.write("OK")
       return
     def CommandGetCharmHand():
-      moveid = playerid + gameid
+      moveid = playerid + gamename
       psy = Psych.gql("WHERE id = :1", moveid).get()
       if None == psy or 0 == psy.has_charm:
 	self.response.out.write("-")
@@ -255,7 +272,7 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write(psy.charm_hand)
       return
     def CommandGetCharmGesture():
-      moveid = playerid + gameid
+      moveid = playerid + gamename
       psy = Psych.gql("WHERE id = :1", moveid).get()
       if None == psy or 0 == psy.has_charm:
 	self.response.out.write("-")
@@ -269,7 +286,6 @@ class MainPage(webapp.RequestHandler):
      'g' : CommandGetMove,
      'p' : CommandSetPara,
      'q' : CommandGetPara,
-     's' : CommandStart,
      'f' : CommandFinish,
      'C' : CommandSetCharm,
      'H' : CommandGetCharmHand,
