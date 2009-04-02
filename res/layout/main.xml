@@ -65,9 +65,10 @@
     <TextView
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
-	android:text="You can either leave the name blank to play someone else who also left the name blank, or choose a name and tell it to a friend."
+	android:text="You can either leave the name blank to play someone else who also left the name blank, or choose a name and tell a friend."
 	android:textSize="18dip"
 	android:autoLink="all"
+	android:singleLine="false"
 	/>
 </LinearLayout>
 <LinearLayout

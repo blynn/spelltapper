@@ -1,3 +1,4 @@
+import logging
 import random
 from datetime import datetime
 
@@ -5,6 +6,7 @@ from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
+from google.appengine.ext.db import Key
 
 class Psych(db.Model):
   id = db.StringProperty()
@@ -27,10 +29,14 @@ class Game(db.Model):
   ctime = db.DateTimeProperty(auto_now_add=True)
   mtime = db.DateTimeProperty(auto_now_add=True)
   level = db.StringProperty()
-  player_i = db.IntegerProperty()
   received_count = db.IntegerProperty()
   ready_count = db.IntegerProperty()
   finished = db.StringProperty()
+  player_count = db.IntegerProperty()
+
+class NewGame(db.Model):
+  nonce = db.StringProperty()
+  player_count = db.IntegerProperty()
 
 class MainPage(webapp.RequestHandler):
   def get(self):
@@ -39,46 +45,51 @@ class MainPage(webapp.RequestHandler):
       return
     cmd = self.request.get("c")
     if "n" == cmd:  # New game.
-      version = self.request.get("v")
-      if version != '1':
-	self.response.out.write("Error: Please update Spelltapper.")
-	return
       level = self.request.get("b")
       if "" == level:
 	self.response.out.write("Error: No level supplied.")
 	return
       name = self.request.get("a")
-      game = Game.gql("WHERE name = :1", name).get()
-      if None == game:
-	game = Game()
-	game.name = name
-	game.player_i = 0
-	game.received_count = 0
-	game.ready_count = 0
-	game.level = level
-	nonce = ''
-	for i in range(16):
-	  nonce += random.choice('0123456789ABCDEF')
-	game.id = nonce
-	game.put()  # TODO: Fix race.
-	self.response.out.write('0' + game.level + nonce)
-      else:
-	if 0 == game.player_i:
-	  game.player_i = 1
-	  if "" == game.name:
-	    game.name = game.id
-	  game.put()  # TODO: Fix race.
-	  self.response.out.write('1' + game.level + game.id)
-	else:  # TODO: If 10 mins have elapsed since mtime, erase old game.
-	  self.response.out.write('Error: Game "' +
-	      name + '" already in progress.')
+      # Use a 64-bit random ID to make it harder to interfere with existing
+      # games.
+      NewGame.get_or_insert(
+	  "n:" + name, nonce=hex(random.getrandbits(64)), player_count=0)
+
+
+      gameid = "g:" + name
+      gamekey = Key.from_path("Game", gameid)
+      def get_game():
+	game = db.get(gamekey)
+	if not game:
+	  game = Game(key_name = gameid,
+		      name = name,
+		      player_count = 0,
+		      received_count = 0,
+		      ready_count = 0,
+		      level = level)
+	  game.put()
+	return game
+      game = db.run_in_transaction(get_game)
+      if 2 == game.player_count:
+	self.response.out.write('Error: Game "' +
+	    name + '" already in progress.')
+	return
+
+      self.response.out.write(unicode(game.player_count) + game.level + name)
+      def add_game_player(gamekey):
+	game = db.get(gamekey)
+	game.player_count = game.player_count + 1
+	game.put()
+      db.run_in_transaction(add_game_player, game.key())
       return;
 
     gameid = self.request.get("g")
-    game = Game.gql("WHERE id = :1", gameid).get()
-    if None == game:
+    game = Game.get_by_key_name("g:" + gameid)
+    if not game:
+      logging.error("No such game: " + gameid)
       self.response.out.write("Error: No such game.")
       return
+    gamekey = game.key()
     game.mtime = datetime.now()
     # Ignore race for once. The winner of this race will be
     # close enough to the right value of the current time for my purposes.
@@ -90,26 +101,29 @@ class MainPage(webapp.RequestHandler):
     def NextTurn():
       for i in range(2):
 	moveid = unicode(i) + gameid
-	move = Move.gql("WHERE id = :1", moveid).get()
-	move.delete()
+	# TODO: Fix Psych races.
 	psy = Psych.gql("WHERE id = :1", moveid).get()
 	if None != psy:
 	  psy.delete()
-      game.ready_count = 0
-      game.received_count = 0
-      game.put()  # TODO: Is a race possible here?
+      def zero_counts():
+	game = db.get(gamekey)
+	game.ready_count = 0
+	game.received_count = 0
+	game.put()
+      db.run_in_transaction(zero_counts)
     def CommandStart():
-      if 1 == game.player_i:
+      if 2 == game.player_count:
 	self.response.out.write("OK")
       else:
 	self.response.out.write("-")
     def CommandFinish():
       self.response.out.write("OK")
       if "" == game.finished:
-	def set_finished(game):
+	def set_finished():
+	  game = db.get(gamekey)
 	  game.finished = playerid
 	  game.put()
-	db.run_in_transaction(set_finished, game)
+	db.run_in_transaction(set_finished)
       elif playerid != game.finished:
 	# Delete this game.
 	move = Move.gql("WHERE id = :1", '0' + gameid).get()
@@ -117,31 +131,37 @@ class MainPage(webapp.RequestHandler):
 	move = Move.gql("WHERE id = :1", '1' + gameid).get()
 	if (None != move): move.delete();
 	psy = Psych.gql("WHERE id = :1", '0' + gameid).get()
-	if (None != move): move.delete();
+	if (None != psy): psy.delete();
 	psy = Psych.gql("WHERE id = :1", '1' + gameid).get()
-	if (None != move): move.delete();
+	if (None != psy): psy.delete();
 	game.delete()
     def CommandMove():
       a = self.request.get("a")
       if "" == a:
 	self.response.out.write("Error: Bad move.")
 	return
+      logging.info("Got move " + gameid + ":" + playerid + " " + a)
       moveid = playerid + gameid
       move = Move.gql("WHERE id = :1", moveid).get()
-      if None == move:
-	move = Move()
-	move.id = moveid
-	move.is_ready = 0
-	move.move = a
-	move.put()
-	self.response.out.write("OK")
-        def increment_received_count(game):
-	  game.received_count = game.received_count + 1
-	  game.put()
-	db.run_in_transaction(increment_received_count, game)
-      else:
-	self.response.out.write("Error: Already received move.")
-      return
+      if None != move:
+	if 0 == move.is_ready:
+	  logging.error("Error: Move sent twice.")
+	  self.response.out.write("Error: Move sent twice.")
+	move.delete()
+
+      move = Move()
+      move.id = moveid
+      move.is_ready = 0
+      move.move = a
+      move.put()
+      self.response.out.write("OK")
+      def increment_received_count():
+	game = db.get(gamekey)
+	if 2 == game.received_count:
+	  logging.error("received_count > 2!")
+	game.received_count = game.received_count + 1
+	game.put()
+      db.run_in_transaction(increment_received_count)
     def CommandGetMove():
       if 2 == game.received_count:
 	moveid = unicode(1 - int(playerid)) + gameid
@@ -153,12 +173,14 @@ class MainPage(webapp.RequestHandler):
 	  if 0 == move.is_ready:
 	    move.is_ready = 1
 	    move.put()
-	    def increment_ready_count(game):
+	    def increment_ready_count():
+	      game = db.get(gamekey)
 	      game.ready_count = game.ready_count + 1
 	      game.put()
-	    db.run_in_transaction(increment_ready_count, game)
+	    db.run_in_transaction(increment_ready_count)
 	    # All players ready for next turn?
-	    if 2 == game.ready_count:
+	    if 2 == db.get(gamekey).ready_count:
+	      logging.info("NextTurn()")
 	      NextTurn()
       else:
 	self.response.out.write('-')

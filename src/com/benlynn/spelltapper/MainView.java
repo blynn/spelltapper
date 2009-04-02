@@ -1030,7 +1030,7 @@ public class MainView extends View {
 	  }
 	  Tubes.netid = Tubes.reply.substring(0, 1);
 	  Player.level = Tubes.reply.charAt(1) - '0';
-	  Tubes.gameid = Tubes.reply.substring(2, 2 + 16);
+	  Tubes.gameid = Tubes.reply.substring(2, Tubes.reply.length());
 	  spelltap.show_tip(R.string.waitchallenge);
 	  handler_state = HANDLER_START_GAME;
 	  Tubes.send_start();

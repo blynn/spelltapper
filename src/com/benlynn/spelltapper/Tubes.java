@@ -52,7 +52,7 @@ class Tubes extends SpellTapMachine {
 	case 0:
 	  MainView.handler_state = MainView.HANDLER_NEW_GAME;
 	  gamename = server_edittext.getText().toString();
-          net_send("?c=n&a=" + gamename + "&v=1&b=" + Player.level);
+          net_send("?c=n&a=" + gamename + "&b=" + Player.level);
 	  break;
       }
     }
@@ -195,7 +195,9 @@ class Tubes extends SpellTapMachine {
   static Button ok_button;
   static Button cancel_button;
   static String gamename;
-  static String server = "http://spelltap.appspot.com/";
+  //static String server = "http://spelltap.appspot.com/";
+  //static String server = "http://4.latest.spelltap.appspot.com/";
+  static String server = "http://192.168.1.101:8080/";
   static EditText server_edittext;
   static boolean is_abandoned;
   static Thread net_thread;
