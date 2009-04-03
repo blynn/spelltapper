@@ -27,6 +27,7 @@ abstract public class Agent {
   void get_charm_gesture() {
     reply_gesture = Gesture.PALM;
   }
+  void disconnect() {}
 
   static class DummyAgent extends Agent {
     DummyAgent() {}

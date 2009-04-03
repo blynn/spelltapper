@@ -118,10 +118,11 @@ public class MainView extends View {
   void run() { tut.run(); }
   void go_back() {
     // TODO: Confirm player wants to leave.
-    Tubes.is_abandoned = true;
+    agent.disconnect();
     if (!is_animating) {
       help_arrow_off();
       spelltap.goto_town();
+      spelltap.narrate(R.string.chicken);
     }
   }
 
@@ -924,6 +925,7 @@ public class MainView extends View {
   }
 
   int url_decode(char c) {
+    if (c == '@') return -1;
     if (c >= 'A' && c <= 'Z') return c - 'A';
     if (c >= 'a' && c <= 'z') return 26 + c - 'a';
     if (c >= '0' && c <= '9') return 52 + c - '0';
@@ -979,6 +981,7 @@ public class MainView extends View {
     Tubes.send_move(s);
   }
   static int handler_state;
+  static final int HANDLER_IDLE = 0;
   static final int HANDLER_GETMOVE = 1;
   static final int HANDLER_DECODE = 2;
   static final int HANDLER_CHARM_CHOSEN = 3;
@@ -1039,19 +1042,13 @@ public class MainView extends View {
 	  Tubes.net_thread = null;
 	}
       } catch (InterruptedException e) {
+	Log.e("MainView", "Interrupted exception.");
       }
       //Log.i("Reply", Tubes.reply);
       switch(handler_state) {
 	case HANDLER_NEW_GAME:
-	  if (Tubes.reply.startsWith("Error: ")) {
-	    spelltap.narrate(R.string.nameconflict);
-	    return;
-	  }
-	  Tubes.netid = Tubes.reply.substring(0, 1);
-	  Tubes.gameid = Tubes.reply.substring(1, Tubes.reply.length());
-	  spelltap.show_tip(R.string.waitchallenge);
+	  Tubes.handle_new_game();
 	  handler_state = HANDLER_START_GAME;
-	  Tubes.send_start();
 	  break;
 	case HANDLER_START_GAME:
 	  tip_off();
@@ -1067,6 +1064,11 @@ public class MainView extends View {
 	  Tubes.send_getmove();
 	  break;
 	case HANDLER_DECODE:
+	  if (Tubes.reply.equals("CHICKEN")) {
+	    spelltap.narrate(R.string.winbychicken);
+	    winner = 0;
+	    break;
+	  }
 	  decode_move(oppturn, Tubes.reply);
 	  break;
 	case HANDLER_CHARM_CHOSEN:
@@ -1125,6 +1127,8 @@ public class MainView extends View {
 	  net_state = NET_IDLE;
 	  set_para_hand();
 	  break;
+	case HANDLER_IDLE:
+	  break;
       }
     }
   }
@@ -1175,6 +1179,11 @@ public class MainView extends View {
     }
     void get_charm_gesture() {
       net_get_charm_gesture();
+    }
+    void disconnect() {
+      handler_state = HANDLER_IDLE;
+      Tubes.stop_net_thread();
+      Tubes.send_disconnect();
     }
   }
 

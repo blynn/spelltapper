@@ -36,6 +36,7 @@ public class SpellTap extends Activity {
     ((Button) findViewById(R.id.book_prev)).setOnClickListener(new BookPrev());
     ((Button) findViewById(R.id.book_next)).setOnClickListener(new BookNext());
     ((Button) findViewById(R.id.book_close)).setOnClickListener(new BookClose());
+    ((Button) findViewById(R.id.about_close)).setOnClickListener(new AboutClose());
     mainview = (MainView) findViewById(R.id.mainview);
     mainview.set_spelltap(this);
     mainview.set_board((Board) findViewById(R.id.board));
@@ -177,11 +178,6 @@ public class SpellTap extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
-    Tubes.is_abandoned = false;
-    if (null != Tubes.net_thread) {
-      //Log.i("SpellTap", "Restaring nethread");
-      Tubes.net_thread.run();
-    }
     senseman.registerListener(tilt_listener,
 	SensorManager.SENSOR_ORIENTATION |
 	SensorManager.SENSOR_DELAY_GAME);
@@ -225,10 +221,10 @@ public class SpellTap extends Activity {
   }
 
   @Override
-  public void onPause() {
-    //Log.i("SpellTap", "Pause");
-    Tubes.is_abandoned = true;
-    super.onPause();
+  public void onDestroy() {
+    Log.i("SpellTap", "onDestroy");
+    Tubes.stop_net_thread();
+    super.onDestroy();
   }
 
   static final int MENU_SPELLBOOK = 1;
@@ -548,7 +544,6 @@ public class SpellTap extends Activity {
   void unlock_place(int place) {
     townview.unlock(place);
   }
-
   static void tip_off() {
     speech_layout.setVisibility(View.GONE);
   }
@@ -616,6 +611,13 @@ public class SpellTap extends Activity {
     BookClose() {}
     public void onClick(View v) {
       SpellTap.this.close_spellbook();
+    }
+  }
+
+  class AboutClose implements View.OnClickListener {
+    AboutClose() {}
+    public void onClick(View v) {
+      about_text.setVisibility(View.GONE);
     }
   }
 

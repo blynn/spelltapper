@@ -1,10 +1,11 @@
-.PHONY: target release red ree
+.PHONY: target release red ree upapp
 
 SDKDIR=~/android-sdk-linux_x86-1.1_r1
 ADB=$(SDKDIR)/tools/adb
 AAPT=$(SDKDIR)/tools/aapt
 DX=$(SDKDIR)/tools/dx
 APKBUILDER=$(SDKDIR)/tools/apkbuilder
+APPCFG=~/google_appengine/appcfg.py
 MUCK=com/benlynn/spelltapper/
 
 target: bin/out.apk
@@ -40,3 +41,6 @@ red : bin/out.apk
 ree : bin/out.apk
 	$(ADB) -e uninstall com.benlynn.spelltapper
 	$(ADB) -e install bin/out.apk
+
+upapp : app/app.yaml app/spelltapper.py
+	$(APPCFG) -e benlynn@gmail.com update app

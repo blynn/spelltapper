@@ -178,9 +178,11 @@ Cancels with other psychological spells.</string>
 
 <string name="oppmoved">Opponent has moved. Tap to continue.</string>
 
+<string name="chicken">Scared out of your mind, you flee the duel!</string>
+<string name="winbychicken">"Terrified of your skill, your opponent flees!"</string>
+
 <string name="about"><b>Spelltapper</b>\n<i>Ben Lynn</i>\n\n
 http://cs.stanford.edu/~blynn/spelltapper/
-\n\nAdaptation of Richard Bartle\'s <i>Spellbinder</i>: http://www.mud.co.uk/richard/spellbnd.htm
-\n\n[Press BACK to leave.]
+\n\nAdaptation of Richard A. Bartle\'s <i>Spellbinder</i>: http://www.mud.co.uk/richard/spellbnd.htm
 </string>
 </resources>

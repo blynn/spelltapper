@@ -20,18 +20,39 @@ import org.apache.http.impl.client.DefaultHttpClient;
 class Tubes extends SpellTapMachine {
   Tubes(SpellTap st) {
     super(st);
-    is_abandoned = false;
     net_thread = null;
     inbuf = new byte[64];
     client = new DefaultHttpClient();
   }
   abstract class Machine { abstract void run(); }
   void run() {
+    state = STATE_OK;
     spelltap.netconfig.setVisibility(View.VISIBLE);
   }
 
+  static void handle_new_game() {
+    if (reply.startsWith("Error: ")) {
+      spelltap.narrate(R.string.nameconflict);
+      return;
+    }
+    netid = reply.substring(0, 1);
+    gameid = reply.substring(1, reply.length());
+    spelltap.show_tip(R.string.waitchallenge);
+    state = STATE_WAIT;
+    send_start();
+  }
+
   void go_back() {
-    cancel();
+    if (STATE_WAIT == state) {
+      MainView.handler_state = MainView.HANDLER_IDLE;
+      stop_net_thread();
+      send_cancelgame();
+      stop_net_thread();
+      spelltap.tip_off();
+      state = STATE_OK;
+    } else {
+      cancel();
+    }
   }
 
   static void cancel() {
@@ -42,6 +63,7 @@ class Tubes extends SpellTapMachine {
   static class NetconfigOk implements View.OnClickListener {
     NetconfigOk() {}
     public void onClick(View v) {
+      if (STATE_WAIT == state) return;
       switch(ping()) {
 	case 2:
 	  spelltap.narrate(R.string.needupdate);
@@ -61,6 +83,7 @@ class Tubes extends SpellTapMachine {
   static class NetconfigCancel implements View.OnClickListener {
     NetconfigCancel() {}
     public void onClick(View v) {
+      if (STATE_WAIT == state) return;
       cancel();
     }
   }
@@ -73,21 +96,38 @@ class Tubes extends SpellTapMachine {
     cancel_button.setOnClickListener(new NetconfigCancel());
   }
 
+  static void stop_net_thread() {
+    Log.i("Tubes", "stop net thread");
+    if (null != net_thread) {
+      retry_handler.sendEmptyMessage(123);
+      try {
+	net_thread.join();
+	net_thread = null;
+      } catch (InterruptedException e) {
+	Log.e("Tubes", "Interrupted exception.");
+      }
+    }
+  }
+
   static String reply;
   static class NetThread extends Thread {
     NetThread(String msg) {
       message = msg;
+      stopped = false;
       retry_handler = cmon_handler = new CmonHandler();
     }
     public void run() {
-      is_abandoned = false;
       reply = send(message);
       cmon_handler.handle_reply();
     }
     class CmonHandler extends Handler {
       @Override
       public void handleMessage(Message msg) {
-	if (is_abandoned) return;
+	if (123 == msg.what) {
+	  stopped = true;
+	  return;
+	}
+	if (stopped) return;
 	reply = send(message);
 	handle_reply();
       }
@@ -101,6 +141,7 @@ class Tubes extends SpellTapMachine {
 	}
       }
     }
+    boolean stopped;
     String message;
     CmonHandler cmon_handler;
   }
@@ -125,12 +166,19 @@ class Tubes extends SpellTapMachine {
   static void send_finish() {
     net_send("?g=" + gameid + "&i=" + netid + "&c=f");
   }
+  static void send_disconnect() {
+    net_send("?g=" + gameid + "&i=" + netid + "&c=D");
+  }
+  static void send_cancelgame() {
+    net_send("?c=C&a=" + gamename);
+  }
+
   static void net_send(String s) {
     if (null != net_thread) {
       Log.e("Tubes", "Bug! net_thread != null.");
     }
     net_thread = new NetThread(s);
-    net_thread.run();
+    net_thread.start();
   }
 
   static void send_move(String move) {
@@ -193,14 +241,15 @@ class Tubes extends SpellTapMachine {
 
   static String netid;
   static String gameid;
-  static int state;
   static Button ok_button;
   static Button cancel_button;
   static String gamename;
-  static String server = "http://5.latest.spelltap.appspot.com/";
+  static String server = "http://6.latest.spelltap.appspot.com/";
   static EditText server_edittext;
-  static boolean is_abandoned;
   static Thread net_thread;
   static byte[] inbuf;
   static HttpClient client;
+  static final int STATE_OK = 0;
+  static final int STATE_WAIT = 1;
+  static int state;
 }

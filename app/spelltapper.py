@@ -10,6 +10,7 @@ from google.appengine.ext.db import Key
 
 class Move(db.Model):
   move = db.StringProperty()
+  ctime = db.DateTimeProperty(auto_now_add=True)
   para = db.StringProperty()
   charm_hand = db.StringProperty()
   charm_gesture = db.StringProperty()
@@ -19,6 +20,7 @@ class Move(db.Model):
 
 class Game(db.Model):
   name = db.StringProperty()
+  chicken = db.IntegerProperty()
   ctime = db.DateTimeProperty(auto_now_add=True)
   mtime = db.DateTimeProperty(auto_now_add=True)
   received_count = db.IntegerProperty()
@@ -38,6 +40,7 @@ class Anon(db.Model):
 
 class MainPage(webapp.RequestHandler):
   def get(self):
+    user = users.get_current_user()
     if "" == self.request.query_string:
       self.response.out.write("1")
       return
@@ -56,11 +59,10 @@ class MainPage(webapp.RequestHandler):
 	  if not anon:
 	    anon = Anon(key_name="meh", nonce="%X" % random.getrandbits(64))
 	    anon.put()
-	    name = anon.nonce
 	  else:
-	    name = anon.nonce
 	    anon.delete()
-	db.run_in_transaction(handle_anon)
+	  return anon.nonce
+	name = db.run_in_transaction(handle_anon)
 
       # Use a 64-bit random ID to make it harder to interfere with existing
       # games.
@@ -79,8 +81,8 @@ class MainPage(webapp.RequestHandler):
 	    n = ng.level
 	  ng.delete()
 	  return 1, n, ng.nonce
-
       player_i, lvl, nonce = db.run_in_transaction(add_player)
+
       self.response.out.write(unicode(player_i) + nonce)
       logging.info("Response: " + unicode(player_i) + ":" + nonce)
       if 1 == player_i:
@@ -100,9 +102,26 @@ class MainPage(webapp.RequestHandler):
 		      has_para = 0,
 		      has_move = 0)
 	  move.put()
-      return;
+      return
 
-    # Not a request for a new game.
+    # (end if "n" == cmd)
+    if "C" == cmd:  # Cancel start of game.
+      name = self.request.get("a")
+      logging.info("Canceling game: '" + name + "'")
+      if "" == name:
+        def cancel_anon():
+	  anon = db.get(Key.from_path("Anon", "meh"))
+	  if anon:
+	    anon.delete()
+	db.run_in_transaction(cancel_anon)
+	return
+
+      def cancel_named():
+	ng = db.get(Key.from_path("NewGame", "n:" + name))
+	ng.delete()
+      db.run_in_transaction(cancel_named)
+      return
+
     gamename = self.request.get("g")
     game = Game.get_by_key_name("g:" + gamename)
 
@@ -111,6 +130,7 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write("-")
       else:
 	self.response.out.write(unicode(game.level))
+	logging.info(gamename + " level = " + unicode(game.level))
       return
 
     if not game:
@@ -126,6 +146,7 @@ class MainPage(webapp.RequestHandler):
     db.run_in_transaction(dtstamp)
     playerid = self.request.get("i")
     if ('0' != playerid) and ('1' != playerid):
+      logging.error("Bad player ID.")
       self.response.out.write("Error: Bad player ID.")
       return
     def CommandFinish():
@@ -173,6 +194,10 @@ class MainPage(webapp.RequestHandler):
       logging.info("rcount " + unicode(db.get(gamekey).received_count))
       self.response.out.write("OK")
     def CommandGetMove():
+      if game.chicken:
+	self.response.out.write('CHICKEN')
+	# TODO: Destroy this game.
+	return
       if 2 == game.received_count:
 	logging.info("GetMove " + gamename + ":" + playerid + " " + unicode(game.received_count))
 	moveid = "m:" + gamename + unicode(1 - int(playerid))
@@ -298,6 +323,15 @@ class MainPage(webapp.RequestHandler):
       else:
 	self.response.out.write(move.charm_gesture)
       return
+    def CommandDisconnect():
+      def set_chicken():
+	game = db.get(gamekey)
+	game.chicken = 1
+	game.put()
+      db.run_in_transaction(set_chicken)
+      logging.info(gamename + ":" + playerid + " flees!")
+      self.response.out.write("Chicken!")
+      return
     def CommandBad():
       self.response.out.write("Error: Bad command.")
       return
@@ -309,6 +343,7 @@ class MainPage(webapp.RequestHandler):
      'C' : CommandSetCharm,
      'H' : CommandGetCharmHand,
      'G' : CommandGetCharmGesture,
+     'D' : CommandDisconnect,
     }.get(cmd, CommandBad)()
 
 application = webapp.WSGIApplication(
