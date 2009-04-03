@@ -209,7 +209,7 @@ public class MainView extends View {
     abstract void run();
     void set_state(int i) {}
   }
-  void set_gesture_knowledge(int level) {
+  static void set_gesture_knowledge(int level) {
     for (int i = 0; i < 9; i++) {
       Gesture g = Gesture.list[i];
       if (null != g) g.learned = false;
@@ -234,11 +234,11 @@ public class MainView extends View {
     }
   }
 
-  void learn(Spell sp) {
+  static void learn(Spell sp) {
     sp.learned = true;
   }
 
-  void set_spell_knowledge(int level) {
+  static void set_spell_knowledge(int level) {
     if (Wisdom.ALL_LEVEL_0 < level) {
       level -= Wisdom.ALL_LEVEL_0;
       for (int i = 0; i < spell_list_count; i++) {
@@ -912,6 +912,25 @@ public class MainView extends View {
     return -1;
   }
 
+  // Encode an integer (like the index of a spell) to a single character
+  // suitable for a URL request parameter.
+  char url_encode(int i) {
+    if (i < 0) Log.e("MainView", "Bug! Cannot encode negative integers.");
+    if (i < 26) return (char) ('A' + i);
+    if (i < 52) return (char) ('a' + i - 26);
+    if (i < 62) return (char) ('0' + i - 52);
+    Log.e("MainView", "Bug! Too big to encode.");
+    return '!';
+  }
+
+  int url_decode(char c) {
+    if (c >= 'A' && c <= 'Z') return c - 'A';
+    if (c >= 'a' && c <= 'z') return 26 + c - 'a';
+    if (c >= '0' && c <= '9') return 52 + c - '0';
+    Log.e("MainView", "Bug! Don't know how to decode.");
+    return -1;
+  }
+
   void net_move(SpellTapMove turn) {
     String s = "";
     // Encode gestures.
@@ -919,13 +938,13 @@ public class MainView extends View {
     s += (char) (choice[1] + '0');
     // Encode spells and targets.
     if (spell_is_twohanded) {
-      s += (char) (ready_spell[spell_choice[0]][2].index + 'A');
+      s += url_encode(ready_spell[spell_choice[0]][2].index);
       s += encode_target(spell_target[0]);
       s += (char) ('A' - 1);
       s += (char) ('A' - 1);
     } else for (int h = 0; h < 2; h++) {
       if (-1 != spell_choice[h]) {
-	s += (char) (ready_spell[spell_choice[h]][h].index + 'A');
+	s += url_encode(ready_spell[spell_choice[h]][h].index);
 	s += encode_target(spell_target[h]);
       } else {
 	s += (char) ('A' - 1);
@@ -1029,14 +1048,14 @@ public class MainView extends View {
 	    return;
 	  }
 	  Tubes.netid = Tubes.reply.substring(0, 1);
-	  Player.level = Tubes.reply.charAt(1) - '0';
-	  Tubes.gameid = Tubes.reply.substring(2, Tubes.reply.length());
+	  Tubes.gameid = Tubes.reply.substring(1, Tubes.reply.length());
 	  spelltap.show_tip(R.string.waitchallenge);
 	  handler_state = HANDLER_START_GAME;
 	  Tubes.send_start();
 	  break;
 	case HANDLER_START_GAME:
 	  tip_off();
+	  Player.set_level(Tubes.reply.charAt(0) - '0');
 	  spelltap.netconfig.setVisibility(View.GONE);
 	  set_tutorial(MACHINE_NET);
 	  spelltap.goto_mainframe();
@@ -1120,7 +1139,7 @@ public class MainView extends View {
     // Decode gestures, spells and spell targets.
     for (int h = 0; h < 2; h++) {
       turn.gest[h] = r.charAt(h) - '0';
-      turn.spell[h] = r.charAt(2 + 2 * h) - 'A';
+      turn.spell[h] = url_decode(r.charAt(2 + 2 * h));
       turn.spell_target[h] = decode_target(r.charAt(3 + 2 * h));
     }
     // Decode monster attacks.
@@ -2292,7 +2311,13 @@ public class MainView extends View {
     String s = "";
     String srcname = Being.list[sc.source].name;
     String tgtname = null;
-    int target = sc.target = map_target(sc.target);
+    // If summon spells are targeted at summoning circles, they have no effect.
+    if (sc.spell.is_summon) {
+      if (sc.target < -1) sc.target = -1;
+    } else {
+      sc.target = map_target(sc.target);
+    }
+    int target = sc.target;
     if (target != -1) {
       tgtname = Being.list[target].name;
     }
@@ -2326,7 +2351,7 @@ public class MainView extends View {
       s += tgtname + ".";
     }
     print(s);
-    //Log.i("MV", s);
+    Log.i("MV", s);
     if (sc.spell == dispel_spell) {
       // Dispel Magic always works.
       sc.run();
@@ -2879,6 +2904,7 @@ public class MainView extends View {
       is_psych = false;
       is_global = false;
       is_monstrous = false;
+      is_summon = false;
       level = 0;
     }
 
@@ -2937,6 +2963,7 @@ public class MainView extends View {
     boolean learned;
     boolean is_psych;
     boolean is_global;
+    boolean is_summon;
     boolean is_finished;  // Set this to true before calling last animation.
                           // Or call finish_spell() [it's slower].
     int cast_source, cast_target;
@@ -3219,6 +3246,7 @@ public class MainView extends View {
       name = i_name;
       init("Summon " + name, gesture, bitmapid, description, 0);
       set_is_monstrous();
+      is_summon = true;
     }
     public void cast(int source, int target) {
       switch(state) {
@@ -3628,7 +3656,7 @@ public class MainView extends View {
 	  Being b = Being.list[target];
 	  if (0 == b.shield) {
 	    b.get_hurt(power);
-	    board.animate_move_damage(target, 1);
+	    board.animate_move_damage(target, power);
 	  } else {
 	    //Log.i("TODO", "block animation");
 	    board.animate_move_damage(target, 0);

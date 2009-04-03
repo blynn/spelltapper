@@ -23,12 +23,13 @@ class Game(db.Model):
   mtime = db.DateTimeProperty(auto_now_add=True)
   received_count = db.IntegerProperty()
   ready_count = db.IntegerProperty()
+  level = db.IntegerProperty()
   finished = db.StringProperty()
 
 class NewGame(db.Model):
   ctime = db.DateTimeProperty(auto_now_add=True)
   nonce = db.StringProperty()
-  level = db.StringProperty()
+  level = db.IntegerProperty()
 
 # For anonymous duels.
 class Anon(db.Model):
@@ -42,10 +43,11 @@ class MainPage(webapp.RequestHandler):
       return
     cmd = self.request.get("c")
     if "n" == cmd:  # New game.
-      level = self.request.get("b")
-      if "" == level:
+      b = self.request.get("b")
+      if "" == b:
 	self.response.out.write("Error: No level supplied.")
 	return
+      level = int(b)
       name = self.request.get("a")
 
       if "" == name:
@@ -71,23 +73,28 @@ class MainPage(webapp.RequestHandler):
 	  ng.put()
 	  return 0, ng.level, ng.nonce
 	else:
+	  if level < ng.level:
+	    n = level
+	  else:
+	    n = ng.level
 	  ng.delete()
-	  return 1, ng.level, ng.nonce
+	  return 1, n, ng.nonce
 
-      player_i, s1, s2 = db.run_in_transaction(add_player)
-      self.response.out.write(unicode(player_i) + s1 + s2)
-      logging.info("Response: " + unicode(player_i) + ":" + s1 + "  " + s2)
+      player_i, lvl, nonce = db.run_in_transaction(add_player)
+      self.response.out.write(unicode(player_i) + nonce)
+      logging.info("Response: " + unicode(player_i) + ":" + nonce)
       if 1 == player_i:
-	gameid = "g:" + s2
+	gameid = "g:" + nonce
 	# TODO: Although unlikely, check game with this nonce does not exist.
 	game = Game(key_name = gameid,
 		    name = name,
+		    level = lvl,
 		    received_count = 0,
 		    ready_count = 0)
 	game.put()
 
 	for i in range(2):
-	  moveid = "m:" + s2 + unicode(i)
+	  moveid = "m:" + nonce + unicode(i)
 	  move = Move(key_name = moveid,
 		      has_charm = 0,
 		      has_para = 0,
@@ -103,7 +110,7 @@ class MainPage(webapp.RequestHandler):
       if not game:
 	self.response.out.write("-")
       else:
-	self.response.out.write("OK")
+	self.response.out.write(unicode(game.level))
       return
 
     if not game:
@@ -112,10 +119,11 @@ class MainPage(webapp.RequestHandler):
       return
 
     gamekey = game.key()
-    game.mtime = datetime.now()
-    # Ignore race for once. The winner of this race will be
-    # close enough to the right value of the current time for my purposes.
-    game.put()
+    def dtstamp():
+      game = db.get(gamekey)
+      game.mtime = datetime.now()
+      game.put()
+    db.run_in_transaction(dtstamp)
     playerid = self.request.get("i")
     if ('0' != playerid) and ('1' != playerid):
       self.response.out.write("Error: Bad player ID.")
@@ -139,7 +147,7 @@ class MainPage(webapp.RequestHandler):
       if "" == a:
 	self.response.out.write("Error: Bad move.")
 	return
-      logging.info("Got move " + gamename + ":" + playerid + " " + a)
+      logging.info("SetMove " + gamename + ":" + playerid + " " + a)
       moveid = "m:" + gamename + playerid
       move = Move.get_by_key_name(moveid)
       if not move:
@@ -162,9 +170,11 @@ class MainPage(webapp.RequestHandler):
 	game.received_count = game.received_count + 1
 	game.put()
       db.run_in_transaction(increment_received_count)
+      logging.info("rcount " + unicode(db.get(gamekey).received_count))
       self.response.out.write("OK")
     def CommandGetMove():
       if 2 == game.received_count:
+	logging.info("GetMove " + gamename + ":" + playerid + " " + unicode(game.received_count))
 	moveid = "m:" + gamename + unicode(1 - int(playerid))
 	move = Move.get_by_key_name(moveid)
 	if not move:

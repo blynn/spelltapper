@@ -284,6 +284,9 @@ public class SpellTap extends Activity {
       case KeyEvent.KEYCODE_B:
 	warp(14);
 	return true;
+      case KeyEvent.KEYCODE_M:
+	warp(15);
+	return true;
       case KeyEvent.KEYCODE_C:
 	warp(16);
 	return true;
@@ -353,7 +356,7 @@ public class SpellTap extends Activity {
     add_gsk(3, Wisdom.KNIFE_AND_PALM);
     add_gsk(5, Wisdom.DKPS);
     add_gsk(7, Wisdom.ALL_BUT_C);
-    add_gsk(15, Wisdom.ALL_GESTURES);
+    add_gsk(16, Wisdom.ALL_GESTURES);
   }
 
   void next_state() {
@@ -402,21 +405,15 @@ public class SpellTap extends Activity {
       unlock_place(SpellTap.PLACE_NET);
     }
     if (state < 14) {
-      Player.level = 0;
+      Player.set_level(0);
     } else if (state < 15) {
-      Player.level = 1;
+      Player.set_level(1);
     } else if (state < 16) {
-      Player.level = 2;
+      Player.set_level(2);
     } else if (state < 17) {
-      Player.level = 3;
+      Player.set_level(3);
     } else {
-      Player.level = 5;
-    }
-    set_spell_knowledge(Wisdom.ALL_LEVEL_0 + Player.level);
-    if (Player.level < 2) {
-      mainview.has_circles = false;
-    } else {
-      mainview.has_circles = true;
+      Player.set_level(5);
     }
 
     int i;

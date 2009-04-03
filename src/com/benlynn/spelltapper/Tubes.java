@@ -159,6 +159,7 @@ class Tubes extends SpellTapMachine {
 
   private static String send(String msg) {
     String url = server + msg;
+    Log.i("TubesUrl", url);
     HttpGet request = new HttpGet(url);
     try {
       HttpResponse response = client.execute(request);
@@ -167,6 +168,7 @@ class Tubes extends SpellTapMachine {
       if (count < 1) return null;
       in.close();
       String r = new String(inbuf, 0, count);
+      Log.i("TubesReply", r);
       return r;
     } catch (UnknownHostException e) {
       Log.e("Tubes", "UnknownHostException");
@@ -195,8 +197,7 @@ class Tubes extends SpellTapMachine {
   static Button ok_button;
   static Button cancel_button;
   static String gamename;
-  //static String server = "http://spelltap.appspot.com/";
-  static String server = "http://4.latest.spelltap.appspot.com/";
+  static String server = "http://5.latest.spelltap.appspot.com/";
   static EditText server_edittext;
   static boolean is_abandoned;
   static Thread net_thread;
