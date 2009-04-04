@@ -2211,7 +2211,6 @@ public class MainView extends View {
     return cur_sc.hand;
   }
   int map_target(int target) {
-    Log.i("remap0", "" + target);
     if (target < -1) {
       int h = -2 - target;
       int i = 0;
@@ -2220,7 +2219,6 @@ public class MainView extends View {
 	i++;
       }
       target = fresh_monster[i][h];
-      Log.i("remap1", "" + target);
     }
     return target;
   }
