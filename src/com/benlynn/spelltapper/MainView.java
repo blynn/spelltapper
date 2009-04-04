@@ -59,6 +59,7 @@ import android.os.Handler;
 import android.os.Message;
 
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
@@ -1035,6 +1036,12 @@ public class MainView extends View {
     Tubes.send_get_charm_gesture();
   }
 
+  static void ready_noise() {
+    // TODO: Add option for this feature before turning this on.
+    //ready_mp.seekTo(0);
+    //ready_mp.start();
+  }
+
   static NetHandler net_handler;
   class NetHandler extends Handler {
     @Override
@@ -1096,6 +1103,7 @@ public class MainView extends View {
 	    Log.e("TODO", "Handle bad messages");
 	  }
 	  opp_ready = true;
+	  ready_noise();
 	  net_state = NET_IDLE;
 	  new_round_post_charm();
 	  break;
@@ -1131,6 +1139,7 @@ public class MainView extends View {
 	    Log.e("TODO", "Handle bad messages");
 	  }
 	  opp_ready = true;
+	  ready_noise();
 	  net_state = NET_IDLE;
 	  set_para_hand();
 	  break;
@@ -1160,6 +1169,7 @@ public class MainView extends View {
       turn.attack_target[n] = decode_target(r.charAt(7 + 2 * n + 1));
     }
     opp_ready = true;
+    ready_noise();
     net_state = NET_REPLY;
     invalidate();
   }
@@ -1365,6 +1375,7 @@ public class MainView extends View {
     machines[MACHINE_NET] = new NetDuel();
     tut_index = -1;
     gesture_help = -1;
+    ready_mp = MediaPlayer.create(con, R.raw.ready);
   }
   static String emptyleftmsg;
   static String emptyrightmsg;
@@ -3773,4 +3784,6 @@ public class MainView extends View {
   static SpellCast monster_resolve, fireice_resolve;
   static int gesture_help;
   static boolean WDDc_cast;
+
+  static MediaPlayer ready_mp;
 }
