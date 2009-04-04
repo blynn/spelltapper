@@ -22,7 +22,7 @@ class Game(db.Model):
   name = db.StringProperty()
   chicken = db.IntegerProperty()
   ctime = db.DateTimeProperty(auto_now_add=True)
-  mtime = db.DateTimeProperty(auto_now_add=True)
+  atime = db.DateTimeProperty(auto_now_add=True)
   received_count = db.IntegerProperty()
   ready_count = db.IntegerProperty()
   level = db.IntegerProperty()
@@ -33,6 +33,17 @@ class NewGame(db.Model):
   nonce = db.StringProperty()
   level = db.IntegerProperty()
 
+class Account(db.Model):
+  ctime = db.DateTimeProperty(auto_now_add=True)
+  nonce = db.StringProperty()
+  level = db.IntegerProperty()
+
+class User(db.Model):
+  ctime = db.DateTimeProperty(auto_now_add=True)
+  atime = db.DateTimeProperty(auto_now_add=True)
+  name = db.StringProperty()
+  level = db.IntegerProperty()
+
 # For anonymous duels.
 class Anon(db.Model):
   nonce = db.StringProperty()
@@ -40,15 +51,59 @@ class Anon(db.Model):
 
 class MainPage(webapp.RequestHandler):
   def get(self):
-    user = users.get_current_user()
     if "" == self.request.query_string:
       self.response.out.write("2")
       return
     cmd = self.request.get("c")
+    if "l" == cmd:  # Login.
+      name = self.request.get("a")
+      b = self.request.get("b")
+      if "" == b:
+	logging.error("Error: No level supplied.")
+	return
+      level = int(b)
+
+      logging.info("login: " + name)
+      # TODO: Handle empty names, spaces at the beginning or end of names, etc.
+      def handle_login():
+	acct = db.get(Key.from_path("Account", "n:" + name))
+	if not acct:
+	  acct = Account(key_name="n:" + name, level=level,
+	              nonce="%X" % random.getrandbits(64))
+	  acct.put()
+	  return acct.nonce
+	else:
+	  return ""
+      nonce = db.run_in_transaction(handle_login)
+      if "" == nonce:
+	self.response.out.write("Error: Name already in use.")
+      else:
+	user = User(key_name="n:" + nonce, name=name)
+	user.put()
+	self.response.out.write(nonce)
+      return
+
+    if "r" == cmd:  # Lobby refresh.
+      nonce = self.request.get("a")
+      def heartbeat():
+	user = db.get(Key.from_path("User", "n:" + nonce))
+	if not user: return None
+	user.atime = datetime.now()
+	user.put()
+	return user
+      user = db.run_in_transaction(heartbeat)
+      if not user: return
+      users = db.GqlQuery("SELECT * FROM User")
+      for u in users:
+	self.response.out.write(u.name + '\n')
+# TODO: Remove users after 12 seconds without a heartbeat.
+	#self.response.out.write(unicode((user.atime - u.atime).seconds) + '\n')
+      return
+
     if "n" == cmd:  # New game.
       b = self.request.get("b")
       if "" == b:
-	self.response.out.write("Error: No level supplied.")
+	logging.error("Error: No level supplied.")
 	return
       level = int(b)
       name = self.request.get("a")
@@ -141,11 +196,13 @@ class MainPage(webapp.RequestHandler):
       return
 
     gamekey = game.key()
+    """
     def dtstamp():
       game = db.get(gamekey)
-      game.mtime = datetime.now()
+      game.atime = datetime.now()
       game.put()
     db.run_in_transaction(dtstamp)
+    """
     playerid = self.request.get("i")
     if ('0' != playerid) and ('1' != playerid):
       logging.error("Bad player ID.")

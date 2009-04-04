@@ -65,6 +65,7 @@ public class SpellTap extends Activity {
     mach[PLACE_DOJO] = dojo = new Dojo(this);
     mach[PLACE_PIT] = pit = new Pit(this);
     mach[PLACE_NET] = tubes = new Tubes(this);
+    mach[PLACE_LOBBY] = lobby = new Lobby(this);
     mach[PLACE_TOWN] = townview.stmach;
     mach[PLACE_MAIN] = mainview.stmach;
     for (int i = 0; i < PLACE_COUNT; i++) {
@@ -79,6 +80,9 @@ public class SpellTap extends Activity {
     Tubes.init((Button) findViewById(R.id.netconfig_ok),
 	(Button) findViewById(R.id.netconfig_cancel),
 	(EditText) findViewById(R.id.gamename));
+
+    lobby_view = findViewById(R.id.lobby_layout);
+    lobby_view.setVisibility(View.GONE);
 
     init_gesture_state_knowledge();
     spellbook_is_open = false;
@@ -225,6 +229,7 @@ public class SpellTap extends Activity {
     Log.i("SpellTap", "onDestroy");
     Tubes.stop_net_thread();
     super.onDestroy();
+    Tubes.fry_quit();
   }
 
   static final int MENU_SPELLBOOK = 1;
@@ -629,6 +634,7 @@ public class SpellTap extends Activity {
   static boolean spellbook_is_open;
   static MainView mainview;
   static View netconfig;
+  static View lobby_view;
   static View mainframe;
   static View booklayout;
   static BookView bookview;
@@ -639,7 +645,8 @@ public class SpellTap extends Activity {
   static final int PLACE_TOWN_COUNT = 4;
   static final int PLACE_TOWN = 4;
   static final int PLACE_MAIN = 5;
-  static final int PLACE_COUNT = 6;
+  static final int PLACE_LOBBY = 6;
+  static final int PLACE_COUNT = 7;
   static TownView townview;
   static InputHog hog;
   static View speech_layout;
@@ -650,6 +657,7 @@ public class SpellTap extends Activity {
   static Dojo dojo;
   static School school;
   static Tubes tubes;
+  static Lobby lobby;
   static int state = 0;
   static int curplace;
   static boolean allow_confirm_one;

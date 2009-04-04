@@ -20,6 +20,9 @@ import org.apache.http.impl.client.DefaultHttpClient;
 class Tubes extends SpellTapMachine {
   Tubes(SpellTap st) {
     super(st);
+    handler = new TubesHandler();
+    fry = new Fry();
+    fry.start();
     net_thread = null;
     inbuf = new byte[64];
     client = new DefaultHttpClient();
@@ -55,6 +58,41 @@ class Tubes extends SpellTapMachine {
     }
   }
 
+  static void login_error(String msg) {
+    errormsg = msg;
+    handler.sendEmptyMessage(INT_LOGIN_ERROR);
+  }
+
+  static void login_ok(String s) {
+    Log.i("Tubes", "login_ok");
+    userid = s;
+    handler.sendEmptyMessage(INT_LOGIN_OK);
+  }
+
+  // Called from this thread.
+  class TubesHandler extends Handler {
+    @Override
+    public void handleMessage(Message msg) {
+      Log.i("Tubes", "d0");
+      if (STATE_OK == state) return;
+      Log.i("Tubes", "d1");
+      state = STATE_OK;
+      switch (msg.what) {
+	case INT_LOGIN_OK:
+	  Log.i("Tubes", "interrupt");
+	  spelltap.netconfig.setVisibility(View.GONE);
+	  spelltap.lobby_view.setVisibility(View.VISIBLE);
+	  spelltap.set_place(SpellTap.PLACE_LOBBY);
+	  // TODO: Go to Lobby.
+	  spelltap.narrate(R.string.FFFdesc);
+	  return;
+	case INT_LOGIN_ERROR:
+	  spelltap.narrate(R.string.nameconflict);
+	  return;
+      }
+    }
+  }
+
   static void cancel() {
     spelltap.netconfig.setVisibility(View.GONE);
     spelltap.goto_town();
@@ -72,9 +110,15 @@ class Tubes extends SpellTapMachine {
 	  spelltap.narrate(R.string.servererror);
 	  break;
 	case 0:
+	  gamename = server_edittext.getText().toString();
+	  state = STATE_WAIT;
+	  Fry.login(gamename, Player.level);
+	  spelltap.show_tip(R.string.waitchallenge);
+	  /*
 	  MainView.handler_state = MainView.HANDLER_NEW_GAME;
 	  gamename = server_edittext.getText().toString();
           net_send("?c=n&a=" + gamename + "&b=" + Player.level);
+	  */
 	  break;
       }
     }
@@ -106,6 +150,16 @@ class Tubes extends SpellTapMachine {
       } catch (InterruptedException e) {
 	Log.e("Tubes", "Interrupted exception.");
       }
+    }
+  }
+
+  static void fry_quit() {
+    Log.i("Tubes", "Fry quit");
+    fry.quit();
+    try {
+      fry.join();
+    } catch (InterruptedException e) {
+      Log.e("Tubes", "fry_quit() interrupted.");
     }
   }
 
@@ -213,7 +267,7 @@ class Tubes extends SpellTapMachine {
       HttpResponse response = client.execute(request);
       InputStream in = response.getEntity().getContent();
       int count = in.read(inbuf, 0, 64);
-      if (count < 1) return null;
+      if (count < 0) return null;
       in.close();
       String r = new String(inbuf, 0, count);
       Log.i("TubesReply", r);
@@ -244,7 +298,7 @@ class Tubes extends SpellTapMachine {
   static Button ok_button;
   static Button cancel_button;
   static String gamename;
-  static String server = "http://8.latest.spelltap.appspot.com/";
+  static String server = "http://9.latest.spelltap.appspot.com/";
   static EditText server_edittext;
   static Thread net_thread;
   static byte[] inbuf;
@@ -252,4 +306,10 @@ class Tubes extends SpellTapMachine {
   static final int STATE_OK = 0;
   static final int STATE_WAIT = 1;
   static int state;
+  static Fry fry;
+  static TubesHandler handler;
+  static final int INT_LOGIN_OK = 1;
+  static final int INT_LOGIN_ERROR = 2;
+  static String errormsg;
+  static String userid;
 }
