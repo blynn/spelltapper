@@ -170,7 +170,7 @@ class Tubes extends SpellTapMachine {
     net_send("?g=" + gameid + "&i=" + netid + "&c=D");
   }
   static void send_cancelgame() {
-    net_send("?c=C&a=" + gamename);
+    net_send("?c=X&a=" + gamename);
   }
 
   static void net_send(String s) {
@@ -244,7 +244,7 @@ class Tubes extends SpellTapMachine {
   static Button ok_button;
   static Button cancel_button;
   static String gamename;
-  static String server = "http://6.latest.spelltap.appspot.com/";
+  static String server = "http://7.latest.spelltap.appspot.com/";
   static EditText server_edittext;
   static Thread net_thread;
   static byte[] inbuf;

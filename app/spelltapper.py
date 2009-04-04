@@ -105,7 +105,7 @@ class MainPage(webapp.RequestHandler):
       return
 
     # (end if "n" == cmd)
-    if "C" == cmd:  # Cancel start of game.
+    if "X" == cmd:  # Cancel start of game.
       name = self.request.get("a")
       logging.info("Canceling game: '" + name + "'")
       if "" == name:
@@ -118,7 +118,8 @@ class MainPage(webapp.RequestHandler):
 
       def cancel_named():
 	ng = db.get(Key.from_path("NewGame", "n:" + name))
-	ng.delete()
+	if ng:
+	  ng.delete()
       db.run_in_transaction(cancel_named)
       return
 
@@ -181,9 +182,17 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write("Error: Move sent twice.")
 	return
 
-      move.has_move = 1
-      move.move = a
-      move.put()
+      def put_move(key):
+	move = db.get(key)
+	move.has_move = 1
+	# Charm Person and Paralysis phases are over by now.
+	# Zero their flags here, as zeroing them later could conflict with
+	# future Charm Person/Paralysis spells.
+	move.has_charm = 0
+	move.has_para = 0
+	move.move = a
+	move.put()
+      db.run_in_transaction(put_move, move.key())
       def increment_received_count():
 	game = db.get(gamekey)
 	if 2 == game.received_count:
@@ -205,12 +214,13 @@ class MainPage(webapp.RequestHandler):
 	if not move:
 	  self.response.out.write('Error: Cannot find move!')
 	else:
-	  self.response.out.write(move.move)
 	  if 1 == move.has_move:
-	    move.has_move = 0
-	    move.has_charm = 0
-	    move.has_para = 0
-	    move.put()
+	    self.response.out.write(move.move)
+	    def zero_move(key):
+	      move = db.get(key)
+	      move.has_move = 0
+	      move.put()
+	    db.run_in_transaction(zero_move, move.key())
 	    def increment_ready_count():
 	      game = db.get(gamekey)
 	      game.ready_count = game.ready_count + 1
@@ -220,6 +230,8 @@ class MainPage(webapp.RequestHandler):
 		game.received_count = 0
 	      game.put()
 	    db.run_in_transaction(increment_ready_count)
+	  else:
+	    logging.error("Requested same move twice.");
       else:
 	self.response.out.write('-')
       return
@@ -248,9 +260,12 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write("Error: Already received paralysis.")
 	return
 
-      move.para = gesture
-      move.has_para = 1;
-      move.put()
+      def put_para(key):
+	move = db.get(key)
+	move.para = gesture
+	move.has_para = 1;
+	move.put()
+      db.run_in_transaction(put_para, move.key())
       self.response.out.write("OK")
       return
     def CommandGetPara():
@@ -284,6 +299,7 @@ class MainPage(webapp.RequestHandler):
       if "" == s:
 	self.response.out.write("Error: Bad charm choices.")
 	return
+      logging.info("SetCharm " + gamename + ":" + playerid + " " + target + " " + s)
       moveid = "m:" + gamename + unicode(1 - int(playerid))
       logging.info("Charm " + moveid)
       move = Move.get_by_key_name(moveid)
@@ -294,10 +310,13 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write("Error: Already received charm.")
 	return;
 
-      move.charm_hand = s[0]
-      move.charm_gesture = s[1]
-      move.has_charm = 1
-      move.put()
+      def put_charm(key):
+	move = db.get(key)
+	move.charm_hand = s[0]
+	move.charm_gesture = s[1]
+	move.has_charm = 1
+	move.put()
+      db.run_in_transaction(put_charm, move.key())
       self.response.out.write("OK")
       return
     def CommandGetCharmHand():
