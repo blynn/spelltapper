@@ -42,7 +42,7 @@ class MainPage(webapp.RequestHandler):
   def get(self):
     user = users.get_current_user()
     if "" == self.request.query_string:
-      self.response.out.write("1")
+      self.response.out.write("2")
       return
     cmd = self.request.get("c")
     if "n" == cmd:  # New game.
@@ -63,6 +63,7 @@ class MainPage(webapp.RequestHandler):
 	    anon.delete()
 	  return anon.nonce
 	name = db.run_in_transaction(handle_anon)
+	logging.info("Anonymous game request")
 
       # Use a 64-bit random ID to make it harder to interfere with existing
       # games.
@@ -230,8 +231,8 @@ class MainPage(webapp.RequestHandler):
 		game.received_count = 0
 	      game.put()
 	    db.run_in_transaction(increment_ready_count)
-	  else:
-	    logging.error("Requested same move twice.");
+	  #else:
+	    #logging.error("Requested same move twice.");
       else:
 	self.response.out.write('-')
       return

@@ -150,7 +150,7 @@ class Tubes extends SpellTapMachine {
   static int ping() {
     String r = send("");
     if (null == r) return 1;
-    if (!r.equals("1")) return 2;
+    if (!r.equals("2")) return 2;
     return 0;
   }
 
@@ -170,7 +170,7 @@ class Tubes extends SpellTapMachine {
     net_send("?g=" + gameid + "&i=" + netid + "&c=D");
   }
   static void send_cancelgame() {
-    net_send("?c=X&a=" + gamename);
+    net_send("?c=X&g=" + gameid + "&a=" + gamename);
   }
 
   static void net_send(String s) {
@@ -244,7 +244,7 @@ class Tubes extends SpellTapMachine {
   static Button ok_button;
   static Button cancel_button;
   static String gamename;
-  static String server = "http://7.latest.spelltap.appspot.com/";
+  static String server = "http://8.latest.spelltap.appspot.com/";
   static EditText server_edittext;
   static Thread net_thread;
   static byte[] inbuf;

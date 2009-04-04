@@ -144,7 +144,6 @@ public class Being {
   static void init() {
     list = new Being[16];
     summon_count = new int[2];
-    summon_count[0] = summon_count[1] = 0;
     int x, y;
     x = 160 - 32;
     y = MainView.ylower - 64;
@@ -162,7 +161,9 @@ public class Being {
 	  pos[8 - i - 1].x, MainView.ylower - 64 - pos[8 - i - 1].y + 16);
     }
   }
-  static void reset_pos() {
+  // Should be called every new game.
+  static void reset() {
+    summon_count[0] = summon_count[1] = 0;
     for (int i = 0; i < 16; i++) pos[i].being = null;
   }
   static public class Status {

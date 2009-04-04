@@ -35,6 +35,12 @@
 // targeted at the old and new incarnations.
 //
 // Invisibility is no defence against Elementals, though Shield is.
+//
+// Numbering of targets is relative: 0 is us, 1 is them, -1 is nobody,
+// -2 our left summoning circle, -3 our right summoning circle
+// -4 their left summoning circle, -5 their right summoning circle
+// 2, 4, 6, ... our monsters, in order summoned
+// 3, 5, 7, ... their monsters, in order summoned
 
 package com.benlynn.spelltapper;
 
@@ -119,6 +125,7 @@ public class MainView extends View {
   void go_back() {
     // TODO: Confirm player wants to leave.
     agent.disconnect();
+    winner = 1;
     if (!is_animating) {
       help_arrow_off();
       spelltap.goto_town();
@@ -508,7 +515,7 @@ public class MainView extends View {
 	  state = 0;
 	  break;
 	}
-	Being.reset_pos();
+	Being.reset();
         return;
       case 7:
 	spelltap.next_state();
@@ -929,7 +936,7 @@ public class MainView extends View {
     if (c >= 'A' && c <= 'Z') return c - 'A';
     if (c >= 'a' && c <= 'z') return 26 + c - 'a';
     if (c >= '0' && c <= '9') return 52 + c - '0';
-    Log.e("MainView", "Bug! Don't know how to decode.");
+    Log.e("MainView", "Bug! Don't know how to decode '" + c + "'.");
     return -1;
   }
 
@@ -2193,6 +2200,7 @@ public class MainView extends View {
     return cur_sc.hand;
   }
   int map_target(int target) {
+    Log.i("remap0", "" + target);
     if (target < -1) {
       int h = -2 - target;
       int i = 0;
@@ -2201,6 +2209,7 @@ public class MainView extends View {
 	i++;
       }
       target = fresh_monster[i][h];
+      Log.i("remap1", "" + target);
     }
     return target;
   }
@@ -2542,7 +2551,7 @@ public class MainView extends View {
     Being.list[1].remove_enchantments();
     Being.list[0].heal_full();
     Being.list[1].heal_full();
-    Being.reset_pos();
+    Being.reset();
     set_main_state(STATE_NORMAL);
     net_state = NET_IDLE;
     tilt_state = TILT_AWAIT_UP;
