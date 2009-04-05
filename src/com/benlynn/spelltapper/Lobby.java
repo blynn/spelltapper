@@ -13,11 +13,20 @@ class Lobby extends SpellTapMachine {
   }
 
   void go_back() {
+    is_live = false;
     Fry.logout();
     spelltap.lobby_view.setVisibility(View.GONE);
     spelltap.goto_town();
   }
   void run() {
+    is_live = true;
+    heartbeat();
+  }
+
+  void heartbeat() {
+    if (!is_live) return;
+    Fry.send_beat();
+    handler.sendEmptyMessageDelayed(CMD_BEAT, 4096);
   }
 
   static void set_list(String s) {
@@ -31,10 +40,15 @@ class Lobby extends SpellTapMachine {
 	case CMD_SET_LIST:
 	  spelltap.lobby_view.set_list((String) msg.obj);
 	  return;
+	case CMD_BEAT:
+	  heartbeat();
+	  return;
       }
     }
   }
 
   static LobbyHandler handler;
   static final int CMD_SET_LIST = 1;
+  static final int CMD_BEAT = 2;
+  static boolean is_live;
 }

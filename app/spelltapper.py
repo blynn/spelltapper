@@ -44,6 +44,7 @@ class User(db.Model):
   name = db.StringProperty()
   level = db.IntegerProperty()
   state = db.IntegerProperty()
+  arg = db.StringProperty()
 
 # For anonymous duels.
 class Anon(db.Model):
@@ -79,7 +80,7 @@ class MainPage(webapp.RequestHandler):
       if "" == nonce:
 	self.response.out.write("Error: Name already in use.")
       else:
-	user = User(key_name="n:" + nonce, name=name, state=0)
+	user = User(key_name="n:" + nonce, name=name, state=0, arg="")
 	user.put()
 	self.response.out.write(nonce)
       return
@@ -100,7 +101,11 @@ class MainPage(webapp.RequestHandler):
       for u in users:
 	self.response.out.write(u.name + '\n')
 	self.response.out.write(unicode(u.state) + '\n')
-# TODO: Remove users after 12 seconds without a heartbeat.
+	self.response.out.write(u.arg + '\n')
+	"""
+	TODO: Remove users after 12 seconds without a heartbeat, also when
+	disconnect command is received
+	"""
 	#self.response.out.write(unicode((user.atime - u.atime).seconds) + '\n')
       return
 

@@ -80,7 +80,6 @@ class Tubes extends SpellTapMachine {
 	  spelltap.lobby_view.setVisibility(View.VISIBLE);
 	  spelltap.set_place(SpellTap.PLACE_LOBBY);
 	  spelltap.tip_off();
-	  Fry.start_heartbeat();
 	  return;
 	case INT_LOGIN_ERROR:
 	  spelltap.narrate(R.string.nameconflict);

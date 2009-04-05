@@ -11,6 +11,7 @@ import android.os.Message;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.HttpClient;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 class Fry extends Thread {
@@ -19,11 +20,11 @@ class Fry extends Thread {
     is_logged_in = false;
     inbuf = new byte[1024];
     client = new DefaultHttpClient();
-  }
-  public void run() {
     Looper.prepare();
     handler = new FryHandler();
     Looper.loop();
+  }
+  public void run() {
   }
   public void quit() {
     handler.sendEmptyMessage(CMD_QUIT);
@@ -39,7 +40,7 @@ class Fry extends Thread {
   static void logout() {
     handler.sendEmptyMessage(CMD_LOGOUT);
   }
-  static void start_heartbeat() {
+  static void send_beat() {
     handler.sendEmptyMessage(CMD_BEAT);
   }
 
@@ -77,10 +78,14 @@ class Fry extends Thread {
 
   private static void send(String msg) {
     String url = server + msg;
-    Log.i("Fry0", url);
+    Log.i("Fry URL", url);
     HttpGet request = new HttpGet(url);
     try {
       HttpResponse response = client.execute(request);
+      if (HttpStatus.SC_OK != response.getStatusLine().getStatusCode()) {
+	reply = null;
+	return;
+      }
       InputStream in = response.getEntity().getContent();
       // TODO: Use HttpEntity.getContentLength().
       int count = in.read(inbuf, 0, 1024);
@@ -90,7 +95,12 @@ class Fry extends Thread {
       }
       in.close();
       reply = new String(inbuf, 0, count);
-      Log.i("Fry1", reply);
+      if (reply.startsWith("Error: ")) {
+	Log.e("Fry Error", reply);
+	reply = null;
+	return;
+      }
+      Log.i("Fry Reply", reply);
     } catch (UnknownHostException e) {
       Log.e("Tubes", "UnknownHostException");
       reply = null;

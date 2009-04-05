@@ -101,6 +101,7 @@ public class SpellTap extends Activity {
       hog.setVisibility(bun.getInt(ICE_VIS_HOG));
       booklayout.setVisibility(bun.getInt(ICE_VIS_BOOKVIEW));
       netconfig.setVisibility(bun.getInt(ICE_VIS_NETCONFIG));
+      lobby_view.setVisibility(bun.getInt(ICE_VIS_LOBBY));
     } else {
       is_noisy = true;
       try {
@@ -210,6 +211,7 @@ public class SpellTap extends Activity {
   static final String ICE_VIS_SPEECH = "game-vis-speech";
   static final String ICE_VIS_HOG = "game-vis-hog";
   static final String ICE_VIS_NETCONFIG = "game-vis-netconfig";
+  static final String ICE_VIS_LOBBY = "game-vis-lobby";
 
   @Override
   public void onSaveInstanceState(Bundle bun) {
@@ -223,6 +225,7 @@ public class SpellTap extends Activity {
     // TODO: Save speech contents too?
     bun.putInt(ICE_VIS_HOG, hog.getVisibility());
     bun.putInt(ICE_VIS_NETCONFIG, netconfig.getVisibility());
+    bun.putInt(ICE_VIS_LOBBY, lobby_view.getVisibility());
     Tubes.save_bundle(bun);
     MainView.save_bundle(bun);
     //Log.i("SpellTap", "Saving " + state);
