@@ -2568,10 +2568,12 @@ public class MainView extends View {
     WDDc_cast = false;
     global_ice_elemental = false;
     global_fire_elemental = false;
+    turn_index = 0;
   }
 
   // Start new round.
   void new_round() {
+    turn_index++;
     fut_choice[0] = fut_choice[1] = -1;
     // Thus begins the Charm Person spaghetti. The most complex case is
     // when Charm Person has simultaneously been cast on both players. Then:
@@ -3785,4 +3787,5 @@ public class MainView extends View {
   static boolean WDDc_cast;
 
   static MediaPlayer ready_mp;
+  static int turn_index;
 }

@@ -172,7 +172,7 @@ Cancels with other psychological spells.</string>
 <string name="DWWFWcdesc">Brings target corpse back to life. Restores up to 5 hit points on living target, but does not cure poison or disease.</string>
 
 <string name="needupdate">Please update Spelltapper.</string>
-<string name="servererror">Cannot connect to server :(</string>
+<string name="servererror">Cannot connect to server :( Try updating Spelltapper?</string>
 <string name="waitchallenge">Connected! Waiting for challenger...</string>
 <string name="nameconflict">Name currently in use. Pick another one.</string>
 

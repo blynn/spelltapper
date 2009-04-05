@@ -155,12 +155,6 @@ class Tubes extends SpellTapMachine {
     return 0;
   }
 
-  static String net_retry() {
-    return send("?g=" + gameid + "&i=" + netid + "&c=g");
-  }
-  static void send_getmove() {
-    net_send("?g=" + gameid + "&i=" + netid + "&c=g");
-  }
   static void send_start() {
     net_send("?g=" + gameid + "&i=" + netid + "&c=s");
   }
@@ -183,27 +177,38 @@ class Tubes extends SpellTapMachine {
   }
 
   static void send_move(String move) {
-    net_send("?g=" + gameid + "&i=" + netid + "&c=m&a=" + move);
+    net_send("?g=" + gameid + "&i=" + netid +
+	"&j=" + MainView.turn_index + "&c=m&a=" + move);
   }
+  static void send_getmove() {
+    net_send("?g=" + gameid + "&i=" + netid +
+	"&j=" + MainView.turn_index + "&c=g");
+  }
+  // Charm Person and Paralysis are from the previous turn, so subtract
+  // one from the index before sending.
   static void send_set_para(int target, int hand) {
-    net_send("?g=" + gameid + "&i=" + netid + "&c=p&a=" +
-	(char) ('0' + target) + "&b=" +
-        (char) ('0' + hand));
+    net_send("?g=" + gameid + "&i=" + netid +
+	"&j=" + (MainView.turn_index - 1) +
+	"&c=p&a=" + (char) ('0' + target) + "&b=" + (char) ('0' + hand));
   }
   static void send_get_para(int target) {
-    net_send("?g=" + gameid + "&i=" + netid + "&c=q&a=" +
-	(char) ('0' + target));
+    net_send("?g=" + gameid + "&i=" + netid +
+	"&j=" + (MainView.turn_index - 1) +
+	"&c=q&a=" + (char) ('0' + target));
   }
   static void send_set_charm(int hand, int gesture) {
-    net_send("?g=" + gameid + "&i=" + netid + "&c=C&a=" +
-	'1' + "&b=" +
+    net_send("?g=" + gameid + "&i=" + netid +
+	"&j=" + (MainView.turn_index - 1) +
+	"&c=C&a=" + '1' + "&b=" +
 	(char) ('0' + hand) + (char) ('0' + gesture));
   }
   static void send_get_charm_gesture() {
-    net_send("?g=" + gameid + "&i=" + netid + "&c=G");
+    net_send("?g=" + gameid + "&i=" + netid +
+	"&j=" + (MainView.turn_index - 1) + "&c=G");
   }
   static void send_get_charm_hand() {
-    net_send("?g=" + gameid + "&i=" + netid + "&c=H");
+    net_send("?g=" + gameid + "&i=" + netid +
+	"&j=" + (MainView.turn_index - 1) + "&c=H");
   }
 
   private static String send(String msg) {
@@ -248,7 +253,7 @@ class Tubes extends SpellTapMachine {
   static Button ok_button;
   static Button cancel_button;
   static String gamename;
-  static String server = "http://8.latest.spelltap.appspot.com/";
+  static String server = "http://9.latest.spelltap.appspot.com/";
   static EditText server_edittext;
   static Thread net_thread;
   static byte[] inbuf;
