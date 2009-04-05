@@ -14,7 +14,6 @@ class Move(db.Model):
   para = db.StringProperty()
   charm_hand = db.StringProperty()
   charm_gesture = db.StringProperty()
-  has_move = db.IntegerProperty()
   has_para = db.IntegerProperty()
   has_charm = db.IntegerProperty()
 
@@ -23,8 +22,8 @@ class Game(db.Model):
   chicken = db.IntegerProperty()
   ctime = db.DateTimeProperty(auto_now_add=True)
   atime = db.DateTimeProperty(auto_now_add=True)
+  now_turn = db.IntegerProperty()
   received_count = db.IntegerProperty()
-  ready_count = db.IntegerProperty()
   level = db.IntegerProperty()
   finished = db.StringProperty()
 
@@ -156,17 +155,9 @@ class MainPage(webapp.RequestHandler):
 	game = Game(key_name = gameid,
 		    name = name,
 		    level = lvl,
-		    received_count = 0,
-		    ready_count = 0)
+		    now_turn = 0,
+		    received_count = 0)
 	game.put()
-
-	for i in range(2):
-	  moveid = "m:" + nonce + unicode(i)
-	  move = Move(key_name = moveid,
-		      has_charm = 0,
-		      has_para = 0,
-		      has_move = 0)
-	  move.put()
       return
 
     # (end if "n" == cmd)
@@ -211,6 +202,7 @@ class MainPage(webapp.RequestHandler):
       self.response.out.write("Error: Bad player ID.")
       return
     def CommandFinish():
+      logging.info("Game " + gamename + " finished.")
       self.response.out.write("OK")
       if "" == game.finished:
 	def set_finished():
@@ -218,87 +210,92 @@ class MainPage(webapp.RequestHandler):
 	  game.finished = playerid
 	  game.put()
 	db.run_in_transaction(set_finished)
-      elif playerid != game.finished:
+      elif playerid != game.finished:  # TODO: This should be string comparison.
 	# Delete this game.
-	for i in range(2):
-	  moveid = "m:" + gamename + unicode(i)
-	  Move.get_by_key_name(moveid).delete()
-	game.delete()
-    def CommandMove():
+	game.delete()  # TODO: Also delete moves.
+    def CommandSetMove():
+      turn_index = self.request.get("j")
+      if "" == turn_index:
+	logging.error("Error: No turn index.")
+	return
       a = self.request.get("a")
       if "" == a:
-	self.response.out.write("Error: Bad move.")
+	logging.error("Error: Bad move.")
 	return
-      logging.info("SetMove " + gamename + ":" + playerid + " " + a)
-      moveid = "m:" + gamename + playerid
+      logging.info("SetMove " + gamename + ":" + turn_index +
+	  ":" + playerid + " " + a)
+      moveid = "m:" + gamename + turn_index + playerid
+
       move = Move.get_by_key_name(moveid)
-      if not move:
-	logging.error("Missing move!")
-	self.response.out.write("Error: Missing move.")
+      if move:
+	logging.error("Move sent twice: ignored.")
+	self.response.out.write("OK")
 	return
+      else:
+	move = Move(key_name = moveid,
+		    has_charm = 0,
+		    has_para = 0);
 
-      if 1 == move.has_move:
-	logging.info("Move sent twice.")
-	self.response.out.write("-")
-	return
+      # Charm Person and Paralysis phases are over by now.
+      # Zero their flags here, as zeroing them later could conflict with
+      # future Charm Person/Paralysis spells.
+      move.has_charm = 0
+      move.has_para = 0
+      move.move = a
+      move.put()
 
-      def put_move(key):
-	move = db.get(key)
-	move.has_move = 1
-	# Charm Person and Paralysis phases are over by now.
-	# Zero their flags here, as zeroing them later could conflict with
-	# future Charm Person/Paralysis spells.
-	move.has_charm = 0
-	move.has_para = 0
-	move.move = a
-	move.put()
-      db.run_in_transaction(put_move, move.key())
+      turn_int = int(turn_index)
       def increment_received_count():
 	game = db.get(gamekey)
-	if 2 == game.received_count:
-	  logging.error("received_count > 2!")
-	game.received_count = game.received_count + 1
+        if game.now_turn == turn_int:
+	  if 2 == game.received_count:
+	    logging.error("received_count > 2!")
+	  else:
+	    game.received_count = game.received_count + 1
+	elif game.now_turn == turn_int - 1:
+	  if 2 > game.received_count:
+	    logging.error("incrementing turn though received_count < 2!")
+	  game.now_turn = turn_int
+	  game.received_count = 1
+	elif game.now_turn > turn_int:
+	  logging.error("received ancient move!")
+	elif game.now_turn < turn_int - 1:
+	  logging.error("received future move!")
 	game.put()
       db.run_in_transaction(increment_received_count)
       logging.info("rcount " + unicode(db.get(gamekey).received_count))
       self.response.out.write("OK")
+    
     def CommandGetMove():
       if game.chicken:
 	self.response.out.write('CHICKEN')
 	# TODO: Destroy this game.
 	return
-      if 2 == game.received_count:
-	logging.info("GetMove " + gamename + ":" + playerid + " " + unicode(game.received_count))
-	moveid = "m:" + gamename + unicode(1 - int(playerid))
+      turn_index = self.request.get("j")
+      if "" == turn_index:
+	logging.error("Error: No turn index.")
+	return
+      turn_int = int(turn_index)
+      if game.now_turn > turn_int or (game.now_turn == turn_int and 2 == game.received_count):
+	logging.info("GetMove " + gamename + ":" + turn_index +
+	    ":" + playerid + " " + unicode(game.received_count))
+	moveid = "m:" + gamename + turn_index + unicode(1 - int(playerid))
 	move = Move.get_by_key_name(moveid)
 	if not move:
-	  self.response.out.write('Error: Cannot find move!')
+	  logging.error('Error: Cannot find move!')
 	else:
-	  if 1 == move.has_move:
-	    self.response.out.write(move.move)
-	    def zero_move(key):
-	      move = db.get(key)
-	      move.has_move = 0
-	      move.put()
-	    db.run_in_transaction(zero_move, move.key())
-	    def increment_ready_count():
-	      game = db.get(gamekey)
-	      game.ready_count = game.ready_count + 1
-	      # All players ready for next turn?
-	      if (2 == game.ready_count):
-		game.ready_count = 0
-		game.received_count = 0
-	      game.put()
-	    db.run_in_transaction(increment_ready_count)
-	  #else:
-	    #logging.error("Requested same move twice.");
+	  self.response.out.write(move.move)
       else:
 	self.response.out.write('-')
       return
     def CommandSetPara():
+      turn_index = self.request.get("j")
+      if "" == turn_index:
+	logging.error("Error: No turn index.")
+	return
       target = self.request.get("a")
       if "" == target:
-	self.response.out.write("Error: Bad paralysis target.")
+	logging.error("Error: Bad paralysis target.")
 	return
       if "0" == target:
 	targetid = playerid
@@ -307,17 +304,17 @@ class MainPage(webapp.RequestHandler):
 
       gesture = self.request.get("b")
       if "" == gesture:
-	self.response.out.write("Error: Bad paralysis gesture.")
+	logging.error("Error: Bad paralysis gesture.")
 	return
-      moveid = "m:" + gamename + targetid
+      moveid = "m:" + gamename + turn_index + targetid
       logging.info("SetPara " + moveid)
       move = Move.get_by_key_name(moveid)
       if not move:
-	self.response.out.write('Error: Cannot find move!')
+	logging.error('Error: Cannot find move!')
 	return
 
       if (1 == move.has_para):
-	self.response.out.write("Error: Already received paralysis.")
+	logging.error("Error: Already received paralysis.")
 	return
 
       def put_para(key):
@@ -329,9 +326,13 @@ class MainPage(webapp.RequestHandler):
       self.response.out.write("OK")
       return
     def CommandGetPara():
+      turn_index = self.request.get("j")
+      if "" == turn_index:
+	logging.error("Error: No turn index.")
+	return
       target = self.request.get("a")
       if "" == target:
-	self.response.out.write("Error: Bad paralysis target.")
+	logging.error("Error: Bad paralysis target.")
 	return
 
       if "0" == target:
@@ -339,10 +340,10 @@ class MainPage(webapp.RequestHandler):
       else:
 	targetid = unicode(1 - int(playerid))
 
-      moveid = "m:" + gamename + targetid
+      moveid = "m:" + gamename + turn_index + targetid
       move = Move.get_by_key_name(moveid)
       if not move:
-	self.response.out.write('Error: Cannot find move!')
+	logging.error('Error: Cannot find move!')
 	return
       if 0 == move.has_para:
 	self.response.out.write("-")
@@ -350,6 +351,10 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write(move.para)
       return
     def CommandSetCharm():
+      turn_index = self.request.get("j")
+      if "" == turn_index:
+	logging.error("Error: No turn index.")
+	return
       # This is unnecessary as we always assume target is opponent.
       target = self.request.get("a")
       if "" == target:
@@ -360,7 +365,7 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write("Error: Bad charm choices.")
 	return
       logging.info("SetCharm " + gamename + ":" + playerid + " " + target + " " + s)
-      moveid = "m:" + gamename + unicode(1 - int(playerid))
+      moveid = "m:" + gamename + turn_index + unicode(1 - int(playerid))
       logging.info("Charm " + moveid)
       move = Move.get_by_key_name(moveid)
       if not move:
@@ -380,10 +385,14 @@ class MainPage(webapp.RequestHandler):
       self.response.out.write("OK")
       return
     def CommandGetCharmHand():
-      moveid = "m:" + gamename + playerid
+      turn_index = self.request.get("j")
+      if "" == turn_index:
+	logging.error("Error: No turn index.")
+	return
+      moveid = "m:" + gamename + turn_index + playerid
       move = Move.get_by_key_name(moveid)
       if not move:
-	self.response.out.write('Error: Cannot find move!')
+	logging.error('Error: Cannot find move!')
 	return
 
       if 0 == move.has_charm:
@@ -392,10 +401,14 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write(move.charm_hand)
       return
     def CommandGetCharmGesture():
-      moveid = "m:" + gamename + playerid
+      turn_index = self.request.get("j")
+      if "" == turn_index:
+	logging.error("Error: No turn index.")
+	return
+      moveid = "m:" + gamename + turn_index + playerid
       move = Move.get_by_key_name(moveid)
       if not move:
-	self.response.out.write('Error: Cannot find move!')
+	logging.error('Error: Cannot find move!')
 	return
       if 0 == move.has_charm:
 	self.response.out.write("-")
@@ -412,9 +425,9 @@ class MainPage(webapp.RequestHandler):
       self.response.out.write("Chicken!")
       return
     def CommandBad():
-      self.response.out.write("Error: Bad command.")
+      logging.error("Error: Bad command.")
       return
-    {'m' : CommandMove,
+    {'m' : CommandSetMove,
      'g' : CommandGetMove,
      'p' : CommandSetPara,
      'q' : CommandGetPara,
