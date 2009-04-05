@@ -40,8 +40,8 @@ class Fry extends Thread {
   static void logout() {
     handler.sendEmptyMessage(CMD_LOGOUT);
   }
-  static void send_beat() {
-    handler.sendEmptyMessage(CMD_BEAT);
+  static void send_beat(int level) {
+    handler.sendMessage(Message.obtain(handler, CMD_BEAT, level, 0));
   }
 
   // Called from this thread.
@@ -66,8 +66,15 @@ class Fry extends Thread {
           send("?c=L&i=" + userid);
 	  return;
 	case CMD_BEAT:
-          send("?c=r&i=" + userid);
-	  Lobby.set_list(reply);
+          send("?c=r&i=" + userid + "&a=" + msg.arg1);
+	  if (null != reply) {
+	    if (reply.equals("Error: No such user ID.")) {
+	      spelltap.lobby.go_back();
+	      spelltap.narrate(R.string.got_disconnected);
+	    } else {
+	      Lobby.set_list(reply);
+	    }
+	  }
 	  return;
 	case CMD_QUIT:
 	  Looper.myLooper().quit();
@@ -124,4 +131,5 @@ class Fry extends Thread {
   static String server = "http://10.latest.spelltap.appspot.com/";
   static HttpClient client;
   static String userid;
+  static SpellTap spelltap;
 }

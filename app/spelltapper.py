@@ -85,11 +85,19 @@ class MainPage(webapp.RequestHandler):
       return
 
     if "r" == cmd:  # Lobby refresh.
+      a = self.request.get("a")
+      if "" == a:
+	logging.error("Error: No level supplied.")
+	return
+      level = int(a)
       nonce = self.request.get("i")
       def heartbeat():
 	user = db.get(Key.from_path("User", "n:" + nonce))
 	if not user: return None
 	user.atime = datetime.now()
+	if level > 0 and 0 == user.state:
+	  user.state = 1
+	  user.arg = a
 	user.put()
 	return user
       user = db.run_in_transaction(heartbeat)

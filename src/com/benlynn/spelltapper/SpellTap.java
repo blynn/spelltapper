@@ -121,6 +121,7 @@ public class SpellTap extends Activity {
     senseman = (SensorManager) getSystemService(SENSOR_SERVICE);
     tilt_listener = new TiltListener();
     fry = new Fry();
+    fry.spelltap = this;
     fry.start();
   }
 

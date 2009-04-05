@@ -186,5 +186,7 @@ http://cs.stanford.edu/~blynn/spelltapper/
 \n\nAdaptation of Richard A. Bartle\'s <i>Spellbinder</i>: http://www.mud.co.uk/richard/spellbnd.htm
 </string>
 
+<string name="got_disconnected">Disconnected from server.</string>
+
 <string name="toggle_sound">Toggle Sound</string>
 </resources>

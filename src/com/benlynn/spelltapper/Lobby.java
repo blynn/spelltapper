@@ -20,17 +20,27 @@ class Lobby extends SpellTapMachine {
   }
   void run() {
     is_live = true;
+    beat_level = 0;
+    LobbyView.level = Player.true_level;
+    LobbyView.has_created_duel = false;
     heartbeat();
   }
 
   void heartbeat() {
     if (!is_live) return;
-    Fry.send_beat();
+    Fry.send_beat(beat_level);
     handler.sendEmptyMessageDelayed(CMD_BEAT, 4096);
   }
 
   static void set_list(String s) {
     handler.sendMessage(Message.obtain(handler, CMD_SET_LIST, s));
+  }
+
+  static void create_duel(int level) {
+    beat_level = level;
+  }
+
+  static void accept_duel(String s) {
   }
 
   class LobbyHandler extends Handler {
@@ -47,6 +57,7 @@ class Lobby extends SpellTapMachine {
     }
   }
 
+  static int beat_level;
   static LobbyHandler handler;
   static final int CMD_SET_LIST = 1;
   static final int CMD_BEAT = 2;
