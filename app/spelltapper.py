@@ -233,8 +233,8 @@ class MainPage(webapp.RequestHandler):
 	return
 
       if 1 == move.has_move:
-	logging.error("Move sent twice.")
-	self.response.out.write("Error: Move sent twice.")
+	logging.info("Move sent twice.")
+	self.response.out.write("-")
 	return
 
       def put_move(key):
