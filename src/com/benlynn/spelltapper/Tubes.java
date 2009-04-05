@@ -15,6 +15,7 @@ import android.widget.EditText;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.HttpClient;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 class Tubes extends SpellTapMachine {
@@ -260,6 +261,9 @@ class Tubes extends SpellTapMachine {
     HttpGet request = new HttpGet(url);
     try {
       HttpResponse response = client.execute(request);
+      if (HttpStatus.SC_OK != response.getStatusLine().getStatusCode()) {
+	return null;
+      }
       InputStream in = response.getEntity().getContent();
       int count = in.read(inbuf, 0, 64);
       if (count < 0) return null;

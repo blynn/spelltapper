@@ -85,7 +85,7 @@ public class SpellTap extends Activity {
     lobby_view.setVisibility(View.GONE);
 
     init_gesture_state_knowledge();
-    spellbook_is_open = false;
+    is_overlay = false;
     Player.init();
 
     if (null != bun) {
@@ -93,6 +93,7 @@ public class SpellTap extends Activity {
       MainView.load_bundle(bun);
       Tubes.load_bundle(bun);
       run();
+      is_noisy = bun.getBoolean(ICE_NOISY);
       set_place(bun.getInt(ICE_PLACE));
       townview.setVisibility(bun.getInt(ICE_VIS_TOWN));
       mainframe.setVisibility(bun.getInt(ICE_VIS_MAIN));
@@ -101,6 +102,7 @@ public class SpellTap extends Activity {
       booklayout.setVisibility(bun.getInt(ICE_VIS_BOOKVIEW));
       netconfig.setVisibility(bun.getInt(ICE_VIS_NETCONFIG));
     } else {
+      is_noisy = true;
       try {
 	FileInputStream in = mainview.con.openFileInput("save");
 	if (0 == in.read()) {
@@ -201,6 +203,7 @@ public class SpellTap extends Activity {
 
   static final String ICE_STATE = "game-state";
   static final String ICE_PLACE = "game-place";
+  static final String ICE_NOISY = "game-noisy";
   static final String ICE_VIS_MAIN = "game-vis-main";
   static final String ICE_VIS_TOWN = "game-vis-town";
   static final String ICE_VIS_BOOKVIEW = "game-vis-booklayout";
@@ -210,6 +213,7 @@ public class SpellTap extends Activity {
 
   @Override
   public void onSaveInstanceState(Bundle bun) {
+    bun.putBoolean(ICE_NOISY, is_noisy);
     bun.putInt(ICE_STATE, state);
     bun.putInt(ICE_PLACE, curplace);
     bun.putInt(ICE_VIS_MAIN, mainframe.getVisibility());
@@ -234,11 +238,13 @@ public class SpellTap extends Activity {
 
   static final int MENU_SPELLBOOK = 1;
   static final int MENU_ABOUT = 2;
+  static final int MENU_SOUND = 3;
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     super.onCreateOptionsMenu(menu);
     menu.add(Menu.NONE, MENU_SPELLBOOK, Menu.NONE, R.string.menu_spells);
     menu.add(Menu.NONE, MENU_ABOUT, Menu.NONE, R.string.menu_about);
+    menu.add(Menu.NONE, MENU_SOUND, Menu.NONE, R.string.toggle_sound);
     return true;
   }
 
@@ -247,10 +253,13 @@ public class SpellTap extends Activity {
     switch (item.getItemId()) {
       case MENU_SPELLBOOK:
         BookView.compute_spells();
-	open_spellbook();
+	toggle_spellbook();
 	return true;
       case MENU_ABOUT:
-	open_about();
+	toggle_about();
+	return true;
+      case MENU_SOUND:
+	is_noisy = !is_noisy;
 	return true;
     }
     return false;
@@ -270,8 +279,10 @@ public class SpellTap extends Activity {
 	  hogoff();
 	  return true;
 	}
-	if (spellbook_is_open) {
-	  close_spellbook();
+	if (is_overlay) {
+	  about_text.setVisibility(View.GONE);
+	  booklayout.setVisibility(View.GONE);
+	  is_overlay = false;
 	  return true;
 	}
 	if (is_in_town()) {
@@ -588,14 +599,26 @@ public class SpellTap extends Activity {
     curmach.run();
   }
 
-  void open_about() {
-    about_text.setVisibility(View.VISIBLE);
-    hog.setVisibility(View.VISIBLE);
+  void toggle_about() {
+    booklayout.setVisibility(View.GONE);
+    if (View.GONE ==  about_text.getVisibility()) {
+      about_text.setVisibility(View.VISIBLE);
+      is_overlay = true;
+    } else {
+      about_text.setVisibility(View.GONE);
+      is_overlay = false;
+    }
   }
 
-  void open_spellbook() {
-    booklayout.setVisibility(View.VISIBLE);
-    spellbook_is_open = true;
+  void toggle_spellbook() {
+    about_text.setVisibility(View.GONE);
+    if (View.GONE ==  booklayout.getVisibility()) {
+      booklayout.setVisibility(View.VISIBLE);
+      is_overlay = true;
+    } else {
+      booklayout.setVisibility(View.GONE);
+      is_overlay = false;
+    }
   }
 
   class BookPrev implements View.OnClickListener {
@@ -628,10 +651,10 @@ public class SpellTap extends Activity {
 
   void close_spellbook() {
     booklayout.setVisibility(View.GONE);
-    spellbook_is_open = false;
+    is_overlay = false;
   }
 
-  static boolean spellbook_is_open;
+  static boolean is_overlay;
   static MainView mainview;
   static View netconfig;
   static LobbyView lobby_view;
@@ -665,4 +688,5 @@ public class SpellTap extends Activity {
   static TextView name_speaker;
   static View portrait;
   static View about_text;
+  static boolean is_noisy;
 }
