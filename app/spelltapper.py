@@ -27,6 +27,15 @@ class Game(db.Model):
   level = db.IntegerProperty()
   finished = db.StringProperty()
 
+class Duel(db.Model):
+  chicken = db.IntegerProperty()
+  ctime = db.DateTimeProperty(auto_now_add=True)
+  atime = db.DateTimeProperty(auto_now_add=True)
+  now_turn = db.IntegerProperty()
+  received_count = db.IntegerProperty()
+  level = db.IntegerProperty()
+  finished = db.StringProperty()
+
 class NewGame(db.Model):
   ctime = db.DateTimeProperty(auto_now_add=True)
   nonce = db.StringProperty()
@@ -44,6 +53,7 @@ class User(db.Model):
   level = db.IntegerProperty()
   state = db.IntegerProperty()
   arg = db.StringProperty()
+  duel = db.StringProperty()
 
 # For anonymous duels.
 class Anon(db.Model):
@@ -85,19 +95,11 @@ class MainPage(webapp.RequestHandler):
       return
 
     if "r" == cmd:  # Lobby refresh.
-      a = self.request.get("a")
-      if "" == a:
-	logging.error("Error: No level supplied.")
-	return
-      level = int(a)
       nonce = self.request.get("i")
       def heartbeat():
 	user = db.get(Key.from_path("User", "n:" + nonce))
 	if not user: return None
 	user.atime = datetime.now()
-	if level > 0 and 0 == user.state:
-	  user.state = 1
-	  user.arg = a
 	user.put()
 	return user
       user = db.run_in_transaction(heartbeat)
@@ -116,56 +118,88 @@ class MainPage(webapp.RequestHandler):
 	#self.response.out.write(unicode((user.atime - u.atime).seconds) + '\n')
       return
 
-    if "n" == cmd:  # New game.
-      b = self.request.get("b")
-      if "" == b:
+    if "n" == cmd:  # New duel.
+      a = self.request.get("a")
+      if "" == a:
 	logging.error("Error: No level supplied.")
 	return
-      level = int(b)
-      name = self.request.get("a")
+      level = int(a)
+      if level < 1 or level > 5:
+	logging.error("Error: Bad level.")
+	return
+      nonce = self.request.get("i")
+      def heartbeat():
+	user = db.get(Key.from_path("User", "n:" + nonce))
+	if not user: return
+	user.atime = datetime.now()
+	if 0 == user.state:
+	  user.state = 1
+	  user.arg = a
+	user.put()
+      db.run_in_transaction(heartbeat)
+      return
 
-      if "" == name:
-        def handle_anon():
-	  anon = db.get(Key.from_path("Anon", "meh"))
-	  if not anon:
-	    anon = Anon(key_name="meh", nonce="%X" % random.getrandbits(64))
-	    anon.put()
-	  else:
-	    anon.delete()
-	  return anon.nonce
-	name = db.run_in_transaction(handle_anon)
-	logging.info("Anonymous game request")
+    if "N" == cmd:  # Accept duel.
+      a = self.request.get("a")
+      if "" == a:
+	logging.error("Error: No opponent supplied.")
+	return
+      nonce = self.request.get("i")
 
-      # Use a 64-bit random ID to make it harder to interfere with existing
-      # games.
+      duelid = "%X" % random.getrandbits(64)
 
-      def add_player():
-	ng = db.get(Key.from_path("NewGame", "n:" + name))
-	if not ng:
-	  ng = NewGame(key_name="n:" + name, level=level,
-	      nonce="%X" % random.getrandbits(64), player_count=0)
-	  ng.put()
-	  return 0, ng.level, ng.nonce
-	else:
-	  if level < ng.level:
-	    n = level
-	  else:
-	    n = ng.level
-	  ng.delete()
-	  return 1, n, ng.nonce
-      player_i, lvl, nonce = db.run_in_transaction(add_player)
+      def mark_user():
+	origuser = user = db.get(Key.from_path("User", "n:" + nonce))
+	if not user:
+	  return None, None, -1
+	origuser.atime = user.atime = datetime.now()
+	if user.state == 2:
+	  return None, None, -2
+	user.state = 2
+	user.arg = a
+	user.duel = duelid
+	user.put()
+	return origuser, user, 0
+      origuser, user, status = db.run_in_transaction(mark_user)
 
-      self.response.out.write(unicode(player_i) + nonce)
-      logging.info("Response: " + unicode(player_i) + ":" + nonce)
-      if 1 == player_i:
-	gameid = "g:" + nonce
-	# TODO: Although unlikely, check game with this nonce does not exist.
-	game = Game(key_name = gameid,
-		    name = name,
-		    level = lvl,
-		    now_turn = 0,
-		    received_count = 0)
-	game.put()
+      if -1 == status:
+	self.response.out.write("Error: No such user ID.")
+	return
+
+      if -2 == status:
+	logging.warning("Already dueling. Ignoring.")
+	return
+
+      acct = db.get(Key.from_path("Account", "n:" + a))
+      if not acct:
+	origuser.put()
+	self.response.out.write("Error: Opponent unavailable.");
+	return
+
+      def accept_duel():
+	opp = db.get(Key.from_path("User", "n:" + acct.nonce))
+	if not opp: return ""
+	if 1 != opp.state: return ""
+	opp.state = 2
+	level = opp.arg
+	opp.arg = user.name
+	opp.duel = duelid
+	opp.put()
+	return level
+      level = db.run_in_transaction(accept_duel)
+      if "" == level:
+	self.response.out.write("Error: Opponent unavailable.")
+	origuser.put()
+	logging.error("accept_duel failed.")
+	return
+
+      duel = Duel(key_name = duelid,
+		  level = level,
+		  now_turn = 0,
+		  received_count = 0)
+      duel.put()
+      self.response.out.write(duelid)
+      logging.info("Response: " + duelid)
       return
 
     # (end if "n" == cmd)
@@ -236,7 +270,7 @@ class MainPage(webapp.RequestHandler):
 
       move = Move.get_by_key_name(moveid)
       if move:
-	logging.error("Move sent twice: ignored.")
+	logging.warning("Move sent twice: ignored.")
 	self.response.out.write("OK")
 	return
       else:

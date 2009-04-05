@@ -40,8 +40,14 @@ class Fry extends Thread {
   static void logout() {
     handler.sendEmptyMessage(CMD_LOGOUT);
   }
-  static void send_beat(int level) {
-    handler.sendMessage(Message.obtain(handler, CMD_BEAT, level, 0));
+  static void send_beat() {
+    handler.sendEmptyMessage(CMD_BEAT);
+  }
+  static void send_new_duel(int level) {
+    handler.sendMessage(Message.obtain(handler, CMD_NEW_DUEL, level, 0));
+  }
+  static void send_accept_duel(String s) {
+    handler.sendMessage(Message.obtain(handler, CMD_ACCEPT_DUEL, s));
   }
 
   // Called from this thread.
@@ -65,14 +71,19 @@ class Fry extends Thread {
 	  }
           send("?c=L&i=" + userid);
 	  return;
+	case CMD_NEW_DUEL:
+          send("?c=n&i=" + userid + "&a=" + msg.arg1);
+	  return;
+	case CMD_ACCEPT_DUEL:
+          send("?c=N&i=" + userid + "&a=" + msg.obj);
+	  return;
 	case CMD_BEAT:
-          send("?c=r&i=" + userid + "&a=" + msg.arg1);
+          send("?c=r&i=" + userid);
 	  if (null != reply) {
-	    if (reply.equals("Error: No such user ID.")) {
-	      spelltap.lobby.go_back();
-	      spelltap.narrate(R.string.got_disconnected);
-	    } else {
-	      Lobby.set_list(reply);
+	    Lobby.set_list(reply);
+	  } else {
+	    if (null != error && error.equals("Error: No such user ID.")) {
+	      Lobby.kick_off();
 	    }
 	  }
 	  return;
@@ -88,6 +99,7 @@ class Fry extends Thread {
     Log.i("Fry URL", url);
     HttpGet request = new HttpGet(url);
     try {
+      error = null;
       HttpResponse response = client.execute(request);
       if (HttpStatus.SC_OK != response.getStatusLine().getStatusCode()) {
 	reply = null;
@@ -104,6 +116,7 @@ class Fry extends Thread {
       reply = new String(inbuf, 0, count);
       if (reply.startsWith("Error: ")) {
 	Log.e("Fry Error", reply);
+	error = reply;
 	reply = null;
 	return;
       }
@@ -123,7 +136,9 @@ class Fry extends Thread {
   static final int CMD_LOGIN = 256;
   static final int CMD_LOGOUT = 257;
   static final int CMD_BEAT = 258;
-  static final int CMD_QUIT = 259;
+  static final int CMD_NEW_DUEL = 259;
+  static final int CMD_ACCEPT_DUEL = 260;
+  static final int CMD_QUIT = 261;
   static FryHandler handler;
   static String reply;
   static String username;
@@ -131,5 +146,6 @@ class Fry extends Thread {
   static String server = "http://10.latest.spelltap.appspot.com/";
   static HttpClient client;
   static String userid;
+  static String error;
   static SpellTap spelltap;
 }

@@ -20,7 +20,6 @@ class Lobby extends SpellTapMachine {
   }
   void run() {
     is_live = true;
-    beat_level = 0;
     LobbyView.level = Player.true_level;
     LobbyView.has_created_duel = false;
     heartbeat();
@@ -28,7 +27,7 @@ class Lobby extends SpellTapMachine {
 
   void heartbeat() {
     if (!is_live) return;
-    Fry.send_beat(beat_level);
+    Fry.send_beat();
     handler.sendEmptyMessageDelayed(CMD_BEAT, 4096);
   }
 
@@ -36,11 +35,16 @@ class Lobby extends SpellTapMachine {
     handler.sendMessage(Message.obtain(handler, CMD_SET_LIST, s));
   }
 
+  static void kick_off() {
+    handler.sendEmptyMessage(CMD_DISCONNECT);
+  }
+
   static void create_duel(int level) {
-    beat_level = level;
+    Fry.send_new_duel(level);
   }
 
   static void accept_duel(String s) {
+    Fry.send_accept_duel(s);
   }
 
   class LobbyHandler extends Handler {
@@ -53,13 +57,17 @@ class Lobby extends SpellTapMachine {
 	case CMD_BEAT:
 	  heartbeat();
 	  return;
+	case CMD_DISCONNECT:
+	  go_back();
+	  spelltap.narrate(R.string.got_disconnected);
+	  return;
       }
     }
   }
 
-  static int beat_level;
   static LobbyHandler handler;
   static final int CMD_SET_LIST = 1;
   static final int CMD_BEAT = 2;
+  static final int CMD_DISCONNECT = 3;
   static boolean is_live;
 }
