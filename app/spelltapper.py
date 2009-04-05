@@ -141,11 +141,6 @@ class MainPage(webapp.RequestHandler):
       return
 
     gamekey = game.key()
-    def dtstamp():
-      game = db.get(gamekey)
-      game.mtime = datetime.now()
-      game.put()
-    db.run_in_transaction(dtstamp)
     playerid = self.request.get("i")
     if ('0' != playerid) and ('1' != playerid):
       logging.error("Bad player ID.")

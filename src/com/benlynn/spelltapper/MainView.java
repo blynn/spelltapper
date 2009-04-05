@@ -1037,9 +1037,10 @@ public class MainView extends View {
   }
 
   static void ready_noise() {
-    // TODO: Add option for this feature before turning this on.
-    //ready_mp.seekTo(0);
-    //ready_mp.start();
+    if (spelltap.is_noisy) {
+      ready_mp.seekTo(0);
+      ready_mp.start();
+    }
   }
 
   static NetHandler net_handler;
