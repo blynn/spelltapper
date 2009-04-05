@@ -301,7 +301,7 @@ class Tubes extends SpellTapMachine {
   static Button ok_button;
   static Button cancel_button;
   static String gamename;
-  static String server = "http://9.latest.spelltap.appspot.com/";
+  static String server = "http://10.latest.spelltap.appspot.com/";
   static EditText server_edittext;
   static Thread net_thread;
   static byte[] inbuf;
