@@ -43,6 +43,7 @@ class User(db.Model):
   atime = db.DateTimeProperty(auto_now_add=True)
   name = db.StringProperty()
   level = db.IntegerProperty()
+  state = db.IntegerProperty()
 
 # For anonymous duels.
 class Anon(db.Model):
@@ -78,13 +79,13 @@ class MainPage(webapp.RequestHandler):
       if "" == nonce:
 	self.response.out.write("Error: Name already in use.")
       else:
-	user = User(key_name="n:" + nonce, name=name)
+	user = User(key_name="n:" + nonce, name=name, state=0)
 	user.put()
 	self.response.out.write(nonce)
       return
 
     if "r" == cmd:  # Lobby refresh.
-      nonce = self.request.get("a")
+      nonce = self.request.get("i")
       def heartbeat():
 	user = db.get(Key.from_path("User", "n:" + nonce))
 	if not user: return None
@@ -92,10 +93,13 @@ class MainPage(webapp.RequestHandler):
 	user.put()
 	return user
       user = db.run_in_transaction(heartbeat)
-      if not user: return
+      if not user:
+	self.response.out.write("Error: No such user ID.")
+	return
       users = db.GqlQuery("SELECT * FROM User")
       for u in users:
 	self.response.out.write(u.name + '\n')
+	self.response.out.write(unicode(u.state) + '\n')
 # TODO: Remove users after 12 seconds without a heartbeat.
 	#self.response.out.write(unicode((user.atime - u.atime).seconds) + '\n')
       return

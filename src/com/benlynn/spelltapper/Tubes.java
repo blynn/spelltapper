@@ -63,9 +63,7 @@ class Tubes extends SpellTapMachine {
     handler.sendEmptyMessage(INT_LOGIN_ERROR);
   }
 
-  static void login_ok(String s) {
-    Log.i("Tubes", "login_ok");
-    userid = s;
+  static void login_ok() {
     handler.sendEmptyMessage(INT_LOGIN_OK);
   }
 
@@ -73,18 +71,15 @@ class Tubes extends SpellTapMachine {
   class TubesHandler extends Handler {
     @Override
     public void handleMessage(Message msg) {
-      Log.i("Tubes", "d0");
       if (STATE_OK == state) return;
-      Log.i("Tubes", "d1");
       state = STATE_OK;
       switch (msg.what) {
 	case INT_LOGIN_OK:
-	  Log.i("Tubes", "interrupt");
 	  spelltap.netconfig.setVisibility(View.GONE);
 	  spelltap.lobby_view.setVisibility(View.VISIBLE);
 	  spelltap.set_place(SpellTap.PLACE_LOBBY);
-	  // TODO: Go to Lobby.
-	  spelltap.narrate(R.string.FFFdesc);
+	  spelltap.tip_off();
+	  Fry.start_heartbeat();
 	  return;
 	case INT_LOGIN_ERROR:
 	  spelltap.narrate(R.string.nameconflict);
@@ -311,5 +306,4 @@ class Tubes extends SpellTapMachine {
   static final int INT_LOGIN_OK = 1;
   static final int INT_LOGIN_ERROR = 2;
   static String errormsg;
-  static String userid;
 }

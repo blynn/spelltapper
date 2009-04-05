@@ -81,7 +81,7 @@ public class SpellTap extends Activity {
 	(Button) findViewById(R.id.netconfig_cancel),
 	(EditText) findViewById(R.id.gamename));
 
-    lobby_view = findViewById(R.id.lobby_layout);
+    lobby_view = (LobbyView) findViewById(R.id.lobbyview);
     lobby_view.setVisibility(View.GONE);
 
     init_gesture_state_knowledge();
@@ -634,7 +634,7 @@ public class SpellTap extends Activity {
   static boolean spellbook_is_open;
   static MainView mainview;
   static View netconfig;
-  static View lobby_view;
+  static LobbyView lobby_view;
   static View mainframe;
   static View booklayout;
   static BookView bookview;

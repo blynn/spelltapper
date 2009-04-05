@@ -16,7 +16,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 class Fry extends Thread {
   // These methods typically called from another thread.
   Fry() {
-    state = STATE_IDLE;
+    is_logged_in = false;
     inbuf = new byte[1024];
     client = new DefaultHttpClient();
   }
@@ -29,12 +29,18 @@ class Fry extends Thread {
     handler.sendEmptyMessage(CMD_QUIT);
   }
   static void login(String i_username, int i_level) {
-    if (STATE_IDLE != state) {
-      Log.e("Fry", "Login from non-idle state!");
+    if (is_logged_in) {
+      Log.e("Fry", "Logging in twice!");
     }
     username = i_username;
     userlevel = i_level;
     handler.sendEmptyMessage(CMD_LOGIN);
+  }
+  static void logout() {
+    handler.sendEmptyMessage(CMD_LOGOUT);
+  }
+  static void start_heartbeat() {
+    handler.sendEmptyMessage(CMD_BEAT);
   }
 
   // Called from this thread.
@@ -43,13 +49,24 @@ class Fry extends Thread {
     public void handleMessage(Message msg) {
       switch (msg.what) {
 	case CMD_LOGIN:
-	  state = STATE_LOGIN;
           send("?c=l&a=" + username + "&b=" + userlevel);
 	  if (null == reply || reply.startsWith("Error: ")) {
 	    Tubes.login_error(reply);
 	  } else {
-	    Tubes.login_ok(reply);
+	    is_logged_in = true;
+	    userid = reply;
+	    Tubes.login_ok();
 	  }
+	  return;
+	case CMD_LOGOUT:
+	  if (!is_logged_in) {
+	    Log.e("Fry", "Logging out without logging in!");
+	  }
+          send("?c=L&i=" + userid);
+	  return;
+	case CMD_BEAT:
+          send("?c=r&i=" + userid);
+	  Lobby.set_list(reply);
 	  return;
 	case CMD_QUIT:
 	  Looper.myLooper().quit();
@@ -84,15 +101,17 @@ class Fry extends Thread {
   }
 
   static byte[] inbuf;
-  static int state;
+  static boolean is_logged_in;
   static final int STATE_IDLE = 0;
-  static final int STATE_LOGIN = 1;
   static final int CMD_LOGIN = 256;
-  static final int CMD_QUIT = 257;
+  static final int CMD_LOGOUT = 257;
+  static final int CMD_BEAT = 258;
+  static final int CMD_QUIT = 259;
   static FryHandler handler;
   static String reply;
   static String username;
   static int userlevel;
   static String server = "http://9.latest.spelltap.appspot.com/";
   static HttpClient client;
+  static String userid;
 }
