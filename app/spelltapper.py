@@ -236,11 +236,6 @@ class MainPage(webapp.RequestHandler):
 		    has_charm = 0,
 		    has_para = 0);
 
-      # Charm Person and Paralysis phases are over by now.
-      # Zero their flags here, as zeroing them later could conflict with
-      # future Charm Person/Paralysis spells.
-      move.has_charm = 0
-      move.has_para = 0
       move.move = a
       move.put()
 
