@@ -120,6 +120,8 @@ public class SpellTap extends Activity {
     }
     senseman = (SensorManager) getSystemService(SENSOR_SERVICE);
     tilt_listener = new TiltListener();
+    fry = new Fry();
+    fry.start();
   }
 
   SensorManager senseman;
@@ -236,7 +238,12 @@ public class SpellTap extends Activity {
     Log.i("SpellTap", "onDestroy");
     Tubes.stop_net_thread();
     super.onDestroy();
-    Tubes.fry_quit();
+    fry.quit();
+    try {
+      fry.join();
+    } catch (InterruptedException e) {
+      Log.e("SpellTap", "Interrupted while destroying network thread.");
+    }
   }
 
   static final int MENU_SPELLBOOK = 1;
@@ -420,15 +427,15 @@ public class SpellTap extends Activity {
       unlock_place(SpellTap.PLACE_NET);
     }
     if (state < 14) {
-      Player.set_level(0);
+      Player.set_true_level(0);
     } else if (state < 15) {
-      Player.set_level(1);
+      Player.set_true_level(1);
     } else if (state < 16) {
-      Player.set_level(2);
+      Player.set_true_level(2);
     } else if (state < 17) {
-      Player.set_level(3);
+      Player.set_true_level(3);
     } else {
-      Player.set_level(5);
+      Player.set_true_level(5);
     }
 
     int i;
@@ -692,4 +699,5 @@ public class SpellTap extends Activity {
   static View portrait;
   static View about_text;
   static boolean is_noisy;
+  static Fry fry;
 }

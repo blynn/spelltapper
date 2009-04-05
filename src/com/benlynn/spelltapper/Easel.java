@@ -75,6 +75,7 @@ class Easel {
 
     sel_paint = new Paint();
     sel_paint.setARGB(255, 127, 255, 127);
+    sel_paint.setStyle(Paint.Style.STROKE);
 
     wait_paint = new Paint();
     wait_paint.setARGB(255, 127, 0, 0);

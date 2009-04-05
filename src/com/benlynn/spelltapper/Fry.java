@@ -20,11 +20,11 @@ class Fry extends Thread {
     is_logged_in = false;
     inbuf = new byte[1024];
     client = new DefaultHttpClient();
+  }
+  public void run() {
     Looper.prepare();
     handler = new FryHandler();
     Looper.loop();
-  }
-  public void run() {
   }
   public void quit() {
     handler.sendEmptyMessage(CMD_QUIT);
@@ -121,7 +121,7 @@ class Fry extends Thread {
   static String reply;
   static String username;
   static int userlevel;
-  static String server = "http://9.latest.spelltap.appspot.com/";
+  static String server = "http://10.latest.spelltap.appspot.com/";
   static HttpClient client;
   static String userid;
 }

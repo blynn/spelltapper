@@ -29,7 +29,13 @@ class Player {
     }
   }
 
+  static void set_true_level(int i) {
+    true_level = i;
+    set_level(i);
+  }
+
   static String name, name_full;
   static int life[];
   static int level;
+  static int true_level;
 }

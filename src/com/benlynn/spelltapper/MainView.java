@@ -1071,6 +1071,7 @@ public class MainView extends View {
 	  spelltap.netconfig.setVisibility(View.GONE);
 	  set_tutorial(MACHINE_NET);
 	  spelltap.goto_mainframe();
+	  ready_noise();
 	  break;
 	case HANDLER_FINISH_GAME:
 	  break;

@@ -22,8 +22,6 @@ class Tubes extends SpellTapMachine {
   Tubes(SpellTap st) {
     super(st);
     handler = new TubesHandler();
-    fry = new Fry();
-    fry.start();
     net_thread = null;
     inbuf = new byte[64];
     client = new DefaultHttpClient();
@@ -148,16 +146,6 @@ class Tubes extends SpellTapMachine {
     }
   }
 
-  static void fry_quit() {
-    Log.i("Tubes", "Fry quit");
-    fry.quit();
-    try {
-      fry.join();
-    } catch (InterruptedException e) {
-      Log.e("Tubes", "fry_quit() interrupted.");
-    }
-  }
-
   static String reply;
   static class NetThread extends Thread {
     NetThread(String msg) {
@@ -260,7 +248,7 @@ class Tubes extends SpellTapMachine {
   }
 
   private static String send(String msg) {
-    String url = server + msg;
+    String url = Fry.server + msg;
     Log.i("TubesUrl", url);
     HttpGet request = new HttpGet(url);
     try {
@@ -301,7 +289,6 @@ class Tubes extends SpellTapMachine {
   static Button ok_button;
   static Button cancel_button;
   static String gamename;
-  static String server = "http://10.latest.spelltap.appspot.com/";
   static EditText server_edittext;
   static Thread net_thread;
   static byte[] inbuf;
@@ -309,7 +296,6 @@ class Tubes extends SpellTapMachine {
   static final int STATE_OK = 0;
   static final int STATE_WAIT = 1;
   static int state;
-  static Fry fry;
   static TubesHandler handler;
   static final int INT_LOGIN_OK = 1;
   static final int INT_LOGIN_ERROR = 2;
