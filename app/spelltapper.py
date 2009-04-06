@@ -43,6 +43,7 @@ class User(db.Model):
    2 Somebody accepted my challenge.
    3 I acknowledge someone's acceptance.
    4 I accepted somebody's challenge.
+   9 I fled a duel.
   """
 
   arg = db.StringProperty()
@@ -132,9 +133,20 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write(unicode(u.state) + '\n')
 	self.response.out.write(u.arg + '\n')
 
-	if (0 == u.state or 1 == u.state) and user.atime > u.atime and (user.atime - u.atime).seconds >= 12:
-	  logging.info(u.name + " timeout: " + unicode((user.atime - u.atime).seconds))
-	  logoff(u.key())
+	if 0 == u.state or 1 == u.state:
+	  if user.atime > u.atime and (user.atime - u.atime).seconds >= 12:
+	    logging.info(u.name + " timeout: " + unicode((user.atime - u.atime).seconds))
+	    logoff(u.key())
+	elif 9 == u.state:
+	  # Players who leave duels cannot reconnect for a little while.
+	  if user.atime > u.atime and (user.atime - u.atime).seconds >= 16:
+	    logging.info(u.name + " timeout: " + unicode((user.atime - u.atime).seconds))
+	    logoff(u.key())
+
+	# TODO: Uptime user.atime in SetMove and lower timeout to a few minutes.
+	elif user.atime > u.atime and (user.atime - u.atime).seconds >= 2048:
+	    logging.info(u.name + " timeout: " + unicode((user.atime - u.atime).seconds))
+	    logoff(u.key())
       return
 
     if "n" == cmd:  # New duel.
@@ -255,9 +267,30 @@ class MainPage(webapp.RequestHandler):
       logging.error("No such game: " + gamename)
       self.response.out.write("Error: No such game.")
       return
-
     gamekey = game.key()
     playerid = self.request.get("i")
+
+    if "D" == cmd:
+      def set_chicken():
+	game = db.get(gamekey)
+	if game:
+	  game.chicken = 1
+	  game.put()
+      db.run_in_transaction(set_chicken)
+      logging.info(gamename + ":" + playerid + " flees!")
+      def chicken_user():
+	user = db.get(Key.from_path("User", "n:" + playerid))
+	if not user:
+	  return None
+	user.atime = datetime.now()
+	user.state = 9
+	user.put()
+	return user
+      db.run_in_transaction(chicken_user)
+      #logoff(Key.from_path("User", "n:" + playerid))
+      self.response.out.write("Chicken!")
+      return
+
     if ('0' != playerid) and ('1' != playerid):
       logging.error("Bad player ID.")
       self.response.out.write("Error: Bad player ID.")
@@ -459,17 +492,6 @@ class MainPage(webapp.RequestHandler):
       else:
 	self.response.out.write(move.charm_gesture)
       return
-    def CommandDisconnect():
-      def set_chicken():
-	game = db.get(gamekey)
-	if game:
-	  game.chicken = 1
-	  game.put()
-      db.run_in_transaction(set_chicken)
-      logging.info(gamename + ":" + playerid + " flees!")
-      logoff(Key.from_path("User", "n:" + playerid))
-      self.response.out.write("Chicken!")
-      return
     def CommandBad():
       logging.error("Error: Bad command.")
       return
@@ -480,7 +502,6 @@ class MainPage(webapp.RequestHandler):
      'C' : CommandSetCharm,
      'H' : CommandGetCharmHand,
      'G' : CommandGetCharmGesture,
-     'D' : CommandDisconnect,
     }.get(cmd, CommandBad)()
 
 application = webapp.WSGIApplication(
