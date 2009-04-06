@@ -97,6 +97,7 @@ class Tubes extends SpellTapMachine {
 	    return;
 	  }
 	  state = STATE_WAIT;
+	  spelltap.show_tip(R.string.serverwait);
 	  Fry.login(gamename, Player.level);
 	  break;
       }

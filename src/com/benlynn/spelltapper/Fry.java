@@ -82,6 +82,9 @@ class Fry extends Thread {
 	  return;
 	case CMD_NEW_DUEL:
           send("?c=n&i=" + userid + "&a=" + msg.arg1);
+	  if (null == reply) {
+	    LobbyView.has_created_duel = false;
+	  }
 	  return;
 	case CMD_ACCEPT_DUEL:
           send("?c=N&i=" + userid + "&a=" + msg.obj);

@@ -150,27 +150,42 @@ class MainPage(webapp.RequestHandler):
       return
 
     if "n" == cmd:  # New duel.
+      logging.info("New duel.")
       a = self.request.get("a")
       if "" == a:
-	logging.error("Error: No level supplied.")
+	logging.error("No level supplied.")
+	self.response.out.write("Error: No level supplied.")
 	return
       level = int(a)
       if level < 1 or level > 5:
-	logging.error("Error: Bad level.")
+	logging.error("Bad level.")
+	self.response.out.write("Error: Bad level.")
 	return
       nonce = self.request.get("i")
       def new_duel():
 	user = db.get(Key.from_path("User", "n:" + nonce))
-	if not user: return
+	if not user: return -2
 	user.atime = datetime.now()
 	if 0 == user.state:
 	  user.state = 1
 	  user.arg = a
+	  user.put()
+	  return 0
 	user.put()
-      db.run_in_transaction(new_duel)
+	return -1
+      status = db.run_in_transaction(new_duel)
+      if -2 == status:
+	logging.error("No such user.")
+	self.response.out.write("Error: No such user.")
+      elif -1 == status:
+	logging.error("User already started duel.")
+	self.response.out.write("Error: Already started duel.")
+      else:
+	self.response.out.write("OK")
       return
 
     if "N" == cmd:  # Accept duel.
+      logging.info("Accept duel.")
       a = self.request.get("a")
       if "" == a:
 	logging.error("Error: No opponent supplied.")
@@ -180,21 +195,23 @@ class MainPage(webapp.RequestHandler):
       duelid = "%X" % random.getrandbits(64)
 
       def mark_user():
-	origuser = user = db.get(Key.from_path("User", "n:" + nonce))
+	user = db.get(Key.from_path("User", "n:" + nonce))
 	if not user:
-	  return None, None, -1
-	origuser.atime = user.atime = datetime.now()
+	  return 0, "", None, -1
+	user.atime = datetime.now()
+	origstate = user.state
+	origarg = user.arg
 	# Can't accept a duel if you were advertising one and someone just
 	# accepted (but you don't know yet). Also can't accept a duel if
 	# already in one.
 	if 1 != user.state and 0 != user.state:
-	  return None, None, -2
+	  return 0, "", None, -2
 	user.state = 4
 	user.arg = a
 	user.duel = duelid
 	user.put()
-	return origuser, user, 0
-      origuser, user, status = db.run_in_transaction(mark_user)
+	return origstate, origarg, user, 0
+      origstate, origarg, user, status = db.run_in_transaction(mark_user)
 
       if -1 == status:
 	self.response.out.write("Error: No such user ID.")
@@ -204,9 +221,19 @@ class MainPage(webapp.RequestHandler):
 	logging.warning("Already dueling. Ignoring.")
 	return
 
+      def restore():
+        def restore_state_arg(i, s):
+	  user = db.get(Key.from_path("User", "n:" + nonce))
+	  if user:
+	    user.state = i
+	    user.arg = s
+	    user.put()
+	db.run_in_transaction(restore_state_arg, origstate, origarg)
+	return
+
       acct = db.get(Key.from_path("Account", "n:" + a))
       if not acct:
-	origuser.put()
+	restore()
 	self.response.out.write("Error: Opponent unavailable.")
 	return
 
@@ -223,7 +250,7 @@ class MainPage(webapp.RequestHandler):
       level = db.run_in_transaction(accept_duel)
       if "" == level:
 	self.response.out.write("Error: Opponent unavailable.")
-	origuser.put()
+	restore()
 	logging.error("accept_duel failed.")
 	return
 
