@@ -56,6 +56,15 @@ class MainPage(webapp.RequestHandler):
       return
     cmd = self.request.get("c")
 
+    """
+    if "deldeldel" == cmd:
+      logging.info("cleanup")
+      stuff = db.GqlQuery("SELECT * FROM Move")
+      for thing in stuff:
+	thing.delete()
+      return
+    """
+
     def logoff(userkey):
       def del_user(userkey):
 	user = db.get(userkey)
@@ -105,7 +114,9 @@ class MainPage(webapp.RequestHandler):
 
     if "L" == cmd:  # Logoff.
       nonce = self.request.get("i")
+      logging.info("logout: " + nonce)
       logoff(Key.from_path("User", "n:" + nonce))
+      return
 
     if "r" == cmd:  # Lobby refresh.
       nonce = self.request.get("i")
@@ -138,8 +149,9 @@ class MainPage(webapp.RequestHandler):
 	    logging.info(u.name + " timeout: " + unicode((user.atime - u.atime).seconds))
 	    logoff(u.key())
 	elif 9 == u.state:
-	  # Players who leave duels cannot reconnect for a little while.
-	  if user.atime > u.atime and (user.atime - u.atime).seconds >= 16:
+	  # TODO: When net games become more robust, punish fleeing wizards
+	  # with longer login bans.
+	  if user.atime > u.atime and (user.atime - u.atime).seconds >= 4:
 	    logging.info(u.name + " timeout: " + unicode((user.atime - u.atime).seconds))
 	    logoff(u.key())
 

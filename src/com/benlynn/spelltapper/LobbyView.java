@@ -60,6 +60,9 @@ public class LobbyView extends View {
       }
       if (32 == user_count) break;
     }
+    if (-1 == selection_i) {
+      selection = null;
+    }
     invalidate();
   }
 
