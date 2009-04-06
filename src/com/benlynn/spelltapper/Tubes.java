@@ -32,18 +32,6 @@ class Tubes extends SpellTapMachine {
     spelltap.netconfig.setVisibility(View.VISIBLE);
   }
 
-  static void handle_new_game() {
-    if (reply.startsWith("Error: ")) {
-      spelltap.narrate(R.string.nameconflict);
-      return;
-    }
-    netid = reply.substring(0, 1);
-    gameid = reply.substring(1, reply.length());
-    spelltap.show_tip(R.string.waitchallenge);
-    state = STATE_WAIT;
-    send_start();
-  }
-
   void go_back() {
     if (STATE_WAIT == state) {
       MainView.handler_state = MainView.HANDLER_IDLE;
@@ -106,12 +94,6 @@ class Tubes extends SpellTapMachine {
 	  gamename = server_edittext.getText().toString();
 	  state = STATE_WAIT;
 	  Fry.login(gamename, Player.level);
-	  spelltap.show_tip(R.string.waitchallenge);
-	  /*
-	  MainView.handler_state = MainView.HANDLER_NEW_GAME;
-	  gamename = server_edittext.getText().toString();
-          net_send("?c=n&a=" + gamename + "&b=" + Player.level);
-	  */
 	  break;
       }
     }

@@ -17,24 +17,12 @@ class Move(db.Model):
   has_para = db.IntegerProperty()
   has_charm = db.IntegerProperty()
 
-class Game(db.Model):
-  name = db.StringProperty()
-  chicken = db.IntegerProperty()
-  ctime = db.DateTimeProperty(auto_now_add=True)
-  atime = db.DateTimeProperty(auto_now_add=True)
-  now_turn = db.IntegerProperty()
-  received_count = db.IntegerProperty()
-  level = db.IntegerProperty()
-  finished = db.StringProperty()
-
 class Duel(db.Model):
   chicken = db.IntegerProperty()
   ctime = db.DateTimeProperty(auto_now_add=True)
-  atime = db.DateTimeProperty(auto_now_add=True)
   now_turn = db.IntegerProperty()
   received_count = db.IntegerProperty()
-  level = db.IntegerProperty()
-  finished = db.StringProperty()
+  level = db.StringProperty()
 
 class NewGame(db.Model):
   ctime = db.DateTimeProperty(auto_now_add=True)
@@ -54,11 +42,6 @@ class User(db.Model):
   state = db.IntegerProperty()
   arg = db.StringProperty()
   duel = db.StringProperty()
-
-# For anonymous duels.
-class Anon(db.Model):
-  nonce = db.StringProperty()
-  ctime = db.DateTimeProperty(auto_now_add=True)
 
 class MainPage(webapp.RequestHandler):
   def get(self):
@@ -105,6 +88,9 @@ class MainPage(webapp.RequestHandler):
       user = db.run_in_transaction(heartbeat)
       if not user:
 	self.response.out.write("Error: No such user ID.")
+	return
+      if 2 == user.state:
+	self.response.out.write("\n" + user.duel)
 	return
       users = db.GqlQuery("SELECT * FROM User")
       for u in users:
@@ -193,7 +179,7 @@ class MainPage(webapp.RequestHandler):
 	logging.error("accept_duel failed.")
 	return
 
-      duel = Duel(key_name = duelid,
+      duel = Duel(key_name = "g:" + duelid,
 		  level = level,
 		  now_turn = 0,
 		  received_count = 0)
@@ -202,35 +188,8 @@ class MainPage(webapp.RequestHandler):
       logging.info("Response: " + duelid)
       return
 
-    # (end if "n" == cmd)
-    if "X" == cmd:  # Cancel start of game.
-      name = self.request.get("a")
-      logging.info("Canceling game: '" + name + "'")
-      if "" == name:
-        def cancel_anon():
-	  anon = db.get(Key.from_path("Anon", "meh"))
-	  if anon:
-	    anon.delete()
-	db.run_in_transaction(cancel_anon)
-	return
-
-      def cancel_named():
-	ng = db.get(Key.from_path("NewGame", "n:" + name))
-	if ng:
-	  ng.delete()
-      db.run_in_transaction(cancel_named)
-      return
-
     gamename = self.request.get("g")
-    game = Game.get_by_key_name("g:" + gamename)
-
-    if "s" == cmd:  # Await for start of game.
-      if not game:
-	self.response.out.write("-")
-      else:
-	self.response.out.write(unicode(game.level))
-	logging.info(gamename + " level = " + unicode(game.level))
-      return
+    game = Duel.get_by_key_name("g:" + gamename)
 
     if not game:
       logging.error("No such game: " + gamename)

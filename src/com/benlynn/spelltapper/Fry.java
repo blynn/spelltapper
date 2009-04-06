@@ -76,11 +76,20 @@ class Fry extends Thread {
 	  return;
 	case CMD_ACCEPT_DUEL:
           send("?c=N&i=" + userid + "&a=" + msg.obj);
+	  if (null != reply) {
+	    duelid = reply;
+	    Lobby.duel1();
+	  }
 	  return;
 	case CMD_BEAT:
           send("?c=r&i=" + userid);
 	  if (null != reply) {
-	    Lobby.set_list(reply);
+	    if ('\n' == reply.charAt(0)) {
+	      Fry.duelid = reply.substring(1, reply.length());
+	      Lobby.duel0();
+	    } else {
+	      Lobby.set_list(reply);
+	    }
 	  } else {
 	    if (null != error && error.equals("Error: No such user ID.")) {
 	      Lobby.kick_off();
@@ -146,6 +155,8 @@ class Fry extends Thread {
   static String server = "http://10.latest.spelltap.appspot.com/";
   static HttpClient client;
   static String userid;
+  static String duelid;
   static String error;
   static SpellTap spelltap;
+  static int netid;
 }

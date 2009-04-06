@@ -997,7 +997,6 @@ public class MainView extends View {
   static final int HANDLER_GET_CHARM_GESTURE = 5;
   static final int HANDLER_SET_PARA = 6;
   static final int HANDLER_GET_PARA = 7;
-  static final int HANDLER_NEW_GAME = 8;
   static final int HANDLER_START_GAME = 9;
   static final int HANDLER_FINISH_GAME = 10;
 
@@ -1043,6 +1042,12 @@ public class MainView extends View {
     }
   }
 
+  void new_net_game() {
+    set_tutorial(MACHINE_NET);
+    spelltap.goto_mainframe();
+    ready_noise();
+  }
+
   static NetHandler net_handler;
   class NetHandler extends Handler {
     @Override
@@ -1061,18 +1066,6 @@ public class MainView extends View {
       }
       //Log.i("Reply", Tubes.reply);
       switch(handler_state) {
-	case HANDLER_NEW_GAME:
-	  Tubes.handle_new_game();
-	  handler_state = HANDLER_START_GAME;
-	  break;
-	case HANDLER_START_GAME:
-	  tip_off();
-	  Player.set_level(Tubes.reply.charAt(0) - '0');
-	  spelltap.netconfig.setVisibility(View.GONE);
-	  set_tutorial(MACHINE_NET);
-	  spelltap.goto_mainframe();
-	  ready_noise();
-	  break;
 	case HANDLER_FINISH_GAME:
 	  break;
 	case HANDLER_GETMOVE:
