@@ -178,7 +178,8 @@ public class LobbyView extends View {
 	      Lobby.create_duel(Player.level);
 	      invalidate();
 	    }
-	  } else if (!selection.equals(Fry.username) &&
+	  } else if (null != selection && 
+	      !selection.equals(Fry.username) &&
 	      duel_level[selection_i] <= Player.true_level) {
 	    Player.set_level(duel_level[selection_i]);
 	    Lobby.accept_duel(selection);
