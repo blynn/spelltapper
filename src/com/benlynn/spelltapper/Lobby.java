@@ -18,6 +18,7 @@ class Lobby extends SpellTapMachine {
     Fry.logout();
     spelltap.lobby_view.setVisibility(View.GONE);
     spelltap.goto_town();
+    Player.set_level(Player.true_level);
   }
   void run() {
     Log.i("Lobby", "d0");

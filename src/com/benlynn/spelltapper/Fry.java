@@ -62,6 +62,7 @@ class Fry extends Thread {
 	  try {
 	    send("?c=l&a=" + URLEncoder.encode(username, "UTF-8") + "&b=" + userlevel);
 	  } catch(UnsupportedEncodingException e) {
+	    Log.e("Fry", "Unsupported encoding exception.");
 	    Tubes.login_error("Error: unsupported encoding exception.");
 	    return;
 	  }
@@ -87,7 +88,12 @@ class Fry extends Thread {
 	  }
 	  return;
 	case CMD_ACCEPT_DUEL:
-          send("?c=N&i=" + userid + "&a=" + msg.obj);
+	  try {
+	    send("?c=N&i=" + userid + "&a=" + URLEncoder.encode((String) msg.obj, "UTF-8"));
+	  } catch(UnsupportedEncodingException e) {
+	    Log.e("Fry", "Unsupported encoding exception.");
+	    return;
+	  }
 	  if (null != reply) {
 	    duelid = reply;
 	    oppname = (String) msg.obj;
@@ -173,7 +179,7 @@ class Fry extends Thread {
   static String reply;
   static String username;
   static int userlevel;
-  static String server = "http://10.latest.spelltap.appspot.com/";
+  static String server = "http://11.latest.spelltap.appspot.com/";
   static HttpClient client;
   static String userid;
   static String duelid;

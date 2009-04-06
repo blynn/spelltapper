@@ -88,12 +88,17 @@ class MainPage(webapp.RequestHandler):
       name = urllib.unquote(self.request.get("a"))
       b = self.request.get("b")
       if "" == b:
-	logging.error("Error: No level supplied.")
+	logging.error("No level supplied.")
+	self.response.out.write("Error: No level supplied.")
 	return
       level = int(b)
 
       logging.info("login: " + name)
-      # TODO: Handle empty names, spaces at the beginning or end of names, etc.
+      # TODO: Handle other bad names.
+      if "" == name:
+	logging.error("Empty name.")
+	self.response.out.write("Error: Empty name.")
+	return
       def handle_login():
 	acct = db.get(Key.from_path("Account", "n:" + name))
 	if not acct:
@@ -198,7 +203,7 @@ class MainPage(webapp.RequestHandler):
 
     if "N" == cmd:  # Accept duel.
       logging.info("Accept duel.")
-      a = self.request.get("a")
+      a = urllib.unquote(self.request.get("a"))
       if "" == a:
 	logging.error("Error: No opponent supplied.")
 	return

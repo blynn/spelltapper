@@ -178,6 +178,14 @@ class Tubes extends SpellTapMachine {
     return 0;
   }
 
+  static void net_send(String s) {
+    if (null != net_thread) {
+      Log.e("Tubes", "Bug! net_thread != null.");
+    }
+    net_thread = new NetThread(s);
+    net_thread.start();
+  }
+
   static void send_start() {
     net_send("?g=" + gameid + "&i=" + netid + "&c=s");
   }
@@ -186,14 +194,6 @@ class Tubes extends SpellTapMachine {
   }
   static void send_cancelgame() {
     net_send("?c=X&g=" + gameid + "&a=" + gamename);
-  }
-
-  static void net_send(String s) {
-    if (null != net_thread) {
-      Log.e("Tubes", "Bug! net_thread != null.");
-    }
-    net_thread = new NetThread(s);
-    net_thread.start();
   }
 
   static void send_move(String move) {
