@@ -36,6 +36,15 @@ class User(db.Model):
   name = db.StringProperty()
   level = db.IntegerProperty()
   state = db.IntegerProperty()
+  """
+  States:
+   0 I'm idle.
+   1 I propose a duel.
+   2 Somebody accepted my challenge.
+   3 I acknowledge someone's acceptance.
+   4 I accepted somebody's challenge.
+  """
+
   arg = db.StringProperty()
   duel = db.StringProperty()
 
@@ -45,6 +54,26 @@ class MainPage(webapp.RequestHandler):
       self.response.out.write("2")
       return
     cmd = self.request.get("c")
+
+    def logoff(userkey):
+      def del_user(userkey):
+	user = db.get(userkey)
+	if not user:
+	  return None
+	user.delete()
+	return user
+      u = db.run_in_transaction(del_user, userkey)
+      if None == u:
+	logging.error("User already deleted.")
+	return
+      def del_acct():
+	acct = db.get(Key.from_path("Account", "n:" + u.name))
+	if not acct:
+	  logging.error("Missing account for user.")
+	  return
+	acct.delete()
+      db.run_in_transaction(del_acct)
+
     if "l" == cmd:  # Login.
       name = urllib.unquote(self.request.get("a"))
       b = self.request.get("b")
@@ -73,20 +102,29 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write(nonce)
       return
 
+    if "L" == cmd:  # Logoff.
+      nonce = self.request.get("i")
+      logoff(Key.from_path("User", "n:" + nonce))
+
     if "r" == cmd:  # Lobby refresh.
       nonce = self.request.get("i")
       def heartbeat():
 	user = db.get(Key.from_path("User", "n:" + nonce))
-	if not user: return None
+	if not user: return False, None
 	user.atime = datetime.now()
+	# Someone accepted the duel.
+	if 2 == user.state:
+	  user.state = 3
+	  user.put()
+	  return True, user
 	user.put()
-	return user
-      user = db.run_in_transaction(heartbeat)
+	return False, user
+      flag, user = db.run_in_transaction(heartbeat)
       if not user:
 	self.response.out.write("Error: No such user ID.")
 	return
-      if 2 == user.state:
-	self.response.out.write("\n" + user.duel)
+      if flag:
+	self.response.out.write("\n" + user.arg + "\n" + user.duel)
 	return
       users = db.GqlQuery("SELECT * FROM User")
       for u in users:
@@ -94,24 +132,9 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write(unicode(u.state) + '\n')
 	self.response.out.write(u.arg + '\n')
 
-	if (user.atime - u.atime).seconds >= 12:
-	  logging.info("deleting " + u.name);
-	  def del_user(userkey):
-	    user = db.get(userkey)
-	    if not user:
-	      return -1
-	    user.delete()
-	    return 0 
-	  if -1 == db.run_in_transaction(del_user, u.key()):
-	    logging.error("User already deleted.")
-	    return
-	  def del_acct():
-	    acct = db.get(Key.from_path("Account", "n:" + u.name))
-	    if not acct:
-	      logging.error("Missing account for user.")
-	      return
-	    acct.delete()
-	  db.run_in_transaction(del_acct)
+	if (0 == u.state or 1 == u.state) and user.atime > u.atime and (user.atime - u.atime).seconds >= 12:
+	  logging.info(u.name + " timeout: " + unicode((user.atime - u.atime).seconds))
+	  logoff(u.key())
       return
 
     if "n" == cmd:  # New duel.
@@ -124,7 +147,7 @@ class MainPage(webapp.RequestHandler):
 	logging.error("Error: Bad level.")
 	return
       nonce = self.request.get("i")
-      def heartbeat():
+      def new_duel():
 	user = db.get(Key.from_path("User", "n:" + nonce))
 	if not user: return
 	user.atime = datetime.now()
@@ -132,7 +155,7 @@ class MainPage(webapp.RequestHandler):
 	  user.state = 1
 	  user.arg = a
 	user.put()
-      db.run_in_transaction(heartbeat)
+      db.run_in_transaction(new_duel)
       return
 
     if "N" == cmd:  # Accept duel.
@@ -149,9 +172,12 @@ class MainPage(webapp.RequestHandler):
 	if not user:
 	  return None, None, -1
 	origuser.atime = user.atime = datetime.now()
-	if user.state == 2:
+	# Can't accept a duel if you were advertising one and someone just
+	# accepted (but you don't know yet). Also can't accept a duel if
+	# already in one.
+	if 1 != user.state and 0 != user.state:
 	  return None, None, -2
-	user.state = 2
+	user.state = 4
 	user.arg = a
 	user.duel = duelid
 	user.put()
@@ -169,7 +195,7 @@ class MainPage(webapp.RequestHandler):
       acct = db.get(Key.from_path("Account", "n:" + a))
       if not acct:
 	origuser.put()
-	self.response.out.write("Error: Opponent unavailable.");
+	self.response.out.write("Error: Opponent unavailable.")
 	return
 
       def accept_duel():
@@ -199,17 +225,31 @@ class MainPage(webapp.RequestHandler):
       return
 
     gamename = self.request.get("g")
-    game = Duel.get_by_key_name("g:" + gamename)
 
     if "f" == cmd:
       logging.info("Game " + gamename + " finished.")
-      self.response.out.write("OK")
+      nonce = self.request.get("i")
+      def restate_user():
+	user = db.get(Key.from_path("User", "n:" + nonce))
+	if not user:
+	  return None
+	user.atime = datetime.now()
+	user.state = 0
+	user.put()
+	return user
+      user = db.run_in_transaction(restate_user)
+      if not user:
+	self.response.out.write("Error: No such user ID.")
+      else:
+	self.response.out.write("OK")
       def del_game():
-	game = db.get(gamekey)
+	game = Duel.get_by_key_name("g:" + gamename)
 	if game:
 	  game.delete()  # TODO: Also delete moves.
       db.run_in_transaction(del_game)
       return
+
+    game = Duel.get_by_key_name("g:" + gamename)
 
     if not game:
       logging.error("No such game: " + gamename)
@@ -243,7 +283,7 @@ class MainPage(webapp.RequestHandler):
       else:
 	move = Move(key_name = moveid,
 		    has_charm = 0,
-		    has_para = 0);
+		    has_para = 0)
 
       move.move = a
       move.put()
@@ -269,7 +309,7 @@ class MainPage(webapp.RequestHandler):
       db.run_in_transaction(increment_received_count)
       logging.info("rcount " + unicode(db.get(gamekey).received_count))
       self.response.out.write("OK")
-    
+
     def CommandGetMove():
       if game.chicken:
 	self.response.out.write('CHICKEN')
@@ -324,7 +364,7 @@ class MainPage(webapp.RequestHandler):
       def put_para(key):
 	move = db.get(key)
 	move.para = gesture
-	move.has_para = 1;
+	move.has_para = 1
 	move.put()
       db.run_in_transaction(put_para, move.key())
       self.response.out.write("OK")
@@ -377,7 +417,7 @@ class MainPage(webapp.RequestHandler):
 	return
       if (1 == move.has_charm):
 	self.response.out.write("Error: Already received charm.")
-	return;
+	return
 
       def put_charm(key):
 	move = db.get(key)
@@ -422,10 +462,12 @@ class MainPage(webapp.RequestHandler):
     def CommandDisconnect():
       def set_chicken():
 	game = db.get(gamekey)
-	game.chicken = 1
-	game.put()
+	if game:
+	  game.chicken = 1
+	  game.put()
       db.run_in_transaction(set_chicken)
       logging.info(gamename + ":" + playerid + " flees!")
+      logoff(Key.from_path("User", "n:" + playerid))
       self.response.out.write("Chicken!")
       return
     def CommandBad():

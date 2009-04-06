@@ -49,6 +49,9 @@ class Fry extends Thread {
   static void send_accept_duel(String s) {
     handler.sendMessage(Message.obtain(handler, CMD_ACCEPT_DUEL, s));
   }
+  static void send_finish() {
+    handler.sendEmptyMessage(CMD_FINISH);
+  }
 
   // Called from this thread.
   class FryHandler extends Handler {
@@ -74,6 +77,7 @@ class Fry extends Thread {
 	  if (!is_logged_in) {
 	    Log.e("Fry", "Logging out without logging in!");
 	  }
+	  is_logged_in = false;
           send("?c=L&i=" + userid);
 	  return;
 	case CMD_NEW_DUEL:
@@ -83,6 +87,7 @@ class Fry extends Thread {
           send("?c=N&i=" + userid + "&a=" + msg.obj);
 	  if (null != reply) {
 	    duelid = reply;
+	    oppname = (String) msg.obj;
 	    Lobby.duel1();
 	  }
 	  return;
@@ -93,6 +98,17 @@ class Fry extends Thread {
 	  } else {
 	    if (null != error && error.equals("Error: No such user ID.")) {
 	      Lobby.kick_off();
+	    }
+	  }
+	  return;
+	case CMD_FINISH:
+	  send("?g=" + duelid + "&i=" + userid + "&c=f");
+	  if (null == reply) {
+	    if (null != error || error.equals("Error: No such user ID.")) {
+	      Lobby.kick_off();
+	    }
+	    if (error.equals("Error: 500.")) {
+	      sendEmptyMessageDelayed(CMD_FINISH, 4096);
 	    }
 	  }
 	  return;
@@ -148,7 +164,8 @@ class Fry extends Thread {
   static final int CMD_BEAT = 258;
   static final int CMD_NEW_DUEL = 259;
   static final int CMD_ACCEPT_DUEL = 260;
-  static final int CMD_QUIT = 261;
+  static final int CMD_FINISH = 261;
+  static final int CMD_QUIT = 262;
   static FryHandler handler;
   static String reply;
   static String username;
@@ -157,6 +174,7 @@ class Fry extends Thread {
   static HttpClient client;
   static String userid;
   static String duelid;
+  static String oppname;
   static String error;
   static SpellTap spelltap;
   static int netid;

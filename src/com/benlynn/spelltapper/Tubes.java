@@ -92,7 +92,7 @@ class Tubes extends SpellTapMachine {
 	  break;
 	case 0:
 	  gamename = server_edittext.getText().toString();
-	  if ("" == gamename) {
+	  if (gamename.equals("")) {
 	    spelltap.narrate(R.string.enteraname);
 	    return;
 	  }
@@ -156,7 +156,7 @@ class Tubes extends SpellTapMachine {
       }
       public void handle_reply() {
 	if (null == reply) {
-	  sendEmptyMessageDelayed(0, 3000);
+	  sendEmptyMessageDelayed(0, 4000);
 	} else if ('-' == reply.charAt(0)) {
 	  sendEmptyMessageDelayed(0, 3000);
 	} else {
@@ -180,11 +180,8 @@ class Tubes extends SpellTapMachine {
   static void send_start() {
     net_send("?g=" + gameid + "&i=" + netid + "&c=s");
   }
-  static void send_finish() {
-    net_send("?g=" + gameid + "&i=" + netid + "&c=f");
-  }
   static void send_disconnect() {
-    net_send("?g=" + gameid + "&i=" + netid + "&c=D");
+    net_send("?g=" + gameid + "&i=" + Fry.userid + "&c=D");
   }
   static void send_cancelgame() {
     net_send("?c=X&g=" + gameid + "&a=" + gamename);

@@ -10,6 +10,7 @@ class Lobby extends SpellTapMachine {
   Lobby(SpellTap st) {
     super(st);
     handler = new LobbyHandler();
+    is_live = false;
   }
 
   void go_back() {
@@ -19,16 +20,20 @@ class Lobby extends SpellTapMachine {
     spelltap.goto_town();
   }
   void run() {
-    is_live = true;
-    Player.level = Player.true_level;
-    LobbyView.has_created_duel = false;
-    heartbeat();
+    Log.i("Lobby", "d0");
+    if (!is_live) {
+      Log.i("Lobby", "d1");
+      is_live = true;
+      Player.level = Player.true_level;
+      LobbyView.has_created_duel = false;
+      heartbeat();
+    }
   }
 
   void heartbeat() {
     if (!is_live) return;
     Fry.send_beat();
-    handler.sendEmptyMessageDelayed(CMD_BEAT, 4096);
+    handler.sendEmptyMessageDelayed(CMD_BEAT, 3000);
   }
 
   static void set_list(String s) {

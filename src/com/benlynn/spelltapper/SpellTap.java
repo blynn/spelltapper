@@ -395,6 +395,8 @@ public class SpellTap extends Activity {
       } catch (Exception e) {
 	Log.e("SpellTapper", "Proceeding without saving state.");
       }
+    } else {
+      state = 128;
     }
     run();
     switch(state) {

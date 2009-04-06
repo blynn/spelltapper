@@ -1170,8 +1170,8 @@ public class MainView extends View {
   }
 
   class NetAgent extends Agent {
-    String name() { return "Opponent"; }
-    String name_full() { return "Opponent"; }
+    String name() { return Fry.oppname; }
+    String name_full() { return Fry.oppname; }
     int life() { return Player.life[Player.level]; }
     int bitmap_id() { return R.drawable.wiz; }
     void move(SpellTapMove turn) {
@@ -1210,9 +1210,11 @@ public class MainView extends View {
 	  return;
 	case 1:
 	  handler_state = HANDLER_FINISH_GAME;
-	  Tubes.send_finish();
 	  spelltap.next_state();
-	  spelltap.goto_town();
+	  spelltap.mainframe.setVisibility(View.GONE);
+	  spelltap.lobby_view.setVisibility(View.VISIBLE);
+	  spelltap.set_place(SpellTap.PLACE_LOBBY);
+	  Fry.send_finish();
 	  return;
       }
     }

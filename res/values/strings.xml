@@ -110,7 +110,7 @@ earn experience by casting spells in duels. Then gain levels and learn new spell
 <string name="talkabouttilt2">Tilt the screen up vertically after gesturing. When you see the flash, tilt the screen back to its original position.</string>
 
 <string name="limit1">Congratulations! You gain a level for dueling one-on-one. Visit Jack for advice.</string>
-<string name="limit2">You are now at level 3.</string>
+<string name="limit2">You are now at level 3. See Jack for good advice.</string>
 <string name="limit3">Have 2 levels on the house! You are at the highest level.</string>
 
 <string name="bug">Oops! You\'ve uncovered a bug!</string>
