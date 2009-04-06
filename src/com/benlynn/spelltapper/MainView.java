@@ -130,7 +130,9 @@ public class MainView extends View {
     if (!is_animating) {
       help_arrow_off();
       spelltap.goto_town();
-      spelltap.narrate(R.string.chicken);
+      if (MACHINE_NET == tut_index) {
+	spelltap.narrate(R.string.chicken);
+      }
     }
   }
 
@@ -1764,7 +1766,8 @@ public class MainView extends View {
 	}
 	return true;
       case MotionEvent.ACTION_MOVE:
-        if ((event.getEventTime() - event.getDownTime()) > 256 && y0 >= ylower) {
+	downtime = (int) ((event.getEventTime() - event.getDownTime()) / 8);
+        if (y0 >= ylower) {
 	  if (x0 < 160 - BUFFERZONE) {
 	    gesture_help = 0;
 	    arrow_view.invalidate();
@@ -3779,9 +3782,10 @@ public class MainView extends View {
 
   static int fireice_i;
   static SpellCast monster_resolve, fireice_resolve;
-  static int gesture_help;
   static boolean WDDc_cast;
 
   static MediaPlayer ready_mp;
   static int turn_index;
+  static int downtime;
+  static int gesture_help;
 }

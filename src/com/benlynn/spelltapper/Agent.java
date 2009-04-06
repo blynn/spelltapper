@@ -264,6 +264,8 @@ abstract public class Agent {
     String name() { return "Al Teffor"; }
     String name_full() { return "Al Teffor, Destroyer of Windows"; }
     int bitmap_id() { return R.drawable.alteffor; }
+    @Override
+    int life() { return 7; }
   }
 
   static Agent getDummy() { return new DummyAgent(); }

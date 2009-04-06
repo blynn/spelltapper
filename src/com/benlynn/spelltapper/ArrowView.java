@@ -107,6 +107,10 @@ public class ArrowView extends View {
 
     // Gesture compass
     if (-1 != MainView.gesture_help) {
+      int n = MainView.downtime;
+      if (n > 255) n = 255;
+      Easel.compass_background.setAlpha(n);
+      Easel.compass_text.setAlpha(n);
       x = 0;
       y = 128;
       if (1 == MainView.gesture_help) x = 200;
