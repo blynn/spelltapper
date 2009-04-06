@@ -173,7 +173,6 @@ Cancels with other psychological spells.</string>
 
 <string name="needupdate">Please update Spelltapper.</string>
 <string name="servererror">Cannot connect to server :( Try updating Spelltapper?</string>
-<string name="waitchallenge">Connected! Waiting for challenger...</string>
 <string name="nameconflict">Name currently in use. Pick another one.</string>
 
 <string name="oppmoved">Opponent has moved. Tap to continue.</string>
@@ -187,6 +186,8 @@ http://cs.stanford.edu/~blynn/spelltapper/
 </string>
 
 <string name="got_disconnected">Disconnected from server.</string>
+
+<string name="enteraname">Enter a name.</string>
 
 <string name="toggle_sound">Toggle Sound</string>
 </resources>

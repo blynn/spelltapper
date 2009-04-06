@@ -92,6 +92,10 @@ class Tubes extends SpellTapMachine {
 	  break;
 	case 0:
 	  gamename = server_edittext.getText().toString();
+	  if ("" == gamename) {
+	    spelltap.narrate(R.string.enteraname);
+	    return;
+	  }
 	  state = STATE_WAIT;
 	  Fry.login(gamename, Player.level);
 	  break;

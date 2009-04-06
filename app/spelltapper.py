@@ -1,3 +1,4 @@
+import urllib
 import logging
 import random
 from datetime import datetime
@@ -24,11 +25,6 @@ class Duel(db.Model):
   received_count = db.IntegerProperty()
   level = db.StringProperty()
 
-class NewGame(db.Model):
-  ctime = db.DateTimeProperty(auto_now_add=True)
-  nonce = db.StringProperty()
-  level = db.IntegerProperty()
-
 class Account(db.Model):
   ctime = db.DateTimeProperty(auto_now_add=True)
   nonce = db.StringProperty()
@@ -50,7 +46,7 @@ class MainPage(webapp.RequestHandler):
       return
     cmd = self.request.get("c")
     if "l" == cmd:  # Login.
-      name = self.request.get("a")
+      name = urllib.unquote(self.request.get("a"))
       b = self.request.get("b")
       if "" == b:
 	logging.error("Error: No level supplied.")
@@ -97,11 +93,25 @@ class MainPage(webapp.RequestHandler):
 	self.response.out.write(u.name + '\n')
 	self.response.out.write(unicode(u.state) + '\n')
 	self.response.out.write(u.arg + '\n')
-	"""
-	TODO: Remove users after 12 seconds without a heartbeat, also when
-	disconnect command is received
-	"""
-	#self.response.out.write(unicode((user.atime - u.atime).seconds) + '\n')
+
+	if (user.atime - u.atime).seconds >= 12:
+	  logging.info("deleting " + u.name);
+	  def del_user(userkey):
+	    user = db.get(userkey)
+	    if not user:
+	      return -1
+	    user.delete()
+	    return 0 
+	  if -1 == db.run_in_transaction(del_user, u.key()):
+	    logging.error("User already deleted.")
+	    return
+	  def del_acct():
+	    acct = db.get(Key.from_path("Account", "n:" + u.name))
+	    if not acct:
+	      logging.error("Missing account for user.")
+	      return
+	    acct.delete()
+	  db.run_in_transaction(del_acct)
       return
 
     if "n" == cmd:  # New duel.
@@ -191,6 +201,16 @@ class MainPage(webapp.RequestHandler):
     gamename = self.request.get("g")
     game = Duel.get_by_key_name("g:" + gamename)
 
+    if "f" == cmd:
+      logging.info("Game " + gamename + " finished.")
+      self.response.out.write("OK")
+      def del_game():
+	game = db.get(gamekey)
+	if game:
+	  game.delete()  # TODO: Also delete moves.
+      db.run_in_transaction(del_game)
+      return
+
     if not game:
       logging.error("No such game: " + gamename)
       self.response.out.write("Error: No such game.")
@@ -202,18 +222,6 @@ class MainPage(webapp.RequestHandler):
       logging.error("Bad player ID.")
       self.response.out.write("Error: Bad player ID.")
       return
-    def CommandFinish():
-      logging.info("Game " + gamename + " finished.")
-      self.response.out.write("OK")
-      if "" == game.finished:
-	def set_finished():
-	  game = db.get(gamekey)
-	  game.finished = playerid
-	  game.put()
-	db.run_in_transaction(set_finished)
-      elif playerid != game.finished:  # TODO: This should be string comparison.
-	# Delete this game.
-	game.delete()  # TODO: Also delete moves.
     def CommandSetMove():
       turn_index = self.request.get("j")
       if "" == turn_index:
@@ -427,7 +435,6 @@ class MainPage(webapp.RequestHandler):
      'g' : CommandGetMove,
      'p' : CommandSetPara,
      'q' : CommandGetPara,
-     'f' : CommandFinish,
      'C' : CommandSetCharm,
      'H' : CommandGetCharmHand,
      'G' : CommandGetCharmGesture,

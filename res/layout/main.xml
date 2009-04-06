@@ -38,7 +38,7 @@
     <TextView
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
-	android:text="Game name (optional):"
+	android:text="Wizard name:"
 	android:textSize="18dip"
 	/>
     <EditText
@@ -65,7 +65,7 @@
     <TextView
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
-	android:text="You can either leave the name blank to play someone else who also left the name blank, or choose a name and tell a friend."
+	android:text=""
 	android:textSize="18dip"
 	android:autoLink="all"
 	android:singleLine="false"

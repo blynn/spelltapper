@@ -2,6 +2,8 @@ package com.benlynn.spelltapper;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.LoginFilter;
 import android.view.Window;
 import android.view.View;
 import android.view.MenuItem;

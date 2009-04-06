@@ -56,7 +56,12 @@ class Fry extends Thread {
     public void handleMessage(Message msg) {
       switch (msg.what) {
 	case CMD_LOGIN:
-          send("?c=l&a=" + username + "&b=" + userlevel);
+	  try {
+	    send("?c=l&a=" + URLEncoder.encode(username, "UTF-8") + "&b=" + userlevel);
+	  } catch(UnsupportedEncodingException e) {
+	    Tubes.login_error("Error: unsupported encoding exception.");
+	    return;
+	  }
 	  if (null == reply || reply.startsWith("Error: ")) {
 	    Tubes.login_error(reply);
 	  } else {
@@ -84,12 +89,7 @@ class Fry extends Thread {
 	case CMD_BEAT:
           send("?c=r&i=" + userid);
 	  if (null != reply) {
-	    if ('\n' == reply.charAt(0)) {
-	      Fry.duelid = reply.substring(1, reply.length());
-	      Lobby.duel0();
-	    } else {
-	      Lobby.set_list(reply);
-	    }
+	    Lobby.set_list(reply);
 	  } else {
 	    if (null != error && error.equals("Error: No such user ID.")) {
 	      Lobby.kick_off();
@@ -112,6 +112,7 @@ class Fry extends Thread {
       HttpResponse response = client.execute(request);
       if (HttpStatus.SC_OK != response.getStatusLine().getStatusCode()) {
 	reply = null;
+	error = "Error: 500.";
 	return;
       }
       InputStream in = response.getEntity().getContent();
